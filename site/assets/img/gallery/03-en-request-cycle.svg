@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="req-title req-desc">
+  <title id="req-title">messaging-php Request Cycle</title>
+  <desc id="req-desc">The request cycle shared by 20 driver names across 13 protocol stacks. Publish path: Message passes the Connection and Driver capability gate, is encoded and written to the Broker. Consume path: Driver::receive returns ReceivedMessage, the Handler processes it and calls ack or reject; failed messages are requeued and redelivered.</desc>
+  <style>
+    text{font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#14213D}
+    .title{font-size:22px;font-weight:700}
+    .sub{font-size:11.5px;fill:#5B6478}
+    .lane{font-size:12.5px;font-weight:700}
+    .lane-en{font-size:9.5px;fill:#8A94A6}
+    .n{font-size:11.5px;font-weight:600}
+    .ns{font-size:8.8px;fill:#5B6478}
+    .bn{font-size:13px;font-weight:700;fill:#FFFFFF}
+    .bs{font-size:9.5px;fill:#DBEAFE}
+    .note{font-size:9.3px;fill:#5B6478}
+    .tag{font-size:9.4px;fill:#B45309}
+    .gate{font-size:8.8px;fill:#B45309}
+    .ctr{text-anchor:middle}
+  </style>
+  <defs>
+    <marker id="arw-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#2563EB"/>
+    </marker>
+    <marker id="arw-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#D97706"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="540" fill="#FFFFFF"/>
+  <text class="title" x="48" y="42">messaging-php Request Cycle</text>
+  <text class="sub" x="912" y="42" text-anchor="end">20 drivers · 13 stacks</text>
+  <text class="sub" x="48" y="64">Pull-based consumption: drivers absorb protocol details; capability gates are explicit</text>
+
+  <!-- Publish path -->
+  <rect x="40" y="88" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="lane" x="52" y="100">① Publish path</text>
+  <text class="lane-en" x="150" y="100">Producer to broker</text>
+
+  <rect x="40" y="108" width="132" height="66" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+  <text class="n ctr" x="106" y="132">Message</text>
+  <text class="ns ctr" x="106" y="149">body · headers</text>
+  <text class="ns ctr" x="106" y="163">key · delayMs</text>
+
+  <rect x="196" y="108" width="150" height="66" rx="9" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.3"/>
+  <text class="n ctr" x="271" y="130">Connection::publish</text>
+  <text class="ns ctr" x="271" y="147">unified entry · argument checks</text>
+  <text class="ns ctr" x="271" y="161">returns PublishResult</text>
+
+  <rect x="370" y="108" width="150" height="66" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+  <text class="n ctr" x="445" y="130">Driver::publish</text>
+  <text class="ns ctr" x="445" y="147">driver · capability gate</text>
+  <text class="ns ctr" x="445" y="161">config checks · throws</text>
+
+  <rect x="548" y="108" width="150" height="66" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+  <text class="n ctr" x="623" y="130">Protocol encoding</text>
+  <text class="ns ctr" x="623" y="147">frames / JSON / HTTP</text>
+  <text class="ns ctr" x="623" y="161">TLS · signing · gzip</text>
+
+  <rect x="778" y="108" width="140" height="300" rx="10" fill="#1E3A8A" stroke="#1E3A8A"/>
+  <text class="bn ctr" x="848" y="238">Broker / cloud</text>
+  <text class="bs ctr" x="848" y="258">queues · topics · persistence</text>
+  <text class="bs ctr" x="848" y="276">ack · retry · groups</text>
+
+  <line x1="172" y1="141" x2="194" y2="141" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+  <line x1="346" y1="141" x2="368" y2="141" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+  <line x1="520" y1="141" x2="546" y2="141" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+  <line x1="698" y1="141" x2="776" y2="141" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+  <text class="ns" x="196" y="192">PublishResult { id, raw }</text>
+  <text class="gate" x="445" y="192">Capability gate: delay / headers / batchPublish</text>
+
+  <!-- Consume path -->
+  <rect x="40" y="246" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="lane" x="52" y="258">② Consume path</text>
+  <text class="lane-en" x="160" y="258">Broker to handler</text>
+
+  <rect x="40" y="272" width="132" height="64" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+  <text class="n ctr" x="106" y="296">ack / reject</text>
+  <text class="ns ctr" x="106" y="312">ack() confirms</text>
+  <text class="ns ctr" x="106" y="326">reject(requeue) retry or drop</text>
+
+  <rect x="196" y="272" width="150" height="64" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+  <text class="n ctr" x="271" y="296">Handler</text>
+  <text class="ns ctr" x="271" y="312">business logic</text>
+  <text class="ns ctr" x="271" y="326">exceptions enter the failure branch</text>
+
+  <rect x="370" y="272" width="150" height="64" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
+  <text class="n ctr" x="445" y="296">ReceivedMessage</text>
+  <text class="ns ctr" x="445" y="312">body · headers · id</text>
+  <text class="ns ctr" x="445" y="326">attempts · raw</text>
+
+  <rect x="548" y="272" width="150" height="64" rx="9" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.3"/>
+  <text class="n ctr" x="623" y="296">Driver::receive</text>
+  <text class="ns ctr" x="623" y="312">unified pull entry</text>
+  <text class="ns ctr" x="623" y="326">push protocols buffered inside</text>
+
+  <line x1="778" y1="292" x2="700" y2="292" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+  <line x1="548" y1="304" x2="522" y2="304" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+  <line x1="370" y1="304" x2="348" y2="304" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+  <line x1="196" y1="304" x2="174" y2="304" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+
+  <!-- Retry: broker redelivers to receive -->
+  <line x1="778" y1="322" x2="700" y2="322" stroke="#D97706" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arw-amber)"/>
+  <text class="tag ctr" x="739" y="340">retry</text>
+
+  <!-- Happy ack path -->
+  <path d="M106 336 L106 360 L776 360" fill="none" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <text class="note" x="120" y="354">ack() / reject(false): confirm or drop</text>
+
+  <!-- Failure path: reject(requeue: true) -->
+  <path d="M271 336 L271 384 L776 384" fill="none" stroke="#D97706" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arw-amber)"/>
+  <text class="tag" x="292" y="400">Failure: reject(requeue: true) → requeue, redelivered on next receive()</text>
+
+  <!-- Legend and notes -->
+  <line x1="48" y1="434" x2="78" y2="434" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+  <text class="note" x="88" y="438">Happy path</text>
+  <line x1="170" y1="434" x2="200" y2="434" stroke="#D97706" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arw-amber)"/>
+  <text class="note" x="210" y="438">Failure / retry</text>
+
+  <text class="note" x="48" y="464">receive() returns one message; consume() is loop sugar; timeoutMs = 0 blocks, a timeout returns null</text>
+  <text class="note" x="48" y="482">Capability gate: ack / requeue checked before use; unsupported throws UnsupportedFeatureException</text>
+  <text class="note" x="48" y="500">Push protocols (STOMP, NATS) buffer inside the driver; handlers must be idempotent across redelivery</text>
+</svg>

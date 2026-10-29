@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://package.erik.xyz/messaging/sitemap.xml

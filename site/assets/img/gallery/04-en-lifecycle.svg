@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-labelledby="life-title life-desc">
+  <title id="life-title">messaging-php Lifecycle</title>
+  <desc id="life-desc">From Composer install and config copy: Config validation, Manager lazy loading, driver lookup, factory creation (Redis/NATS/RabbitMQ connect in the factory, others lazily), capability gate, the publish and consume loop, ack or reject, and close/disconnect/reconnect. CI covers PHP 8.0–8.5.</desc>
+  <style>
+    text{font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#14213D}
+    .title{font-size:22px;font-weight:700}
+    .sub{font-size:11.5px;fill:#5B6478}
+    .section{font-size:12.5px;font-weight:700}
+    .section-en{font-size:9.5px;fill:#8A94A6}
+    .st{font-size:11.5px;font-weight:600}
+    .ss{font-size:8.9px;fill:#5B6478}
+    .num{font-size:10.5px;font-weight:700;fill:#2563EB}
+    .pn{font-size:12px;font-weight:700}
+    .pt{font-size:9.4px;fill:#475569}
+    .chip{font-size:9px;fill:#1D4ED8}
+    .ex{font-size:9.2px;fill:#1E3A8A;font-weight:600}
+    .cond{font-size:9.2px;fill:#5B6478}
+    .note{font-size:8.8px;fill:#5B6478}
+    .warn{font-size:9.3px;fill:#B45309}
+    .ctr{text-anchor:middle}
+  </style>
+  <defs>
+    <marker id="arw-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#2563EB"/>
+    </marker>
+    <marker id="arw-grey" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#94A3B8"/>
+    </marker>
+    <marker id="arw-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#D97706"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="600" fill="#FFFFFF"/>
+  <text class="title" x="48" y="42">messaging-php Lifecycle</text>
+  <text class="sub" x="912" y="42" text-anchor="end">Lifecycle · connections, capabilities and reconnects · CI PHP 8.0–8.5</text>
+  <text class="sub" x="48" y="64">From Composer install to a consumable connection: every step can fail with a specific exception</text>
+
+  <!-- Left: install and consume lifecycle -->
+  <rect x="40" y="86" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="section" x="52" y="98">① Install, connect and consume</text>
+  <text class="section-en" x="286" y="98">Install · Connection Lifecycle</text>
+
+  <!-- Step 1 -->
+  <rect x="48" y="106" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="127" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="131">1</text>
+  <text class="st" x="88" y="123">Composer install</text>
+  <text class="ss" x="88" y="138">allow-plugins → detect framework → copy config (Yii3 merges)</text>
+
+  <!-- Step 2 -->
+  <rect x="48" y="160" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="181" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="185">2</text>
+  <text class="st" x="88" y="177">Config::fromArray()</text>
+  <text class="ss" x="88" y="192">validates default, connection names and required driver; fails fast</text>
+
+  <!-- Step 3 -->
+  <rect x="48" y="214" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="235" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="239">3</text>
+  <text class="st" x="88" y="231">Manager::connection(name)</text>
+  <text class="ss" x="88" y="246">lazy: create and cache Connection by name</text>
+
+  <!-- Step 4 -->
+  <rect x="48" y="268" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="289" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="293">4</text>
+  <text class="st" x="88" y="285">Driver lookup</text>
+  <text class="ss" x="88" y="300">BUILT_IN_DRIVERS or factories registered via Manager::extend()</text>
+
+  <!-- Step 5 -->
+  <rect x="48" y="322" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="343" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="347">5</text>
+  <text class="st" x="88" y="339">DriverFactory::create()</text>
+  <text class="ss" x="88" y="354">validates config; Redis/NATS/RabbitMQ connect in factory, others lazily</text>
+
+  <!-- Step 6 -->
+  <rect x="48" y="376" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="397" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="401">6</text>
+  <text class="st" x="88" y="393">capabilities() gate</text>
+  <text class="ss" x="88" y="408">8 booleans: ack / requeue / delay / consumerGroups, ...</text>
+
+  <!-- Step 7 -->
+  <rect x="48" y="430" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="451" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="455">7</text>
+  <text class="st" x="88" y="447">publish / receive / consume</text>
+  <text class="ss" x="88" y="462">publish, or enter the pull loop; push protocols are buffered</text>
+
+  <!-- Step 8 -->
+  <rect x="48" y="484" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="505" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="509">8</text>
+  <text class="st" x="88" y="501">ack() / reject(requeue)</text>
+  <text class="ss" x="88" y="516">commit the result; failures redeliver, unsupported features throw</text>
+
+  <!-- Step 9 -->
+  <rect x="48" y="538" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="559" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="563">9</text>
+  <text class="st" x="88" y="555">close() / disconnect() / reconnect</text>
+  <text class="ss" x="88" y="570">no auto reconnect; disconnect clears cache, then connection() rebuilds</text>
+
+  <!-- Step arrows -->
+  <line x1="248" y1="148" x2="248" y2="158" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="202" x2="248" y2="212" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="256" x2="248" y2="266" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="310" x2="248" y2="320" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="364" x2="248" y2="374" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="418" x2="248" y2="428" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="472" x2="248" y2="482" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="526" x2="248" y2="536" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+
+  <!-- Consume loop: 8 -> 7 -->
+  <path d="M448 505 L462 505 L462 451 L450 451" fill="none" stroke="#D97706" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arw-amber)"/>
+  <text class="warn" x="466" y="482">loop</text>
+
+  <!-- Right: capability check -->
+  <rect x="496" y="106" width="416" height="136" rx="11" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.3"/>
+  <rect x="512" y="120" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="pn" x="524" y="132">Capability check</text>
+  <text class="section-en" x="640" y="132">Capability Gate</text>
+  <text class="pt" x="512" y="152">capabilities() returns 8 booleans; check before calling:</text>
+  <g>
+    <rect x="512" y="162" width="60" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="542" y="178">ack</text>
+    <rect x="580" y="162" width="74" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="617" y="178">requeue</text>
+    <rect x="662" y="162" width="60" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="692" y="178">delay</text>
+    <rect x="730" y="162" width="104" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="782" y="178">consumerGroups</text>
+    <rect x="512" y="194" width="96" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="560" y="210">batchPublish</text>
+    <rect x="616" y="194" width="72" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="652" y="210">ordering</text>
+    <rect x="696" y="194" width="68" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="730" y="210">headers</text>
+    <rect x="772" y="194" width="62" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="803" y="210">subscribe first</text>
+  </g>
+  <text class="warn" x="512" y="234">Unsupported features throw UnsupportedFeatureException, never silently degrade</text>
+
+  <!-- Right: exception map -->
+  <rect x="496" y="258" width="416" height="218" rx="11" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <rect x="512" y="272" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="pn" x="524" y="284">Exception map</text>
+  <text class="section-en" x="640" y="284">Exception Map</text>
+  <text class="note" x="512" y="304">All exceptions extend MessagingException (RuntimeException)</text>
+
+  <line x1="512" y1="318" x2="896" y2="318" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="334">Connect / handshake failure</text>
+  <text class="cond" x="648" y="334">→</text>
+  <text class="ex" x="666" y="334">ConnectionException</text>
+
+  <line x1="512" y1="342" x2="896" y2="342" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="358">Read timeout</text>
+  <text class="cond" x="648" y="358">→</text>
+  <text class="ex" x="666" y="358">TimeoutException</text>
+
+  <line x1="512" y1="366" x2="896" y2="366" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="382">Bad frame / protocol state</text>
+  <text class="cond" x="648" y="382">→</text>
+  <text class="ex" x="666" y="382">ProtocolException</text>
+
+  <line x1="512" y1="390" x2="896" y2="390" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="406">Authentication failure</text>
+  <text class="cond" x="648" y="406">→</text>
+  <text class="ex" x="666" y="406">AuthenticationException</text>
+
+  <line x1="512" y1="414" x2="896" y2="414" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="430">HTTP non-2xx</text>
+  <text class="cond" x="648" y="430">→</text>
+  <text class="ex" x="666" y="430">RequestException</text>
+
+  <line x1="512" y1="438" x2="896" y2="438" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="454">Missing driver capability</text>
+  <text class="cond" x="648" y="454">→</text>
+  <text class="ex" x="666" y="454">UnsupportedFeatureException</text>
+  <line x1="512" y1="462" x2="896" y2="462" stroke="#F1F5F9" stroke-width="1"/>
+
+  <!-- Right: reconnect semantics -->
+  <rect x="496" y="496" width="416" height="88" rx="11" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.3"/>
+  <rect x="512" y="510" width="4" height="14" rx="2" fill="#D97706"/>
+  <text class="pn" x="524" y="522">Reconnect semantics</text>
+  <text class="section-en" x="672" y="522">Reconnect</text>
+  <text class="note" x="512" y="542">No auto reconnect: Manager keeps the closed connection cached</text>
+  <text class="note" x="512" y="558">Call disconnect('name') or close() to clear it, then connection() rebuilds</text>
+  <text class="note" x="512" y="574">Consumers stay idempotent; reconnect reruns factory + handshake</text>
+</svg>

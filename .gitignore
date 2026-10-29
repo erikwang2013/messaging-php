@@ -7,5 +7,3 @@
 /.vscode/
 .DS_Store
 
-# Generated static site, deployed separately
-/site/

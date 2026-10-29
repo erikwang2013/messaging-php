@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 200 200" role="img" aria-labelledby="petTitle petDesc">
+  <title id="petTitle">messaging-php 项目宠物 · 机器人信使小递 · 欢乐</title>
+  <desc id="petDesc">小递眯起青色笑眼，张开嘴大笑，双臂高举，头顶纸飞机天线向后仰，周围闪着金色星星。</desc>
+  <style>
+    /* Animated only when the user allows motion; otherwise the static pose. */
+    @media (prefers-reduced-motion: no-preference){
+      .pet{animation:pet-bounce 2.8s ease-in-out infinite}
+      .twinkle{animation:twinkle 1.8s ease-in-out infinite}
+      @keyframes pet-bounce{0%,60%,100%{transform:translateY(0)}35%{transform:translateY(-3px)}}
+      @keyframes twinkle{0%,100%{opacity:.4}50%{opacity:1}}
+    }
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="100" cy="186" rx="43" ry="6" fill="#1E2233" opacity=".08"/>
+    <ellipse cx="100" cy="187" rx="26" ry="3.2" fill="#1E2233" opacity=".06"/>
+    <g class="pet">
+    <g>
+      <path d="M85 158 L85 172" fill="none" stroke="#1E2233" stroke-width="13"/>
+      <path d="M85 158 L85 172" fill="none" stroke="#9FE0EF" stroke-width="8"/>
+      <path d="M115 158 L115 172" fill="none" stroke="#1E2233" stroke-width="13"/>
+      <path d="M115 158 L115 172" fill="none" stroke="#9FE0EF" stroke-width="8"/>
+      <rect x="73" y="169" width="24" height="12" rx="6" fill="#DDF7FC" stroke="#1E2233" stroke-width="3.4"/>
+      <rect x="103" y="169" width="24" height="12" rx="6" fill="#DDF7FC" stroke="#1E2233" stroke-width="3.4"/>
+      <path d="M79 175 H91" fill="none" stroke="#1E2233" stroke-width="1.5" opacity=".25"/>
+      <path d="M109 175 H121" fill="none" stroke="#1E2233" stroke-width="1.5" opacity=".25"/>
+    </g>
+    <rect x="68" y="110" width="64" height="54" rx="20" fill="#DDF7FC" stroke="#1E2233" stroke-width="4"/>
+    <path d="M74 122 C70 132 70 148 76 158" fill="none" stroke="#9FE0EF" stroke-width="3" opacity=".55"/>
+    <g>
+      <rect x="80" y="123" width="40" height="27" rx="7" fill="#1E2233" stroke="#0B1020" stroke-width="2.5"/>
+      <rect x="82.5" y="125.5" width="35" height="22" rx="5" fill="none" stroke="#3B4664" stroke-width="1.2" opacity=".55"/>
+      <g transform="rotate(-4 100 136)">
+        <rect x="87" y="127" width="26" height="16" rx="2.5" fill="#FFFFFF" stroke="#1E2233" stroke-width="1.8"/>
+        <path d="M88 128.5 L100 137 L112 128.5" fill="none" stroke="#1E2233" stroke-width="1.5"/>
+        <path d="M94 139 L105 132 L101 139 L98 137 Z" fill="#2563EB" stroke="#1E2233" stroke-width="1"/>
+        <path d="M98 137 L105 132 L101 139 Z" fill="#60A5FA" stroke="#1E2233" stroke-width=".7"/>
+      </g>
+      <circle cx="88" cy="158" r="6.2" fill="#2563EB" opacity=".18"/>
+      <circle cx="88" cy="158" r="3.2" fill="#2563EB" opacity="1" stroke="#1E2233" stroke-width="1.4"/>
+      <circle cx="100" cy="158" r="6.2" fill="#2DD4BF" opacity=".18"/>
+      <circle cx="100" cy="158" r="3.2" fill="#2DD4BF" opacity="1" stroke="#1E2233" stroke-width="1.4"/>
+      <circle cx="112" cy="158" r="6.2" fill="#8B5CF6" opacity=".18"/>
+      <circle cx="112" cy="158" r="3.2" fill="#8B5CF6" opacity="1" stroke="#1E2233" stroke-width="1.4"/>
+    </g>
+    <g>
+      <path d="M62 111 C82 123 118 123 138 111 L140 120 C118 132 82 132 60 120 Z" fill="#777BB4" stroke="#1E2233" stroke-width="3.2"/>
+      <path d="M130 120 C133 126 134 132 132 138 L141 135 C142 129 140 124 138 119 Z" fill="#5F63A0" stroke="#1E2233" stroke-width="2.6"/>
+      <circle cx="133" cy="120" r="5" fill="#5F63A0" stroke="#1E2233" stroke-width="2.6"/>
+    </g>
+    <g>
+      <circle cx="50" cy="80" r="13" fill="#8AD2E5" stroke="#1E2233" stroke-width="4"/>
+      <circle cx="150" cy="80" r="13" fill="#8AD2E5" stroke="#1E2233" stroke-width="4"/>
+      <circle cx="43" cy="80" r="3" fill="#DDF7FC" stroke="#1E2233" stroke-width="1.8"/>
+      <circle cx="157" cy="80" r="3" fill="#DDF7FC" stroke="#1E2233" stroke-width="1.8"/>
+      <rect x="52" y="34" width="96" height="82" rx="26" fill="#FFFFFF" stroke="#1E2233" stroke-width="4"/>
+      <rect x="63" y="47" width="74" height="54" rx="15" fill="#1E2233" stroke="#0B1020" stroke-width="2.6"/>
+      <rect x="65" y="49" width="70" height="50" rx="13" fill="none" stroke="#3B4664" stroke-width="1.2" opacity=".55"/>
+      <path d="M72 54 Q84 49 100 49" fill="none" stroke="#FFFFFF" stroke-width="2.5" opacity=".1"/>
+    </g>
+    <g>
+      <path d="M76 72 Q84 62 92 72" fill="none" stroke="#67E8F9" stroke-width="4.5"/>
+      <path d="M108 72 Q116 62 124 72" fill="none" stroke="#67E8F9" stroke-width="4.5"/>
+      <path d="M91 82 Q100 95 109 82 Z" fill="#67E8F9" stroke="#A5F3FC" stroke-width="1.4"/>
+    </g>
+      <path d="M73 127 C64 119 56 114 49 108" fill="none" stroke="#1E2233" stroke-width="12"/>
+      <path d="M73 127 C64 119 56 114 49 108" fill="none" stroke="#9FE0EF" stroke-width="7"/>
+      <circle cx="45" cy="104" r="7.2" fill="#DDF7FC" stroke="#1E2233" stroke-width="3.2"/><path d="M42.48 103 q3 2 5.04 0" fill="none" stroke="#1E2233" stroke-width="1.2" opacity=".3"/>
+      <path d="M127 127 C140 117 149 108 155 102" fill="none" stroke="#1E2233" stroke-width="12"/>
+      <path d="M127 127 C140 117 149 108 155 102" fill="none" stroke="#9FE0EF" stroke-width="7"/>
+      <circle cx="160" cy="99" r="7.2" fill="#DDF7FC" stroke="#1E2233" stroke-width="3.2"/><path d="M157.48 98 q3 2 5.04 0" fill="none" stroke="#1E2233" stroke-width="1.2" opacity=".3"/>
+    <g transform="rotate(-8 100 34)">
+      <path d="M100 34 L106 30" fill="none" stroke="#1E2233" stroke-width="3.6"/>
+      <circle cx="100" cy="34" r="4" fill="#777BB4" stroke="#1E2233" stroke-width="2.6"/>
+      <g transform="translate(0 5)">
+        <path d="M104 25 L132 6 L119 29 L113 22 Z" fill="#2563EB" stroke="#1E2233" stroke-width="2.4"/>
+        <path d="M119 29 L132 6 L125 25 Z" fill="#FFFFFF" stroke="#1E2233" stroke-width="2"/>
+        <path d="M113 22 L119 29 L116 20 Z" fill="#60A5FA" stroke="#1E2233" stroke-width="1.6"/>
+      </g>
+    </g>
+    <g class="twinkle">
+      <path d="M42 38 L44 44 L50 46 L44 48 L42 54 L40 48 L34 46 L40 44 Z" fill="#FBBF24"/>
+      <path d="M158 28 L160 34 L166 36 L160 38 L158 44 L156 38 L150 36 L156 34 Z" fill="#FBBF24"/>
+      <circle cx="50" cy="28" r="2.2" fill="#60A5FA"/>
+      <circle cx="148" cy="50" r="2" fill="#60A5FA"/>
+    </g>
+    </g>
+  </g>
+</svg>
