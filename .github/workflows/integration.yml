@@ -63,6 +63,12 @@ jobs:
           docker compose --profile pulsar logs
           exit 1
 
+      - name: Create Pulsar namespace
+        if: matrix.profile == 'pulsar'
+        run: |
+          docker compose --profile pulsar exec -T pulsar bin/pulsar-admin tenants create public --allowed-clusters standalone || true
+          docker compose --profile pulsar exec -T pulsar bin/pulsar-admin namespaces create public/default || true
+
       - name: Wait for Moto
         if: matrix.profile == 'aws'
         run: |
@@ -154,6 +160,12 @@ jobs:
           done
           docker compose --profile pulsar logs
           exit 1
+
+      - name: Create Pulsar namespace
+        if: matrix.profile == 'pulsar'
+        run: |
+          docker compose --profile pulsar exec -T pulsar bin/pulsar-admin tenants create public --allowed-clusters standalone || true
+          docker compose --profile pulsar exec -T pulsar bin/pulsar-admin namespaces create public/default || true
 
       - name: Wait for Moto
         if: matrix.profile == 'aws'
