@@ -38,6 +38,11 @@ cat > "$TMP/composer.json" <<JSON
     "config": {
         "allow-plugins": {
             "erikwang2013/messaging-php": true
+        },
+        "policy": {
+            "advisories": {
+                "block": false
+            }
         }
     }
 }
