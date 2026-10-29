@@ -7,8 +7,8 @@ namespace Erikwang2013\Messaging\Driver\Nsq;
 final class NsqFrame
 {
     public function __construct(
-        public readonly int $type,
-        public readonly string $payload,
+        public int $type,
+        public string $payload,
     ) {
     }
 

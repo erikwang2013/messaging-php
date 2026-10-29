@@ -24,12 +24,12 @@ final class NsqDriver implements DriverInterface
     private array $consumers = [];
 
     public function __construct(
-        private readonly string $host,
-        private readonly int $port,
-        private readonly string $channel,
-        private readonly float $timeout = 5.0,
-        private readonly int $requeueDelayMs = 0,
-        private readonly ?LoggerInterface $logger = null,
+        private string $host,
+        private int $port,
+        private string $channel,
+        private float $timeout = 5.0,
+        private int $requeueDelayMs = 0,
+        private ?LoggerInterface $logger = null,
     ) {
     }
 

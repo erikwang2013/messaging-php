@@ -8,8 +8,8 @@ class RequestException extends MessagingException
 {
     public function __construct(
         string $message,
-        private readonly ?int $statusCode = null,
-        private readonly ?string $responseBody = null,
+        private ?int $statusCode = null,
+        private ?string $responseBody = null,
         ?\Throwable $previous = null,
     ) {
         parent::__construct($message, 0, $previous);

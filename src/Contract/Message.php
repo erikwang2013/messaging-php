@@ -10,10 +10,10 @@ final class Message
      * @param array<string, mixed> $headers
      */
     public function __construct(
-        public readonly string $body,
-        public readonly array $headers = [],
-        public readonly ?string $key = null,
-        public readonly ?int $delayMs = null,
+        public string $body,
+        public array $headers = [],
+        public ?string $key = null,
+        public ?int $delayMs = null,
     ) {
         if ($delayMs !== null && $delayMs < 0) {
             throw new \InvalidArgumentException('Message delay must be zero or positive.');

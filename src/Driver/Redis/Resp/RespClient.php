@@ -10,11 +10,11 @@ use Erikwang2013\Messaging\Support\Socket;
 
 final class RespClient
 {
-    private readonly RespParser $parser;
+    private RespParser $parser;
 
     private function __construct(
-        private readonly Socket $socket,
-        private readonly float $commandTimeout,
+        private Socket $socket,
+        private float $commandTimeout,
     ) {
         $this->parser = new RespParser(
             fn (): string => $this->socket->readLine(),

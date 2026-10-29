@@ -10,8 +10,8 @@ final class Config
      * @param array<string, ConnectionConfig> $connections
      */
     private function __construct(
-        private readonly array $connections,
-        private readonly string $defaultConnection,
+        private array $connections,
+        private string $defaultConnection,
     ) {
     }
 

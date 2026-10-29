@@ -119,7 +119,7 @@ final class Socket
         return $this->stream;
     }
 
-    private function throwReadFailure(): never
+    private function throwReadFailure(): void
     {
         $metadata = stream_get_meta_data($this->stream);
         if ($metadata['timed_out']) {

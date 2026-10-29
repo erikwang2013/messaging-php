@@ -7,8 +7,8 @@ namespace Erikwang2013\Messaging\Contract;
 final class ConsumeOptions
 {
     public function __construct(
-        public readonly int $timeoutMs = 0,
-        public readonly ?int $maxMessages = null,
+        public int $timeoutMs = 0,
+        public ?int $maxMessages = null,
     ) {
         if ($timeoutMs < 0) {
             throw new \InvalidArgumentException('Consume timeout must be zero or positive.');

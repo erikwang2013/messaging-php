@@ -50,14 +50,14 @@ final class StompDriver implements DriverInterface
         'correlation-id',
     ];
 
-    private readonly string $host;
-    private readonly int $port;
-    private readonly ?string $login;
-    private readonly ?string $passcode;
-    private readonly string $prefix;
-    private readonly float $connectTimeout;
-    private readonly Capabilities $capabilities;
-    private readonly LoggerInterface $logger;
+    private string $host;
+    private int $port;
+    private ?string $login;
+    private ?string $passcode;
+    private string $prefix;
+    private float $connectTimeout;
+    private Capabilities $capabilities;
+    private LoggerInterface $logger;
 
     private ?Socket $socket = null;
     private ?FrameReader $reader = null;
@@ -76,7 +76,7 @@ final class StompDriver implements DriverInterface
 
     public function __construct(
         ConnectionConfig $config,
-        private readonly Preset $preset,
+        private Preset $preset,
         ?LoggerInterface $logger = null,
     ) {
         $this->host = $config->requireString('host');

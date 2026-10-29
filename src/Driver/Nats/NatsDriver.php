@@ -27,14 +27,14 @@ final class NatsDriver implements DriverInterface
 {
     private const BLOCK_FOREVER = 31_536_000.0;
 
-    private readonly string $host;
-    private readonly int $port;
-    private readonly ?string $user;
-    private readonly ?string $pass;
-    private readonly ?string $queueGroup;
-    private readonly float $timeout;
-    private readonly bool $headersEnabled;
-    private readonly LoggerInterface $logger;
+    private string $host;
+    private int $port;
+    private ?string $user;
+    private ?string $pass;
+    private ?string $queueGroup;
+    private float $timeout;
+    private bool $headersEnabled;
+    private LoggerInterface $logger;
 
     private ?Socket $socket = null;
     private bool $serverHeaders = true;

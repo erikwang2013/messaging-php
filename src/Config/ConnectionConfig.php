@@ -10,9 +10,9 @@ final class ConnectionConfig
      * @param array<string, mixed> $options
      */
     private function __construct(
-        private readonly string $name,
-        private readonly string $driver,
-        private readonly array $options,
+        private string $name,
+        private string $driver,
+        private array $options,
     ) {
     }
 

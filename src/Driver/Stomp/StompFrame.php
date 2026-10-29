@@ -21,9 +21,9 @@ final class StompFrame
      * @param array<string, string> $headers
      */
     public function __construct(
-        public readonly string $command,
-        public readonly array $headers = [],
-        public readonly string $body = '',
+        public string $command,
+        public array $headers = [],
+        public string $body = '',
     ) {
     }
 

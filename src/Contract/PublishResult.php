@@ -7,9 +7,9 @@ namespace Erikwang2013\Messaging\Contract;
 final class PublishResult
 {
     public function __construct(
-        public readonly string $destination,
-        public readonly ?string $id = null,
-        public readonly mixed $raw = null,
+        public string $destination,
+        public ?string $id = null,
+        public mixed $raw = null,
     ) {
     }
 }

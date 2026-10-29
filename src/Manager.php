@@ -22,8 +22,8 @@ final class Manager
         'nsq' => \Erikwang2013\Messaging\Driver\Nsq\NsqFactory::class,
     ];
 
-    private readonly Config $config;
-    private readonly LoggerInterface $logger;
+    private Config $config;
+    private LoggerInterface $logger;
 
     /** @var array<string, DriverFactoryInterface> */
     private array $factories = [];

@@ -16,8 +16,8 @@ final class NsqConnection
     private string $buffer = '';
 
     private function __construct(
-        private readonly Socket $socket,
-        private readonly float $readTimeout,
+        private Socket $socket,
+        private float $readTimeout,
     ) {
     }
 

@@ -23,10 +23,10 @@ final class RedisStreamsDriver implements DriverInterface
     private array $groups = [];
 
     public function __construct(
-        private readonly RespClient $client,
-        private readonly string $group,
-        private readonly string $consumer,
-        private readonly ?int $maxLength = null,
+        private RespClient $client,
+        private string $group,
+        private string $consumer,
+        private ?int $maxLength = null,
     ) {
     }
 

@@ -21,7 +21,7 @@ final class FakeDriver implements DriverInterface
 
     private int $sequence = 0;
 
-    public function __construct(private readonly ?Capabilities $capabilities = null)
+    public function __construct(private ?Capabilities $capabilities = null)
     {
     }
 

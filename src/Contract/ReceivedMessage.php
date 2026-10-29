@@ -14,14 +14,14 @@ final class ReceivedMessage
      * @param (\Closure(bool): void)|null $rejectCallback
      */
     public function __construct(
-        private readonly string $body,
-        private readonly array $headers = [],
-        private readonly ?string $id = null,
-        private readonly ?string $key = null,
-        private readonly int $attempts = 1,
-        private readonly ?\Closure $ackCallback = null,
-        private readonly ?\Closure $rejectCallback = null,
-        private readonly mixed $raw = null,
+        private string $body,
+        private array $headers = [],
+        private ?string $id = null,
+        private ?string $key = null,
+        private int $attempts = 1,
+        private ?\Closure $ackCallback = null,
+        private ?\Closure $rejectCallback = null,
+        private mixed $raw = null,
     ) {
     }
 

@@ -16,8 +16,8 @@ final class RespParser
      * @param \Closure(int): string $readBytes
      */
     public function __construct(
-        private readonly \Closure $readLine,
-        private readonly \Closure $readBytes,
+        private \Closure $readLine,
+        private \Closure $readBytes,
     ) {
     }
 

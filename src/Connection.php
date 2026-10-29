@@ -16,8 +16,8 @@ use Erikwang2013\Messaging\Exception\UnsupportedFeatureException;
 final class Connection
 {
     public function __construct(
-        private readonly string $name,
-        private readonly DriverInterface $driver,
+        private string $name,
+        private DriverInterface $driver,
     ) {
     }
 

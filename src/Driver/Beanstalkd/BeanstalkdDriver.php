@@ -21,11 +21,11 @@ final class BeanstalkdDriver implements DriverInterface
      */
     private const TUBE_PATTERN = '~\A[A-Za-z0-9+/;.$_()-]{1,200}\z~';
 
-    private readonly string $host;
-    private readonly int $port;
-    private readonly float $connectTimeout;
-    private readonly int $priority;
-    private readonly int $ttr;
+    private string $host;
+    private int $port;
+    private float $connectTimeout;
+    private int $priority;
+    private int $ttr;
 
     private ?Socket $socket = null;
     private ?string $usingTube = null;

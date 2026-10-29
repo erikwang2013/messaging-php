@@ -30,8 +30,8 @@ final class BeanstalkdProtocol
     private const BLOCKING_READ_TIMEOUT = 2147483647.0;
 
     public function __construct(
-        private readonly Socket $socket,
-        private readonly float $readTimeout = 5.0,
+        private Socket $socket,
+        private float $readTimeout = 5.0,
     ) {
     }
 
