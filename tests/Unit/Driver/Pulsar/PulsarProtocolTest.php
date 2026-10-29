@@ -234,7 +234,7 @@ final class PulsarProtocolTest extends TestCase
         self::assertSame(1, Protobuf::intValue($sendBody, 3));
     }
 
-    public function test_subscribe_command_is_exclusive_and_starts_earliest(): void
+    public function test_subscribe_command_is_shared_and_starts_earliest(): void
     {
         $fields = Protobuf::decode(PulsarProtocol::subscribeCommand('events', 'sub', 21, 22, 'consumer-a'));
 
@@ -242,7 +242,8 @@ final class PulsarProtocolTest extends TestCase
         $subscribe = Protobuf::decode((string) ($fields[4][0] ?? ''));
         self::assertSame('events', Protobuf::stringValue($subscribe, 1));
         self::assertSame('sub', Protobuf::stringValue($subscribe, 2));
-        self::assertSame(PulsarProtocol::SUBSCRIPTION_EXCLUSIVE, Protobuf::intValue($subscribe, 3));
+        // Shared subscriptions honor delayed delivery; Exclusive ignores deliverAt.
+        self::assertSame(PulsarProtocol::SUBSCRIPTION_SHARED, Protobuf::intValue($subscribe, 3));
         self::assertSame(21, Protobuf::intValue($subscribe, 4));
         self::assertSame(22, Protobuf::intValue($subscribe, 5));
         self::assertSame('consumer-a', Protobuf::stringValue($subscribe, 6));

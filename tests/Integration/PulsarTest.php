@@ -141,7 +141,7 @@ final class PulsarTest extends DriverContractTestCase
 
     public function test_publish_delay_is_honored(): void
     {
-        $this->driver->publish($this->topic, new Message('delayed', [], null, 500));
+        $this->driver->publish($this->topic, new Message('delayed', [], null, 2000));
 
         self::assertNull($this->driver->receive($this->topic, new ReceiveOptions(150)));
 

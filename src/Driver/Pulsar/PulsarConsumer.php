@@ -179,9 +179,7 @@ final class PulsarConsumer
                 $settled = true;
 
                 if ($requeue) {
-                    // An Exclusive subscription cannot redeliver one message: the
-                    // broker redelivers all of this consumer's unacknowledged ones.
-                    $connection->send(PulsarProtocol::redeliverCommand($consumerId));
+                    $connection->send(PulsarProtocol::redeliverCommand($consumerId, $encodedId));
 
                     return;
                 }

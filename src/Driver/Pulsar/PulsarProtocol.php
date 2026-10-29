@@ -18,7 +18,8 @@ final class PulsarProtocol
 {
     public const MAGIC = 0x0e01;
     public const MAX_FRAME_SIZE = 67_108_864;
-    public const PROTOCOL_VERSION = 6;
+    // v11 keeps the magic+CRC32C payload framing; older versions strip it.
+    public const PROTOCOL_VERSION = 11;
     public const CLIENT_VERSION = 'messaging-php/1.0.0';
 
     public const COMMAND_CONNECT = 2;
@@ -48,6 +49,7 @@ final class PulsarProtocol
     public const LOOKUP_FAILED = 2;
 
     public const SUBSCRIPTION_EXCLUSIVE = 0;
+    public const SUBSCRIPTION_SHARED = 1;
     public const ACK_INDIVIDUAL = 0;
     public const INITIAL_POSITION_EARLIEST = 1;
 
@@ -174,7 +176,9 @@ final class PulsarProtocol
     ): string {
         $body = Protobuf::stringField(1, $topic)
             . Protobuf::stringField(2, $subscription)
-            . Protobuf::varintField(3, self::SUBSCRIPTION_EXCLUSIVE)
+            // Shared subscriptions honor delayed delivery and allow more than
+            // one consumer; Exclusive/Failover ignore deliverAt.
+            . Protobuf::varintField(3, self::SUBSCRIPTION_SHARED)
             . Protobuf::varintField(4, $consumerId)
             . Protobuf::varintField(5, $requestId);
 
@@ -207,12 +211,14 @@ final class PulsarProtocol
         );
     }
 
-    /**
-     * An Exclusive subscription can only redeliver all unacknowledged messages.
-     */
-    public static function redeliverCommand(int $consumerId): string
+    public static function redeliverCommand(int $consumerId, ?string $encodedMessageId = null): string
     {
-        return self::command(self::COMMAND_REDELIVER, Protobuf::varintField(1, $consumerId));
+        $body = Protobuf::varintField(1, $consumerId);
+        if ($encodedMessageId !== null) {
+            $body .= Protobuf::bytesField(2, $encodedMessageId);
+        }
+
+        return self::command(self::COMMAND_REDELIVER, $body);
     }
 
     public static function closeProducerCommand(int $producerId, int $requestId): string
@@ -278,32 +284,49 @@ final class PulsarProtocol
      */
     public static function decodePayload(string $payloadFrame): array
     {
-        if (strlen($payloadFrame) < 10) {
+        if (strlen($payloadFrame) < 5) {
             throw new ProtocolException('Pulsar payload frame is too short.');
         }
 
         $magic = unpack('nmagic', substr($payloadFrame, 0, 2));
-        if ($magic === false || (int) $magic['magic'] !== self::MAGIC) {
-            throw new ProtocolException('Invalid Pulsar payload magic.');
+        $hasChecksum = $magic !== false && (int) $magic['magic'] === self::MAGIC;
+        $headerSize = $hasChecksum ? 10 : 4;
+
+        if (strlen($payloadFrame) < $headerSize) {
+            throw new ProtocolException('Pulsar payload frame is too short.');
         }
 
-        $checksum = unpack('Nchecksum', substr($payloadFrame, 2, 4));
-        $metadataSize = unpack('Nsize', substr($payloadFrame, 6, 4));
-        if ($checksum === false || $metadataSize === false) {
-            throw new ProtocolException('Unable to unpack the Pulsar payload frame header.');
+        if ($hasChecksum) {
+            $checksum = unpack('Nchecksum', substr($payloadFrame, 2, 4));
+            $metadataSize = unpack('Nsize', substr($payloadFrame, 6, 4));
+            if ($checksum === false || $metadataSize === false) {
+                throw new ProtocolException('Unable to unpack the Pulsar payload frame header.');
+            }
+
+            $checksumInput = substr($payloadFrame, 6);
+            if (self::checksum($checksumInput) !== (int) $checksum['checksum']) {
+                throw new ProtocolException('Pulsar payload checksum mismatch.');
+            }
+        } else {
+            // Protocol versions below 11 (and brokers that skip checksums for
+            // older clients) send metadataSize directly, without magic/CRC.
+            $metadataSize = unpack('Nsize', substr($payloadFrame, 0, 4));
+            if ($metadataSize === false) {
+                throw new ProtocolException('Unable to unpack the Pulsar payload frame header.');
+            }
+
+            $legacySize = (int) $metadataSize['size'];
+            if ($legacySize < 1 || 4 + $legacySize > strlen($payloadFrame)) {
+                throw new ProtocolException('Invalid Pulsar payload magic or metadata size.');
+            }
         }
 
         $size = (int) $metadataSize['size'];
-        if ($size < 1 || 10 + $size > strlen($payloadFrame)) {
+        if ($size < 1 || $headerSize + $size > strlen($payloadFrame)) {
             throw new ProtocolException(sprintf('Invalid Pulsar metadata size [%d].', $size));
         }
 
-        $checksumInput = substr($payloadFrame, 6);
-        if (self::checksum($checksumInput) !== (int) $checksum['checksum']) {
-            throw new ProtocolException('Pulsar payload checksum mismatch.');
-        }
-
-        $metadata = Protobuf::decode(substr($payloadFrame, 10, $size));
+        $metadata = Protobuf::decode(substr($payloadFrame, $headerSize, $size));
 
         $compression = Protobuf::intValue($metadata, 8, 0);
         if ($compression !== 0) {
@@ -317,7 +340,7 @@ final class PulsarProtocol
             throw new UnsupportedFeatureException('Pulsar batched messages are not supported.');
         }
 
-        return [$metadata, substr($payloadFrame, 10 + $size)];
+        return [$metadata, substr($payloadFrame, $headerSize + $size)];
     }
 
     /**

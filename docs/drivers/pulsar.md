@@ -41,7 +41,7 @@ $conn = $manager->connection('pulsar');
 | ack | ✓ | 逐条 `CommandAck`（Individual） |
 | requeue | ✓ | `reject(true)` 发送 `CommandRedeliverUnacknowledgedMessages`；`reject(false)` 等同 ack（丢弃） |
 | delay（发布） | ✓ | `deliverAfterMs` 写入 `MessageMetadata.deliver_at_time`，由 broker 延迟投递 |
-| consumer group | ✓ | 每个订阅名一组消费者；驱动只使用 Exclusive 订阅 |
+| consumer group | ✓ | 每个订阅名一组消费者；驱动使用 Shared 订阅，支持多消费者与延迟投递 |
 | batch publish | ✗ | 抛 `UnsupportedFeatureException` |
 | ordering | ✓ | 单 producer 单 topic 保序；设置 key 时分区键为 `partition_key`。驱动不做分区路由 |
 | headers | ✓ | 写入 `MessageMetadata.properties`（字符串键值），key 写入 `partition_key` |
@@ -55,9 +55,9 @@ Header 值会统一转为字符串：`bool` → `'true'`/`'false'`，`null` → 
 
 - 帧格式：4 字节大端 `totalSize` + 4 字节大端 `commandSize` + protobuf `BaseCommand`（+ 可选 payload）
 - 命令：`Connect`/`Connected`、`LookupTopic`/`LookupResponse`（最多跟随 5 次 redirect）、`Producer`/`ProducerSuccess`、`Send`/`SendReceipt`/`SendError`、`Subscribe`/`Success`、`Flow`、`Message`、`Ack`、`RedeliverUnacknowledgedMessages`、`CloseProducer`/`CloseConsumer`、`Ping`/`Pong`
-- 消息帧：magic `0x0e01` + 4 字节 CRC32C + 4 字节 metadata 长度 + `MessageMetadata` + body；校验覆盖 metadata 长度、metadata 和 body
-- 协议版本：6；客户端标识 `messaging-php/1.0.0`
-- 订阅类型：Exclusive；启动位置：Earliest（见下方偏差说明）
+- 消息帧：magic `0x0e01` + 4 字节 CRC32C + 4 字节 metadata 长度 + `MessageMetadata` + body；同时兼容旧协议/旧客户端的无 magic、无 checksum 格式（直接以 metadata 长度开头）
+- 协议版本：11（v11 起 broker 保留 magic/CRC 帧；更早版本会剥离）；客户端标识 `messaging-php/1.0.0`
+- 订阅类型：Shared（Exclusive/Failover 会忽略延迟投递）；启动位置：Earliest（见下方偏差说明）
 - 每次 `receive()` 最多取一条消息，按需发送 `Flow(1)` 许可
 
 ## 限制
@@ -66,8 +66,8 @@ Header 值会统一转为字符串：`bool` → `'true'`/`'false'`，`null` → 
 - **不支持认证**：TLS 传输可用，但不支持 Pulsar token、OAuth 等认证；broker 发起 `AuthChallenge` 时抛 `AuthenticationException`。
 - **不支持 batching、压缩、schema、事务、chunking**：入站消息带 compression 或 batch 标记、出站 `publishBatch()` 均抛 `UnsupportedFeatureException`。
 - **不支持分区 topic 路由**：驱动把 destination 当作单个 topic。对分区 topic 只能显式指定某个分区（如 `...-partition-0`），不会自动跨分区发布或消费。
-- **只使用 Exclusive 订阅**：同一订阅同时只能有一个消费者；第二个消费者会收到 broker 的 `ConsumerBusy`。
-- **`reject(true)` 会重投该消费者的全部未确认消息**：Pulsar 的 Exclusive 订阅不支持选择性重投，驱动发送不带 message id 的 redeliver 命令，由 broker 重投所有未 ack 的消息。消费端应把 `reject(true)` 视为「整批未确认消息重新开始」。
+- **使用 Shared 订阅**：同一订阅允许多个消费者；`reject(true)` 发送带 message id 的 redeliver 命令，只重投被拒绝的那条消息，`attempts()` 由 broker 的 `redelivery_count` 递增。
+- **延迟投递的分辨率约 1 秒**：broker 的 delayed-delivery tick 默认 1000ms；小于 tick 的延迟（例如 500ms）可能立即投递。需要可靠延迟时请使用不小于 1 秒的值。
 - **启动位置是 Earliest**：这是为了让 `requiresActiveSubscription=false` 的契约成立（先发布、后首次 `receive()` 仍能收到）。Pulsar 默认是 `Latest`；只需要新消息的订阅应复用已有订阅名，或由 broker 端管理订阅。
 - **发布不自动重试**：`publish()` 遇到 `ConnectionException` 会丢弃生产者连接，下一次调用重连。失败时消息可能已被 broker 持久化，重试可能产生重复，需要业务侧幂等。
 - **ack/reject 是单向写**：不等待 broker 确认；连接断开时抛 `ConnectionException`。未 ack 的消息在连接断开后会由 broker 重新投递。
