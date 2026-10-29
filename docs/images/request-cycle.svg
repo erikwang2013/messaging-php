@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="req-title req-desc">
   <title id="req-title">messaging-php 请求周期</title>
-  <desc id="req-desc">发布路径：Message 经 Connection 与 Driver 编码后写入 Broker；消费路径：Broker 经 Driver::receive 返回 ReceivedMessage，由 Handler 处理后 ack 或 reject，失败消息重新入队并重投。</desc>
+  <desc id="req-desc">20 个驱动名、13 套协议栈共用的请求周期。发布路径：Message 经 Connection 与 Driver 的能力门禁后编码写入 Broker；消费路径：Broker 经 Driver::receive 返回 ReceivedMessage，由 Handler 处理后 ack 或 reject，失败消息重新入队并重投。</desc>
   <style>
     text{font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#14213D}
     .title{font-size:22px;font-weight:700}
@@ -12,8 +12,9 @@
     .ns{font-size:9.2px;fill:#5B6478}
     .bn{font-size:13px;font-weight:700;fill:#FFFFFF}
     .bs{font-size:9.5px;fill:#DBEAFE}
-    .note{font-size:10px;fill:#5B6478}
+    .note{font-size:9.3px;fill:#5B6478}
     .tag{font-size:9.4px;fill:#B45309}
+    .gate{font-size:8.8px;fill:#B45309}
     .ctr{text-anchor:middle}
   </style>
   <defs>
@@ -27,8 +28,8 @@
 
   <rect x="0" y="0" width="960" height="540" fill="#FFFFFF"/>
   <text class="title" x="48" y="42">messaging-php 请求周期</text>
-  <text class="sub" x="912" y="42" text-anchor="end">Request Cycle · 发布与消费</text>
-  <text class="sub" x="48" y="64">统一拉取式消费：协议差异被 Driver 吸收，业务只面对 Message / ReceivedMessage</text>
+  <text class="sub" x="912" y="42" text-anchor="end">20 驱动名 · 13 协议栈</text>
+  <text class="sub" x="48" y="64">统一拉取式消费：协议差异由 Driver 吸收，能力门禁显式声明</text>
 
   <!-- 发布路径 -->
   <rect x="40" y="88" width="4" height="14" rx="2" fill="#2563EB"/>
@@ -47,8 +48,8 @@
 
   <rect x="370" y="108" width="150" height="66" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
   <text class="n ctr" x="445" y="130">Driver::publish</text>
-  <text class="ns ctr" x="445" y="147">驱动实现</text>
-  <text class="ns ctr" x="445" y="161">能力与配置检查</text>
+  <text class="ns ctr" x="445" y="147">驱动实现 · 能力门禁</text>
+  <text class="ns ctr" x="445" y="161">配置校验 · 不支持抛异常</text>
 
   <rect x="548" y="108" width="150" height="66" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.3"/>
   <text class="n ctr" x="623" y="130">协议编码</text>
@@ -65,6 +66,7 @@
   <line x1="520" y1="141" x2="546" y2="141" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
   <line x1="698" y1="141" x2="776" y2="141" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
   <text class="ns" x="196" y="192">PublishResult { id, raw }</text>
+  <text class="gate" x="445" y="192">能力门禁：delay / headers / batchPublish</text>
 
   <!-- 消费路径 -->
   <rect x="40" y="246" width="4" height="14" rx="2" fill="#2563EB"/>
@@ -114,7 +116,7 @@
   <line x1="170" y1="434" x2="200" y2="434" stroke="#D97706" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arw-amber)"/>
   <text class="note" x="210" y="438">失败 / 重投</text>
 
-  <text class="note" x="48" y="464">receive() 每次取一条；consume() 只是循环糖；timeoutMs = 0 时阻塞等待，超时返回 null</text>
-  <text class="note" x="48" y="482">push 型协议（STOMP / NATS 等）由驱动内部缓冲，receive() 从缓冲区取出</text>
-  <text class="note" x="48" y="500">能力差异显式声明：不支持 ack / requeue 时抛 UnsupportedFeatureException；重投窗口内业务需幂等</text>
+  <text class="note" x="48" y="464">receive() 每次取一条；consume() 只是循环糖；timeoutMs = 0 阻塞等待，超时返回 null</text>
+  <text class="note" x="48" y="482">能力门禁：消费前检查 ack / requeue；不支持抛 UnsupportedFeatureException，不静默降级</text>
+  <text class="note" x="48" y="500">push 型协议（STOMP / NATS 等）由驱动内部缓冲；重投窗口内业务需幂等</text>
 </svg>

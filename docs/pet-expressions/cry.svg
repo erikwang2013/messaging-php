@@ -1,9 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 200 200" role="img" aria-labelledby="petTitle petDesc">
   <title id="petTitle">messaging-php 项目宠物 · 机器人信使小递 · 哭泣</title>
   <desc id="petDesc">小递的屏幕眼睛里蓄满青色泪水，嘴角向下撇，右手抬到脸边擦泪，胸前中间的状态灯暗了下去。</desc>
+  <style>
+    /* Animated only when the user allows motion; otherwise the static pose. */
+    @media (prefers-reduced-motion: no-preference){
+      .pet{animation:pet-float 5s ease-in-out infinite}
+      .tear{animation:tear-drop 2.4s ease-in infinite}
+      .tear-b{animation-delay:1.2s}
+      @keyframes pet-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+      @keyframes tear-drop{0%{transform:translateY(0);opacity:0}15%{opacity:.9}70%{opacity:.9;transform:translateY(7px)}100%{transform:translateY(8px);opacity:0}}
+    }
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
   <g stroke-linecap="round" stroke-linejoin="round">
     <ellipse cx="100" cy="186" rx="43" ry="6" fill="#1E2233" opacity=".08"/>
     <ellipse cx="100" cy="187" rx="26" ry="3.2" fill="#1E2233" opacity=".06"/>
+    <g class="pet">
     <g>
       <path d="M85 158 L85 172" fill="none" stroke="#1E2233" stroke-width="13"/>
       <path d="M85 158 L85 172" fill="none" stroke="#9FE0EF" stroke-width="8"/>
@@ -49,8 +61,8 @@
       <rect x="109.5" y="62" width="13" height="16" rx="4" fill="#67E8F9"/>
       <circle cx="81" cy="66" r="3" fill="#FFFFFF" opacity=".95"/>
       <circle cx="113" cy="66" r="3" fill="#FFFFFF" opacity=".95"/>
-      <rect x="80" y="81" width="3" height="6" rx="1.2" fill="#7DD3FC"/>
-      <rect x="112" y="81" width="3" height="6" rx="1.2" fill="#7DD3FC"/>
+      <rect class="tear" x="80" y="81" width="3" height="6" rx="1.2" fill="#7DD3FC"/>
+      <rect class="tear tear-b" x="112" y="81" width="3" height="6" rx="1.2" fill="#7DD3FC"/>
       <path d="M93 89 Q100 83 107 89" fill="none" stroke="#A5F3FC" stroke-width="3"/>
     </g>
       <path d="M73 127 C65 132 61 141 60 149" fill="none" stroke="#1E2233" stroke-width="12"/>
@@ -69,5 +81,6 @@
       </g>
     </g>
 
+    </g>
   </g>
 </svg>

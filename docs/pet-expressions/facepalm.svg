@@ -1,9 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 200 200" role="img" aria-labelledby="petTitle petDesc">
   <title id="petTitle">messaging-php 项目宠物 · 机器人信使小递 · 捂脸</title>
   <desc id="petDesc">小递用右手捂住屏幕，青色眼睛挤成两条折线，嘴角皱起，额角挂着一滴汗，纸飞机天线歪向一边。</desc>
+  <style>
+    /* Animated only when the user allows motion; otherwise the static pose. */
+    @media (prefers-reduced-motion: no-preference){
+      .pet{transform-box:view-box;transform-origin:100px 180px;animation:pet-headshake 3.6s ease-in-out infinite}
+      @keyframes pet-headshake{0%,16%,46%,100%{transform:rotate(0)}22%{transform:rotate(2.4deg)}30%{transform:rotate(-2.4deg)}38%{transform:rotate(1.4deg)}}
+    }
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
   <g stroke-linecap="round" stroke-linejoin="round">
     <ellipse cx="100" cy="186" rx="43" ry="6" fill="#1E2233" opacity=".08"/>
     <ellipse cx="100" cy="187" rx="26" ry="3.2" fill="#1E2233" opacity=".06"/>
+    <g class="pet">
     <g>
       <path d="M85 158 L85 172" fill="none" stroke="#1E2233" stroke-width="13"/>
       <path d="M85 158 L85 172" fill="none" stroke="#9FE0EF" stroke-width="8"/>
@@ -66,5 +75,6 @@
       </g>
     </g>
     <path d="M147 50 c3 4 4 6 4 8 a4 4 0 0 1 -8 0 c0 -2 1 -4 4 -8 Z" fill="#7DD3FC" stroke="#1E2233" stroke-width="1.5"/>
+    </g>
   </g>
 </svg>

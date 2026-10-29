@@ -12,6 +12,8 @@ composer require erikwang2013/messaging-php
 
 本包是 Composer Plugin。安装/更新时若检测到 `hyperf/framework`，会自动把默认配置复制到 `config/autoload/messaging.php`（已存在则不覆盖）；`vendor:publish` 仍可用于重新发布。
 
+插件通过 `extra.plugin-optional` 声明为可选，但该声明只有 Composer 2.5.3+ 支持：在 2.5.3+ 上未配置 `allow-plugins` 时会跳过插件并继续安装，Composer 2.2–2.5.2 则会安装失败；请保留上面的 `allow-plugins` 命令。插件被跳过时，用 `vendor:publish` 手动发布配置即可。
+
 在应用 `composer.json` 里登记 ConfigProvider（已有 `extra.hyperf.config` 时把类名追加进数组）：
 
 ```json
@@ -55,7 +57,7 @@ return [
 
 | 变量 | 默认 | 说明 |
 |---|---|---|
-| `MESSAGING_DRIVER` | `beanstalkd` | 驱动名：`beanstalkd` / `redis` / `nsq` / `nats` / `activemq` / `artemis` |
+| `MESSAGING_DRIVER` | `beanstalkd` | 任意内置驱动名（20 个，完整清单见 [docs/drivers.md](../drivers.md)） |
 | `MESSAGING_HOST` | `127.0.0.1` | broker 地址 |
 | `MESSAGING_PORT` | `11300` | broker 端口；换驱动时一起改（redis：6379，nsq：4150，nats：4222） |
 | `MESSAGING_TIMEOUT` | `5.0` | 连接超时（秒） |

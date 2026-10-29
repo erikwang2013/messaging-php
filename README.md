@@ -8,7 +8,7 @@
 
 TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依赖 rdkafka / ext-zmq / ext-redis 等 broker SDK 或扩展，`composer require` 后即可使用。
 
-当前进度：**P1–P5 全部完成**，20 个驱动名全部实现——ActiveMQ、ActiveMQ Artemis、Redis Streams、NATS Core、NSQ、Beanstalkd、AWS SQS / SNS / Kinesis、Google Cloud Pub/Sub、Azure Service Bus、RabbitMQ、ZeroMQ、Kafka、Redpanda、AutoMQ、Confluent Platform、Azure Event Hubs、Pulsar、RocketMQ。完成情况与能力差异以 [驱动支持矩阵](docs/drivers.md) 为准。
+当前进度（v1.8.1）：**P1–P5 全部完成**，20/20 驱动名全部实现——ActiveMQ、ActiveMQ Artemis、Redis Streams、NATS Core、NSQ、Beanstalkd、AWS SQS / SNS / Kinesis、Google Cloud Pub/Sub、Azure Service Bus、RabbitMQ、ZeroMQ、Kafka、Redpanda、AutoMQ、Confluent Platform、Azure Event Hubs、Pulsar、RocketMQ。完成情况与能力差异以 [驱动支持矩阵](docs/drivers.md) 为准。
 
 项目站点：[https://package.erik.xyz/messaging](https://package.erik.xyz/messaging)
 
@@ -37,7 +37,7 @@ TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依�
 
 小递是一台圆滚滚的浅蓝白色机器人信使：深色屏幕上亮着青色像素眼睛，头顶立着蓝色纸飞机天线，胸口有信封投递口和三盏代表 P1/P2/P3 的状态灯，脖子上围着 PHP 紫围巾。它把消息从一端送到另一端，就像 messaging-php 用一套 `publish / receive / ack` 把业务代码接到 20 种消息系统、13 套协议栈和 6 个框架适配器上。
 
-小递的十二种表情（源文件在 [docs/pet-expressions](docs/pet-expressions/)）：
+小递的十二种表情均为动态 SVG 动画（源文件在 [docs/pet-expressions](docs/pet-expressions/)）：
 
 | 表情 | | | |
 |:---:|:---:|:---:|:---:|
@@ -198,37 +198,37 @@ return [
 | P2 | `gcp-pubsub` | Google Cloud Pub/Sub | 已实现 |
 | P2 | `azure-service-bus` | Azure Service Bus | 已实现 |
 | P3 | `rabbitmq` | RabbitMQ | 已实现（默认交换机） |
-| P3 | `zeromq` | ZeroMQ | 已实现（PUB/SUB、PUSH/PULL） |
+| P3 | `zeromq` | ZeroMQ | 已实现（PUB/SUB、PUSH/PULL；协议/模拟测试） |
 | P4 | `kafka`、`redpanda`、`automq`、`confluent`、`eventhubs` | Kafka 系 5 个产品 | 已实现（无 SASL） |
-| P5 | `pulsar` | Apache Pulsar | 已实现（实验；未跑真实 broker） |
-| P5 | `rocketmq` | Apache RocketMQ | 已实现（实验；未跑真实 broker） |
+| P5 | `pulsar` | Apache Pulsar | 已实现（实验；真实 Pulsar 3.3.2 验证） |
+| P5 | `rocketmq` | Apache RocketMQ | 已实现（实验；协议/模拟测试，未跑真实 broker） |
 
 P1–P5 驱动能力速查（`capabilities()` 的实际声明）：
 
 | 驱动 | ack | requeue | delay | consumer group | 关键限制 |
 |---|---|---|---|---|---|
-| `activemq` | ✓ | ✓ | ✓ | ✗ | requeue 为重发 + ACK，可能重复 |
-| `artemis` | ✓ | ✗ | ✓ | ✗ | STOMP NACK 等同丢弃；需先订阅 |
+| `activemq` | ✓ | ✓ | ✓ | ✗ | requeue 为重发 + ACK，可能重复；`buffer_limit` 默认 10000 |
+| `artemis` | ✓ | ✗ | ✓ | ✗ | STOMP NACK 等同丢弃；需先订阅；`buffer_limit` 默认 10000 |
 | `redis` | ✓ | ✗ | ✗ | ✓ | 未确认消息留在 PEL，需 XAUTOCLAIM 恢复 |
-| `nats` | ✗ | ✗ | ✗ | 配置 `queue_group` 时 ✓ | Core 为至多一次，先订阅再发布 |
+| `nats` | ✗ | ✗ | ✗ | 配置 `queue_group` 时 ✓ | Core 为至多一次，先订阅再发布；`buffer_limit` 默认 10000；空闲重连 |
 | `nsq` | ✓ | ✓ | ✗ | ✗ | channel 必须先存在；发布无 id |
 | `beanstalkd` | ✓ | ✓ | ✓ | ✗ | 不支持 headers / key / 批量 |
 | `sqs` | ✓ | ✓ | ✓ | ✗ | FIFO 逐条 delay 不支持；长轮询 |
 | `sns` | ✗ | ✗ | ✗ | — | 仅 publish |
 | `kinesis` | ✗（checkpoint） | ✗ | ✗ | 分片消费 | 内存 checkpoint + 可选回调 |
-| `gcp-pubsub` | ✓ | ✓ | ✗ | ✓ | 单条 REST pull；attempts 恒为 1 |
-| `azure-service-bus` | ✓ | ✓ | ✓ | ✗ | peek-lock；实体需预先存在 |
+| `gcp-pubsub` | ✓ | ✓ | ✗ | ✓ | 单条 REST pull；`ack_deadline_seconds` 默认 60；attempts 恒为 1 |
+| `azure-service-bus` | ✓ | ✓ | ✓ | ✗ | peek-lock；实体需预先存在；SAS 资源 URI 小写签名 |
 | `rabbitmq` | ✓ | ✓ | ✗ | ✗ | 默认交换机；无 publisher confirm |
-| `zeromq` | ✗ | ✗ | ✗ | ✗ | PUB/SUB、PUSH/PULL；无持久化/确认 |
+| `zeromq` | ✗ | ✗ | ✗ | ✗ | PUB/SUB、PUSH/PULL；无持久化/确认；`buffer_limit` 默认 10000 |
 | `kafka` 系 | ✓（提交 offset） | ✓（seek 回退） | ✗ | ✓ | 仅 PLAINTEXT/TLS、gzip；无 SASL |
-| `pulsar` | ✓ | ✓（negative ack） | ✓ | ✓ | 实验；无 batching/压缩/schema |
-| `rocketmq` | ✓ | ✓（重试队列） | ✓（延迟等级） | ✓ | 实验；4.x remoting |
+| `pulsar` | ✓ | ✓（按条 negative ack） | ✓（约 1 秒分辨率） | ✓（Shared 订阅） | 实验；协议 v11；无 batching/压缩/schema |
+| `rocketmq` | ✓ | ✓（重试队列） | ✓（延迟等级） | ✓ | 实验；4.x remoting；`heartbeat_interval` 默认 30 秒；从 broker 已提交位点恢复 |
 
 13 套协议栈已全部实现并覆盖 20 个驱动名。
 
 逐驱动文档：[Beanstalkd](docs/drivers/beanstalkd.md) · [Redis Streams](docs/drivers/redis-streams.md) · [NSQ](docs/drivers/nsq.md) · [ActiveMQ](docs/drivers/activemq.md) · [Artemis](docs/drivers/artemis.md) · [NATS](docs/drivers/nats.md) · [SQS](docs/drivers/sqs.md) · [SNS](docs/drivers/sns.md) · [Kinesis](docs/drivers/kinesis.md) · [GCP Pub/Sub](docs/drivers/gcp-pubsub.md) · [Azure Service Bus](docs/drivers/azure-service-bus.md) · [RabbitMQ](docs/drivers/rabbitmq.md) · [ZeroMQ](docs/drivers/zeromq.md) · [Kafka](docs/drivers/kafka.md) · [Pulsar](docs/drivers/pulsar.md) · [RocketMQ](docs/drivers/rocketmq.md)
 
-> P1 驱动目前均为明文 TCP，TLS 配置随驱动逐步开放；P2 云服务驱动将使用 HTTPS。
+> P1 驱动目前均为明文 TCP，TLS 配置随驱动逐步开放；P2 云服务驱动使用 HTTPS。
 
 ## 架构设计
 
@@ -259,59 +259,81 @@ P1–P5 驱动能力速查（`capabilities()` 的实际声明）：
 ```
 messaging-php/
 ├── src/
-│   ├── Manager.php                 # 多连接管理、驱动注册表
+│   ├── Manager.php                 # 多连接管理、驱动注册表、disconnect
 │   ├── Connection.php              # publish / receive / consume / capabilities
+│   ├── Composer/                   # Composer Plugin + ConfigInstaller（框架配置自动复制）
 │   ├── Config/                     # Config · ConnectionConfig
 │   ├── Contract/                   # DriverInterface · Message · ReceivedMessage · Capabilities 等
 │   ├── Driver/
+│   │   ├── Aws/                    # SQS / SNS / Kinesis
+│   │   ├── Azure/                  # Service Bus
 │   │   ├── Beanstalkd/             # 文本协议
+│   │   ├── Gcp/                    # Pub/Sub REST + JWT
+│   │   ├── Kafka/                  # Kafka wire protocol + Redpanda / AutoMQ / Confluent / Event Hubs 预设
 │   │   ├── Nats/                   # NATS Core 文本协议
 │   │   ├── Nsq/                    # NSQ TCP 协议
+│   │   ├── Pulsar/                 # Pulsar 二进制协议
+│   │   ├── RabbitMq/               # AMQP 0-9-1
 │   │   ├── Redis/                  # Redis Streams + RESP 编解码
-│   │   └── Stomp/                  # STOMP 1.2 + ActiveMQ / Artemis 预设
+│   │   ├── RocketMq/               # RocketMQ remoting
+│   │   ├── Stomp/                  # STOMP 1.2 + ActiveMQ / Artemis 预设
+│   │   └── ZeroMq/                 # ZMTP 3.1
 │   ├── Exception/                  # MessagingException 与 6 个子类
-│   ├── Integration/                # 框架适配器
-│   │   ├── Laravel/                # ServiceProvider + Facade
-│   │   ├── ThinkPHP/               # Service
-│   │   ├── Webman/                 # 插件 bootstrap + 静态入口
-│   │   ├── Hyperf/                 # ConfigProvider + ManagerFactory
-│   │   └── Yii2/                   # MessagingComponent + 配置
+│   ├── Integration/                # Laravel / ThinkPHP / Webman / Hyperf / Yii2 适配器
 │   └── Support/                    # Socket 等底层支撑
-├── config/                         # Laravel / ThinkPHP 配置 · webman 插件 · Yii3 DI
+├── config/                         # Laravel / ThinkPHP 默认配置 · webman 插件 · Yii3 config plugin（di/params）
 ├── tests/
-│   ├── Unit/                       # 配置、编解码、驱动单元测试
-│   ├── Protocol/                   # stream_socket_server 假 broker 协议测试
+│   ├── Unit/                       # 配置、编解码、驱动与 Composer 单元测试
+│   ├── Protocol/                   # 各协议假 broker 协议测试
 │   ├── Contract/                   # DriverContractTestCase 共享契约基类
-│   └── Integration/                # 真实 broker 容器集成测试
+│   ├── Integration/                # 真实 broker / 模拟云服务集成测试
+│   ├── Composer/                   # plugin-smoke.sh
+│   └── Support/                    # 测试辅助
 ├── docs/
 │   ├── drivers.md                  # 20 系统支持矩阵与能力差异
 │   ├── drivers/                    # 单驱动配置、限制与示例
 │   ├── frameworks/                 # 六套框架集成文档
-│   └── images/                     # 架构、功能、请求周期、生命周期 SVG
+│   ├── images/                     # 架构、功能、请求周期、生命周期 SVG（en/ 为英文版）
+│   └── pet-expressions/            # 小递的 12 种动态表情
 ├── examples/                       # 驱动示例（逐步补充）
-├── docker-compose.yml              # 按 profile 启停各 broker
-├── phpunit.xml
+├── docker-compose.yml              # 按 profile 启停各 broker 与模拟服务
+├── phpunit.xml                     # PHPUnit 10（PHP 8.1–8.5）
+├── phpunit-9.xml                   # PHPUnit 9.6（PHP 8.0）
 ├── composer.json
-└── README.md
+├── README.md
+└── README_EN.md
 ```
 
 ## 测试与开发
 
 ```bash
 composer install
-composer test          # tests/Unit + tests/Protocol，无需外部服务
-composer phpstan       # 静态分析
-composer cs            # 代码风格检查
+composer test                          # tests/Unit + tests/Protocol，无需外部服务
+composer phpstan                       # PHPStan level 5
+composer cs                            # PHP-CS-Fixer 检查
+bash tests/Composer/plugin-smoke.sh    # Composer Plugin 自动复制配置冒烟测试
 ```
 
-集成测试连接真实 broker，按 profile 启动容器后运行：
+当前单元/协议测试：742 个测试、2663 个断言；未安装对应框架时，相关框架单测自动跳过。PHP 8.0 请改用 `vendor/bin/phpunit -c phpunit-9.xml` 运行同一套单元/协议测试（PHPUnit 9.6），PHP 8.1–8.5 使用 PHPUnit 10。CI 还包含 PHP 8.0 全量 lint 与运行时冒烟，以及 Composer Plugin 冒烟任务。
+
+集成测试连接真实 broker 或本地模拟服务，按 profile 启动容器后运行：
 
 ```bash
+# fast：每次 push / PR，真实 broker 容器
 docker compose --profile redis up -d
 composer test-integration -- --filter RedisStreams
 ```
 
-可用 profile：`redis`、`beanstalkd`、`nsq`、`activemq`、`artemis`、`nats`。连接不上 broker 时相关集成测试会自动 skip，不会阻塞本地开发。CI 在 PHP 8.0（PHPUnit 9.6）与 PHP 8.1–8.5（PHPUnit 10）上运行单元与协议测试。
+fast profile：`redis`、`beanstalkd`、`nsq`、`nats`。
+
+```bash
+# heavy：schedule / workflow_dispatch，覆盖重型 broker 与云服务模拟
+docker compose --profile rabbitmq up -d
+MESSAGING_RABBITMQ_USER=messaging MESSAGING_RABBITMQ_PASS=messaging \
+  composer test-integration -- --filter RabbitMq
+```
+
+heavy profile：`activemq`、`artemis`、`aws`（Moto，SQS / SNS / Kinesis）、`gcp`（Pub/Sub emulator）、`rabbitmq`、`kafka`（Redpanda）、`pulsar`。所需环境变量见 `.github/workflows/integration.yml`。RocketMQ 与 ZeroMQ 目前只跑单元/协议测试；Azure Service Bus 使用内存假 HTTP 传输（官方 emulator 不支持 REST data-plane）。连接不上 broker 时相关集成测试自动 skip，不会阻塞本地开发。
 
 ## 许可证
 

@@ -8,7 +8,7 @@ A unified message queue and event streaming client written in pure PHP: one `pub
 
 TCP protocols are implemented with the PHP standard library, and HTTP cloud services connect directly through Guzzle. No rdkafka, ext-zmq, ext-redis or other broker SDK or extension is required — it works right after `composer require`.
 
-**All P1–P5 phases are complete**, covering all 20 driver names — ActiveMQ, ActiveMQ Artemis, Redis Streams, NATS Core, NSQ, Beanstalkd, AWS SQS / SNS / Kinesis, Google Cloud Pub/Sub, Azure Service Bus, RabbitMQ, ZeroMQ, Kafka, Redpanda, AutoMQ, Confluent Platform, Azure Event Hubs, Pulsar and RocketMQ. See the [driver support matrix](docs/drivers.md) for status and capability differences.
+**Current status (v1.8.1): all P1–P5 phases are complete**, covering all 20/20 driver names — ActiveMQ, ActiveMQ Artemis, Redis Streams, NATS Core, NSQ, Beanstalkd, AWS SQS / SNS / Kinesis, Google Cloud Pub/Sub, Azure Service Bus, RabbitMQ, ZeroMQ, Kafka, Redpanda, AutoMQ, Confluent Platform, Azure Event Hubs, Pulsar and RocketMQ. See the [driver support matrix](docs/drivers.md) for status and capability differences.
 
 Project site: [https://package.erik.xyz/messaging](https://package.erik.xyz/messaging)
 
@@ -37,7 +37,7 @@ See [docs/drivers.md](docs/drivers.md) for complete per-driver limitations and r
 
 Xiaodi is a round light-blue-and-white robot messenger: a dark screen face with cyan pixel eyes, a blue paper-plane antenna on its head, an envelope slot and three P1/P2/P3 status lights on its chest, and a PHP-purple scarf around its neck. Xiaodi carries messages from one end to the other, just as messaging-php connects business code to 20 messaging systems, 13 protocol stacks and 6 framework adapters through a single `publish / receive / ack` API.
 
-Twelve Xiaodi expressions (source files in [docs/pet-expressions](docs/pet-expressions/)):
+All twelve Xiaodi expressions are animated SVGs (source files in [docs/pet-expressions](docs/pet-expressions/)):
 
 | Expression | | | |
 |:---:|:---:|:---:|:---:|
@@ -198,31 +198,31 @@ Twenty product names are carried by 13 protocol stacks. See [docs/drivers.md](do
 | P2 | `gcp-pubsub` | Google Cloud Pub/Sub | Implemented |
 | P2 | `azure-service-bus` | Azure Service Bus | Implemented |
 | P3 | `rabbitmq` | RabbitMQ | Implemented (default exchange) |
-| P3 | `zeromq` | ZeroMQ | Implemented (PUB/SUB, PUSH/PULL) |
+| P3 | `zeromq` | ZeroMQ | Implemented (PUB/SUB, PUSH/PULL; protocol/mock tests) |
 | P4 | `kafka`, `redpanda`, `automq`, `confluent`, `eventhubs` | 5 Kafka-family products | Implemented (no SASL) |
-| P5 | `pulsar` | Apache Pulsar | Implemented (experimental; no live broker run) |
-| P5 | `rocketmq` | Apache RocketMQ | Implemented (experimental; no live broker run) |
+| P5 | `pulsar` | Apache Pulsar | Implemented (experimental; verified against a real Pulsar 3.3.2 broker) |
+| P5 | `rocketmq` | Apache RocketMQ | Implemented (experimental; protocol/mock tests, no live broker run) |
 
 P1–P5 driver capability quick reference (the actual `capabilities()` declarations):
 
 | Driver | ack | requeue | delay | consumer group | Key limitations |
 |---|---|---|---|---|---|
-| `activemq` | ✓ | ✓ | ✓ | ✗ | requeue is re-send + ACK; duplicates possible |
-| `artemis` | ✓ | ✗ | ✓ | ✗ | STOMP NACK is a discard; subscribe first |
+| `activemq` | ✓ | ✓ | ✓ | ✗ | requeue is re-send + ACK; duplicates possible; `buffer_limit` defaults to 10000 |
+| `artemis` | ✓ | ✗ | ✓ | ✗ | STOMP NACK is a discard; subscribe first; `buffer_limit` defaults to 10000 |
 | `redis` | ✓ | ✗ | ✗ | ✓ | unacked messages stay in the PEL; recover with XAUTOCLAIM |
-| `nats` | ✗ | ✗ | ✗ | ✓ when `queue_group` is configured | Core is at-most-once; subscribe before publishing |
+| `nats` | ✗ | ✗ | ✗ | ✓ when `queue_group` is configured | Core is at-most-once; subscribe before publishing; `buffer_limit` defaults to 10000; idle reconnect |
 | `nsq` | ✓ | ✓ | ✗ | ✗ | the channel must exist first; published messages carry no id |
 | `beanstalkd` | ✓ | ✓ | ✓ | ✗ | no headers / key / batch publish |
 | `sqs` | ✓ | ✓ | ✓ | ✗ | per-message delay unsupported for FIFO; long polling |
 | `sns` | ✗ | ✗ | ✗ | — | publish only |
 | `kinesis` | ✗ (checkpoint) | ✗ | ✗ | shard consumption | in-memory checkpoint + optional callback |
-| `gcp-pubsub` | ✓ | ✓ | ✗ | ✓ | one-message REST pull; attempts is always 1 |
-| `azure-service-bus` | ✓ | ✓ | ✓ | ✗ | peek-lock; entities must exist in advance |
+| `gcp-pubsub` | ✓ | ✓ | ✗ | ✓ | one-message REST pull; `ack_deadline_seconds` defaults to 60; attempts is always 1 |
+| `azure-service-bus` | ✓ | ✓ | ✓ | ✗ | peek-lock; entities must exist in advance; SAS resource URI signed in lowercase |
 | `rabbitmq` | ✓ | ✓ | ✗ | ✗ | default exchange; no publisher confirm |
-| `zeromq` | ✗ | ✗ | ✗ | ✗ | PUB/SUB and PUSH/PULL; no persistence or acknowledgement |
+| `zeromq` | ✗ | ✗ | ✗ | ✗ | PUB/SUB and PUSH/PULL; no persistence or acknowledgement; `buffer_limit` defaults to 10000 |
 | `kafka` family | ✓ (offset commit) | ✓ (seek back) | ✗ | ✓ | PLAINTEXT/TLS and gzip only; no SASL |
-| `pulsar` | ✓ | ✓ (negative ack) | ✓ | ✓ | Experimental; no batching/compression/schema |
-| `rocketmq` | ✓ | ✓ (retry queue) | ✓ (delay level) | ✓ | Experimental; 4.x remoting |
+| `pulsar` | ✓ | ✓ (per-message negative ack) | ✓ (~1 s resolution) | ✓ (Shared subscription) | Experimental; protocol v11; no batching/compression/schema |
+| `rocketmq` | ✓ | ✓ (retry queue) | ✓ (delay level) | ✓ | Experimental; 4.x remoting; `heartbeat_interval` defaults to 30 s; resumes from broker-committed offsets |
 
 All 13 protocol stacks now cover the 20 driver names.
 
@@ -259,59 +259,81 @@ A connection starts from a config array: `Config::fromArray()` validates the def
 ```
 messaging-php/
 ├── src/
-│   ├── Manager.php                 # multi-connection management, driver registry
+│   ├── Manager.php                 # multi-connection management, driver registry, disconnect
 │   ├── Connection.php              # publish / receive / consume / capabilities
+│   ├── Composer/                   # Composer plugin + ConfigInstaller (automatic framework config copy)
 │   ├── Config/                     # Config · ConnectionConfig
 │   ├── Contract/                   # DriverInterface · Message · ReceivedMessage · Capabilities, etc.
 │   ├── Driver/
+│   │   ├── Aws/                    # SQS / SNS / Kinesis
+│   │   ├── Azure/                  # Service Bus
 │   │   ├── Beanstalkd/             # text protocol
+│   │   ├── Gcp/                    # Pub/Sub REST + JWT
+│   │   ├── Kafka/                  # Kafka wire protocol + Redpanda / AutoMQ / Confluent / Event Hubs presets
 │   │   ├── Nats/                   # NATS Core text protocol
 │   │   ├── Nsq/                    # NSQ TCP protocol
+│   │   ├── Pulsar/                 # Pulsar binary protocol
+│   │   ├── RabbitMq/               # AMQP 0-9-1
 │   │   ├── Redis/                  # Redis Streams + RESP codec
-│   │   └── Stomp/                  # STOMP 1.2 + ActiveMQ / Artemis presets
+│   │   ├── RocketMq/               # RocketMQ remoting
+│   │   ├── Stomp/                  # STOMP 1.2 + ActiveMQ / Artemis presets
+│   │   └── ZeroMq/                 # ZMTP 3.1
 │   ├── Exception/                  # MessagingException and 6 subclasses
-│   ├── Integration/                # framework adapters
-│   │   ├── Laravel/                # ServiceProvider + Facade
-│   │   ├── ThinkPHP/               # Service
-│   │   ├── Webman/                 # plugin bootstrap + static entry point
-│   │   ├── Hyperf/                 # ConfigProvider + ManagerFactory
-│   │   └── Yii2/                   # MessagingComponent + config
+│   ├── Integration/                # Laravel / ThinkPHP / Webman / Hyperf / Yii2 adapters
 │   └── Support/                    # Socket and other low-level support
-├── config/                         # Laravel / ThinkPHP config · webman plugin · Yii3 DI
+├── config/                         # Laravel / ThinkPHP default config · webman plugin · Yii3 config plugin (di/params)
 ├── tests/
-│   ├── Unit/                       # config, codec and driver unit tests
-│   ├── Protocol/                   # stream_socket_server fake-broker protocol tests
+│   ├── Unit/                       # config, codec, driver and Composer unit tests
+│   ├── Protocol/                   # fake-broker protocol tests per protocol
 │   ├── Contract/                   # DriverContractTestCase shared contract base class
-│   └── Integration/                # real-broker container integration tests
+│   ├── Integration/                # real-broker / simulated cloud integration tests
+│   ├── Composer/                   # plugin-smoke.sh
+│   └── Support/                    # test helpers
 ├── docs/
 │   ├── drivers.md                  # 20-system support matrix and capability differences
 │   ├── drivers/                    # per-driver config, limitations and examples
 │   ├── frameworks/                 # six framework integration docs
-│   └── images/                     # architecture, features, request cycle and lifecycle SVGs
+│   ├── images/                     # architecture, features, request cycle and lifecycle SVGs (en/ for English)
+│   └── pet-expressions/            # 12 animated Xiaodi expressions
 ├── examples/                       # driver examples (added progressively)
-├── docker-compose.yml              # start and stop brokers by profile
-├── phpunit.xml
+├── docker-compose.yml              # start and stop brokers and simulators by profile
+├── phpunit.xml                     # PHPUnit 10 (PHP 8.1–8.5)
+├── phpunit-9.xml                   # PHPUnit 9.6 (PHP 8.0)
 ├── composer.json
-└── README.md
+├── README.md
+└── README_EN.md
 ```
 
 ## Testing and development
 
 ```bash
 composer install
-composer test          # tests/Unit + tests/Protocol, no external services required
-composer phpstan       # static analysis
-composer cs            # code style check
+composer test                          # tests/Unit + tests/Protocol, no external services required
+composer phpstan                       # PHPStan level 5
+composer cs                            # PHP-CS-Fixer check
+bash tests/Composer/plugin-smoke.sh    # Composer plugin auto-copy smoke test
 ```
 
-Integration tests connect to real brokers. Start the containers by profile, then run:
+The unit/protocol suite currently has 742 tests and 2663 assertions; framework unit tests are skipped automatically when the corresponding framework is not installed. On PHP 8.0, use `vendor/bin/phpunit -c phpunit-9.xml` to run the same unit/protocol suite (PHPUnit 9.6); PHP 8.1–8.5 use PHPUnit 10. CI also runs full PHP 8.0 linting plus a runtime smoke test, and a Composer plugin smoke job.
+
+Integration tests connect to real brokers or local simulators. Start the containers by profile, then run:
 
 ```bash
+# fast: every push / PR, real broker containers
 docker compose --profile redis up -d
 composer test-integration -- --filter RedisStreams
 ```
 
-Available profiles: `redis`, `beanstalkd`, `nsq`, `activemq`, `artemis`, `nats`. Integration tests skip automatically when a broker is unreachable, so local development is never blocked. CI runs unit and protocol tests on PHP 8.0 (PHPUnit 9.6) and PHP 8.1–8.5 (PHPUnit 10).
+Fast profiles: `redis`, `beanstalkd`, `nsq`, `nats`.
+
+```bash
+# heavy: schedule / workflow_dispatch, heavy brokers and cloud simulators
+docker compose --profile rabbitmq up -d
+MESSAGING_RABBITMQ_USER=messaging MESSAGING_RABBITMQ_PASS=messaging \
+  composer test-integration -- --filter RabbitMq
+```
+
+Heavy profiles: `activemq`, `artemis`, `aws` (Moto, SQS / SNS / Kinesis), `gcp` (Pub/Sub emulator), `rabbitmq`, `kafka` (Redpanda), `pulsar`. Required environment variables are listed in `.github/workflows/integration.yml`. RocketMQ and ZeroMQ currently run unit/protocol tests only; Azure Service Bus uses an in-memory fake HTTP transport (the official emulator does not support the REST data plane). Integration tests skip automatically when a broker is unreachable, so local development is never blocked.
 
 ## License
 

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="feat-title feat-desc">
   <title id="feat-title">messaging-php 功能设计</title>
-  <desc id="feat-desc">六个能力面：统一 API、能力模型、驱动注册表、纯 PHP 传输、框架集成、测试体系。</desc>
+  <desc id="feat-desc">六个能力面：统一 API、能力模型、驱动注册表（20 个驱动名 / 13 套协议栈）、纯 PHP 传输、框架集成与 Composer 自动配置、742 个测试与 CI 矩阵。</desc>
   <style>
     text{font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#14213D}
     .title{font-size:22px;font-weight:700}
     .sub{font-size:11.5px;fill:#5B6478}
     .ct{font-size:15px;font-weight:700}
     .ce{font-size:9.5px;fill:#8A94A6}
-    .b{font-size:10.8px;fill:#334155}
+    .b{font-size:10px;fill:#334155}
     .num{font-size:11px;font-weight:700;fill:#2563EB}
     .foot{font-size:10.5px;fill:#5B6478}
     .ctr{text-anchor:middle}
@@ -17,7 +17,7 @@
   <rect x="0" y="0" width="960" height="540" fill="#FFFFFF"/>
   <text class="title" x="48" y="42">messaging-php 功能设计</text>
   <text class="sub" x="912" y="42" text-anchor="end">Feature Map · 六个能力面</text>
-  <text class="sub" x="48" y="64">统一接口 → 能力协商 → 驱动注册 → 纯 PHP 传输 → 框架集成 → 测试保障</text>
+  <text class="sub" x="48" y="64">统一接口 → 能力协商 → 驱动注册 → 纯 PHP 传输 → 框架与 Composer 集成 → 测试保障</text>
 
   <!-- 卡片 1 统一 API -->
   <rect x="44" y="84" width="272" height="188" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.4"/>
@@ -27,10 +27,11 @@
   <text class="ct" x="92" y="113">统一 API</text>
   <text class="ce" x="92" y="128">Unified API</text>
   <line x1="68" y1="142" x2="292" y2="142" stroke="#E2E8F0" stroke-width="1"/>
-  <text class="b" x="68" y="164">· publish / publishBatch 发布</text>
-  <text class="b" x="68" y="186">· receive / consume 拉取消费</text>
-  <text class="b" x="68" y="208">· ack() / reject(requeue) 确认</text>
-  <text class="b" x="68" y="230">· Message::json 与 ReceivedMessage</text>
+  <text class="b" x="68" y="162">· publish / publishBatch 发布</text>
+  <text class="b" x="68" y="182">· receive / consume 拉取消费</text>
+  <text class="b" x="68" y="202">· ack() / reject(requeue) 确认</text>
+  <text class="b" x="68" y="222">· Message / ReceivedMessage 契约</text>
+  <text class="b" x="68" y="242">· 业务代码只依赖 Connection</text>
 
   <!-- 卡片 2 能力模型 -->
   <rect x="344" y="84" width="272" height="188" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.4"/>
@@ -40,10 +41,11 @@
   <text class="ct" x="392" y="113">能力模型</text>
   <text class="ce" x="392" y="128">Capability Model</text>
   <line x1="368" y1="142" x2="592" y2="142" stroke="#E2E8F0" stroke-width="1"/>
-  <text class="b" x="368" y="164">· ack · requeue · delay · batch</text>
-  <text class="b" x="368" y="186">· consumerGroups · ordering · headers</text>
-  <text class="b" x="368" y="208">· capabilities() 运行时查询</text>
-  <text class="b" x="368" y="230">· 不支持即抛异常，不静默降级</text>
+  <text class="b" x="368" y="162">· ack · requeue · delay · batchPublish</text>
+  <text class="b" x="368" y="182">· consumerGroups · ordering · headers</text>
+  <text class="b" x="368" y="202">· requiresActiveSubscription</text>
+  <text class="b" x="368" y="222">· capabilities() 运行时查询</text>
+  <text class="b" x="368" y="242">· 不支持即抛异常，不静默降级</text>
 
   <!-- 卡片 3 驱动注册表 -->
   <rect x="644" y="84" width="272" height="188" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.4"/>
@@ -51,12 +53,13 @@
   <circle cx="670" cy="117" r="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
   <text class="num ctr" x="670" y="121">3</text>
   <text class="ct" x="692" y="113">驱动注册表</text>
-  <text class="ce" x="692" y="128">Driver Registry</text>
+  <text class="ce" x="692" y="128">20 驱动名 · 13 协议栈</text>
   <line x1="668" y1="142" x2="892" y2="142" stroke="#E2E8F0" stroke-width="1"/>
-  <text class="b" x="668" y="164">· 20 个产品名 · 13 套协议栈</text>
-  <text class="b" x="668" y="186">· 内置驱动工厂按需创建</text>
-  <text class="b" x="668" y="208">· Manager::extend() 注册自定义</text>
-  <text class="b" x="668" y="230">· 连接懒加载并按名缓存</text>
+  <text class="b" x="668" y="162">· 20 个驱动名 / 13 套协议栈</text>
+  <text class="b" x="668" y="182">· 全部实现；Pulsar / RocketMQ 实验性</text>
+  <text class="b" x="668" y="202">· Manager::extend() 注册自定义工厂</text>
+  <text class="b" x="668" y="222">· 连接按名缓存 · 按驱动策略连接</text>
+  <text class="b" x="668" y="242">· 新增 broker 不改公开 API</text>
 
   <!-- 卡片 4 纯 PHP 传输 -->
   <rect x="44" y="292" width="272" height="188" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.4"/>
@@ -66,10 +69,11 @@
   <text class="ct" x="92" y="321">纯 PHP 传输</text>
   <text class="ce" x="92" y="336">Pure-PHP Transports</text>
   <line x1="68" y1="350" x2="292" y2="350" stroke="#E2E8F0" stroke-width="1"/>
-  <text class="b" x="68" y="372">· stream_socket_client 实现 TCP/TLS</text>
-  <text class="b" x="68" y="394">· 自研 RESP / STOMP / NATS / NSQ</text>
-  <text class="b" x="68" y="416">· 云 API：Guzzle + SigV4 / JWT / SAS</text>
-  <text class="b" x="68" y="438">· 无需 rdkafka / ext-zmq / ext-redis</text>
+  <text class="b" x="68" y="370">· stream_socket_client 实现 TCP/TLS</text>
+  <text class="b" x="68" y="390">· 自研 RESP / STOMP / NATS / NSQ</text>
+  <text class="b" x="68" y="410">· Beanstalkd / Kafka / Pulsar 编解码</text>
+  <text class="b" x="68" y="430">· 云 API：Guzzle + SigV4 / JWT / SAS</text>
+  <text class="b" x="68" y="450">· 无需 broker SDK / 扩展依赖</text>
 
   <!-- 卡片 5 框架集成 -->
   <rect x="344" y="292" width="272" height="188" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.4"/>
@@ -77,12 +81,13 @@
   <circle cx="370" cy="325" r="12" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
   <text class="num ctr" x="370" y="329" style="fill:#B45309">5</text>
   <text class="ct" x="392" y="321">框架集成</text>
-  <text class="ce" x="392" y="336">Framework Integration</text>
+  <text class="ce" x="392" y="336">6 Frameworks + Composer Plugin</text>
   <line x1="368" y1="350" x2="592" y2="350" stroke="#E2E8F0" stroke-width="1"/>
-  <text class="b" x="368" y="372">· Laravel · ThinkPHP · webman</text>
-  <text class="b" x="368" y="394">· Hyperf · Yii2 · Yii3</text>
-  <text class="b" x="368" y="416">· 容器绑定 Manager 单例</text>
-  <text class="b" x="368" y="438">· 配置发布 · 门面 / DI 注入</text>
+  <text class="b" x="368" y="370">· Laravel · ThinkPHP · webman · Hyperf</text>
+  <text class="b" x="368" y="390">· Yii2 · Yii3：6 个可选适配器</text>
+  <text class="b" x="368" y="410">· Composer Plugin 安装期检测框架</text>
+  <text class="b" x="368" y="430">· 自动复制配置；Yii3 自动合并</text>
+  <text class="b" x="368" y="450">· allow-plugins 必需 · 容器单例</text>
 
   <!-- 卡片 6 测试体系 -->
   <rect x="644" y="292" width="272" height="188" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.4"/>
@@ -90,14 +95,15 @@
   <circle cx="670" cy="325" r="12" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
   <text class="num ctr" x="670" y="329" style="fill:#B45309">6</text>
   <text class="ct" x="692" y="321">测试体系</text>
-  <text class="ce" x="692" y="336">Testing</text>
+  <text class="ce" x="692" y="336">742 tests · 2663 assertions</text>
   <line x1="668" y1="350" x2="892" y2="350" stroke="#E2E8F0" stroke-width="1"/>
-  <text class="b" x="668" y="372">· 单元测试 + 假 broker 协议测试</text>
-  <text class="b" x="668" y="394">· DriverContractTestCase 契约基类</text>
-  <text class="b" x="668" y="416">· Docker Compose profile 集成测试</text>
-  <text class="b" x="668" y="438">· PHPStan · PHP-CS-Fixer · CI 矩阵</text>
+  <text class="b" x="668" y="370">· 742 tests · 2663 assertions</text>
+  <text class="b" x="668" y="390">· 单元 · 假 broker 协议 · 契约测试</text>
+  <text class="b" x="668" y="410">· Docker Compose 集成测试</text>
+  <text class="b" x="668" y="430">· CI 矩阵 PHP 8.0–8.5（PHPUnit 9.6/10）</text>
+  <text class="b" x="668" y="450">· PHPStan · CS-Fixer · plugin smoke</text>
 
   <!-- 底部能力条 -->
   <rect x="44" y="500" width="872" height="28" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.2"/>
-  <text class="foot ctr" x="480" y="518">PSR-3 日志注入 · 统一异常体系 · 数组配置 · PHP &gt;= 8.0 · 无 broker SDK / 扩展依赖</text>
+  <text class="foot ctr" x="480" y="518">PSR-3 日志注入 · 统一异常体系 · 数组配置 · PHP 8.0–8.5 · Composer Plugin 自动配置 · 无 broker SDK / 扩展依赖</text>
 </svg>

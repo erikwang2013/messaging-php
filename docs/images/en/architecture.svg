@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="arch-title arch-desc">
   <title id="arch-title">messaging-php Architecture</title>
-  <desc id="arch-desc">Four layers from top to bottom: framework adapters, core, driver adapters, and brokers or cloud services. Twenty product names map to 13 protocol stacks, with all 20 shipped P1-P5 drivers highlighted.</desc>
+  <desc id="arch-desc">Four layers from top to bottom: framework adapters with Composer install-time auto-config, core, drivers grouped by 13 protocol stacks covering 20 driver names, and brokers or cloud services. PHP 8.0–8.5 is supported across the CI matrix and all 20 drivers are shipped.</desc>
   <style>
     text{font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#14213D}
     .title{font-size:22px;font-weight:700}
@@ -9,10 +9,12 @@
     .lane{font-size:12.5px;font-weight:700}
     .lane-en{font-size:9.5px;fill:#8A94A6}
     .n{font-size:11.5px;font-weight:600}
-    .ns{font-size:9px;fill:#5B6478}
-    .p1n{font-size:11px;font-weight:700;fill:#92400E}
-    .p1s{font-size:9px;fill:#B45309}
-    .note{font-size:10px;fill:#5B6478}
+    .ns{font-size:8.4px;fill:#5B6478}
+    .pn{font-size:10.5px;font-weight:700;fill:#92400E}
+    .pd{font-size:8.4px;fill:#B45309}
+    .px{font-size:7.6px;fill:#B45309}
+    .note{font-size:9.2px;fill:#5B6478}
+    .badge{font-size:9px;font-weight:700;fill:#1D4ED8}
     .ctr{text-anchor:middle}
   </style>
   <defs>
@@ -26,112 +28,131 @@
 
   <rect x="0" y="0" width="960" height="540" fill="#FFFFFF"/>
   <text class="title" x="48" y="42">messaging-php Architecture</text>
-  <text class="sub" x="912" y="42" text-anchor="end">Pure PHP · 20 systems · Unified API</text>
-  <text class="sub" x="48" y="64">Apps depend on Manager / Connection; drivers group by protocol with explicit capabilities</text>
+  <text class="sub" x="912" y="42" text-anchor="end">PHP 8.0–8.5 · Composer 2.2+</text>
+  <text class="sub" x="48" y="64">6 framework adapters → Composer auto-config → core layer → 13 protocol stacks / 20 drivers → brokers and cloud</text>
 
-  <!-- 框架适配层 -->
-  <rect x="40" y="80" width="880" height="68" rx="12" fill="#F8FAFC" stroke="#E2E8F0"/>
-  <rect x="56" y="92" width="4" height="14" rx="2" fill="#2563EB"/>
-  <text class="lane" x="68" y="104">Framework layer</text>
-  <text class="lane-en" x="200" y="104">Optional integration</text>
+  <!-- Framework adapters + Composer install -->
+  <rect x="40" y="78" width="880" height="76" rx="12" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <rect x="56" y="90" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="lane" x="68" y="102">Framework adapters + Composer plugin</text>
+  <text class="lane-en" x="342" y="102">Optional integrations · config copied at install time</text>
   <g>
-    <rect x="61" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text class="n ctr" x="125" y="130">Laravel</text>
-    <rect x="203" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text class="n ctr" x="267" y="130">ThinkPHP</text>
-    <rect x="345" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text class="n ctr" x="409" y="130">webman</text>
-    <rect x="487" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text class="n ctr" x="551" y="130">Hyperf</text>
-    <rect x="629" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text class="n ctr" x="693" y="130">Yii2</text>
-    <rect x="771" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text class="n ctr" x="835" y="130">Yii3</text>
+    <rect x="52" y="108" width="420" height="40" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <rect x="62" y="117" width="60" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
+    <text class="ns ctr" x="92" y="132">Laravel</text>
+    <rect x="130" y="117" width="60" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
+    <text class="ns ctr" x="160" y="132">ThinkPHP</text>
+    <rect x="198" y="117" width="60" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
+    <text class="ns ctr" x="228" y="132">webman</text>
+    <rect x="266" y="117" width="60" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
+    <text class="ns ctr" x="296" y="132">Hyperf</text>
+    <rect x="334" y="117" width="60" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
+    <text class="ns ctr" x="364" y="132">Yii2</text>
+    <rect x="402" y="117" width="60" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
+    <text class="ns ctr" x="432" y="132">Yii3</text>
+    <rect x="484" y="108" width="424" height="40" rx="8" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.2"/>
+    <text class="pd" x="496" y="123" style="font-size:9.2px;font-weight:700;fill:#92400E">Composer Plugin · install / update auto-config</text>
+    <text class="pd" x="496" y="139">allow-plugins → detect frameworks → copy config; Yii3 merges via yiisoft/config</text>
   </g>
-  <line x1="480" y1="148" x2="480" y2="166" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+  <line x1="480" y1="154" x2="480" y2="162" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
 
-  <!-- 核心层 -->
-  <rect x="40" y="168" width="880" height="66" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
-  <rect x="56" y="180" width="4" height="14" rx="2" fill="#2563EB"/>
-  <text class="lane" x="68" y="192">Core layer</text>
-  <text class="lane-en" x="160" y="192">Protocol agnostic</text>
+  <!-- Core layer -->
+  <rect x="40" y="164" width="880" height="64" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+  <rect x="56" y="176" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="lane" x="68" y="188">Core layer</text>
+  <text class="lane-en" x="150" y="188">Protocol agnostic</text>
+  <rect x="790" y="174" width="110" height="20" rx="10" fill="#EFF6FF" stroke="#93C5FD"/>
+  <text class="badge ctr" x="845" y="188">PHP 8.0–8.5 CI</text>
   <g>
-    <rect x="76" y="199" width="190" height="27" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
-    <text class="n ctr" x="171" y="216">Config validation</text>
-    <rect x="282" y="199" width="190" height="27" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
-    <text class="n ctr" x="377" y="216">Manager / connections</text>
-    <rect x="488" y="199" width="190" height="27" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
-    <text class="n ctr" x="583" y="216">Connection facade</text>
-    <rect x="694" y="199" width="190" height="27" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
-    <text class="n ctr" x="789" y="216">DriverInterface contract</text>
+    <rect x="76" y="198" width="190" height="24" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="n ctr" x="171" y="215">Config validation</text>
+    <rect x="282" y="198" width="190" height="24" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="n ctr" x="377" y="215">Manager / connections</text>
+    <rect x="488" y="198" width="190" height="24" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="n ctr" x="583" y="215">Connection facade</text>
+    <rect x="694" y="198" width="190" height="24" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="n ctr" x="789" y="215">DriverInterface contract</text>
   </g>
-  <line x1="480" y1="234" x2="480" y2="250" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+  <line x1="480" y1="228" x2="480" y2="236" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
 
-  <!-- 驱动适配层 -->
-  <rect x="40" y="252" width="880" height="172" rx="12" fill="#F8FAFC" stroke="#E2E8F0"/>
-  <rect x="56" y="264" width="4" height="14" rx="2" fill="#2563EB"/>
-  <text class="lane" x="68" y="276">Driver layer</text>
-  <text class="lane-en" x="146" y="276">Driver Adapters · 20 product names / 13 protocol stacks</text>
-  <g>
-    <rect x="57" y="284" width="158" height="48" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="136" y="303">STOMP 1.2</text>
-    <text class="p1s ctr" x="136" y="318">P1 · ActiveMQ / Artemis</text>
-    <rect x="229" y="284" width="158" height="48" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="308" y="303">RESP</text>
-    <text class="p1s ctr" x="308" y="318">P1 · Redis Streams</text>
-    <rect x="401" y="284" width="158" height="48" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="480" y="303">NATS text protocol</text>
-    <text class="p1s ctr" x="480" y="318">P1 · NATS Core</text>
-    <rect x="573" y="284" width="158" height="48" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="652" y="303">NSQ TCP</text>
-    <text class="p1s ctr" x="652" y="318">P1 · nsq</text>
-    <rect x="745" y="284" width="158" height="48" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="824" y="303">Beanstalkd text</text>
-    <text class="p1s ctr" x="824" y="318">P1 · beanstalkd</text>
-  </g>
-  <g>
-    <rect x="53" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="102" y="355">AMQP 0-9-1</text>
-    <text class="p1s ctr" x="102" y="369">P3 · rabbitmq</text>
-    <rect x="161" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="210" y="355">Kafka</text>
-    <text class="p1s ctr" x="210" y="369">P4 · Kafka x5</text>
-    <rect x="269" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="318" y="355">Pulsar</text>
-    <text class="p1s ctr" x="318" y="369">P5 · pulsar</text>
-    <rect x="377" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="426" y="355">RocketMQ</text>
-    <text class="p1s ctr" x="426" y="369">P5 · rocketmq</text>
-    <rect x="485" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="534" y="355">AWS</text>
-    <text class="p1s ctr" x="534" y="369">P2 · sqs/sns/kinesis</text>
-    <rect x="593" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="642" y="355">GCP</text>
-    <text class="p1s ctr" x="642" y="369">P2 · gcp-pubsub</text>
-    <rect x="701" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="750" y="355">Azure</text>
-    <text class="p1s ctr" x="750" y="369">P2 · azure-service-bus</text>
-    <rect x="809" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
-    <text class="p1n ctr" x="858" y="355">ZMTP 3.1</text>
-    <text class="p1s ctr" x="858" y="369">P3 · zeromq</text>
-  </g>
-  <rect x="57" y="391" width="10" height="10" rx="2" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
-  <text class="note" x="73" y="400">P1-P5 shipped: all 20 drivers</text>
-  <text class="note" x="903" y="400" text-anchor="end">DriverFactory by name · lazy cached connections</text>
-  <line x1="480" y1="424" x2="480" y2="442" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+  <!-- Driver adapters -->
+  <rect x="40" y="236" width="880" height="204" rx="12" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <rect x="56" y="248" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="lane" x="68" y="260">Driver adapters</text>
+  <text class="lane-en" x="174" y="260">13 protocol stacks → 20 driver names</text>
+  <text class="note" x="903" y="260" text-anchor="end">shipped 20 / 20</text>
 
-  <!-- Broker / 云服务层 -->
-  <rect x="40" y="444" width="880" height="74" rx="12" fill="#F1F5F9" stroke="#E2E8F0"/>
-  <rect x="56" y="456" width="4" height="14" rx="2" fill="#2563EB"/>
-  <text class="lane" x="68" y="468">Broker / cloud</text>
-  <text class="lane-en" x="190" y="468">Storage, routing, ack and redelivery</text>
+  <!-- Row 1 -->
   <g>
-    <rect x="60" y="474" width="410" height="36" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text class="ns ctr" x="265" y="488">RabbitMQ · Kafka · Pulsar · RocketMQ · NATS</text>
-    <text class="ns ctr" x="265" y="502">ActiveMQ / Artemis · Redis · NSQ · Beanstalkd · ZeroMQ</text>
-    <rect x="490" y="474" width="410" height="36" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-    <text class="ns ctr" x="695" y="488">AWS SQS / SNS / Kinesis · GCP Pub/Sub</text>
-    <text class="ns ctr" x="695" y="502">Azure Service Bus / Event Hubs (Kafka endpoint)</text>
+    <rect x="52" y="268" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="132" y="285">AMQP 0-9-1</text>
+    <text class="pd ctr" x="132" y="302">rabbitmq</text>
+    <rect x="226" y="268" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="306" y="285">Kafka wire</text>
+    <text class="pd ctr" x="306" y="302">kafka · redpanda · automq</text>
+    <text class="pd ctr" x="306" y="314">confluent · eventhubs</text>
+    <rect x="400" y="268" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="480" y="285">STOMP 1.2</text>
+    <text class="pd ctr" x="480" y="302">activemq · artemis</text>
+    <rect x="574" y="268" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="654" y="285">Pulsar binary</text>
+    <text class="pd ctr" x="654" y="302">pulsar</text>
+    <text class="px ctr" x="654" y="314">experimental · no real broker</text>
+    <rect x="748" y="268" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="828" y="285">RocketMQ remoting</text>
+    <text class="pd ctr" x="828" y="302">rocketmq</text>
+    <text class="px ctr" x="828" y="314">experimental · no real broker</text>
   </g>
-  <text class="note" x="48" y="534">Highlighted: all 20 P1-P5 drivers shipped; every driver reuses the same DriverInterface. See docs/drivers.md</text>
+
+  <!-- Row 2 -->
+  <g>
+    <rect x="52" y="326" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="132" y="343">NATS text</text>
+    <text class="pd ctr" x="132" y="360">nats</text>
+    <rect x="226" y="326" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="306" y="343">RESP</text>
+    <text class="pd ctr" x="306" y="360">redis</text>
+    <rect x="400" y="326" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="480" y="343">AWS API + SigV4</text>
+    <text class="pd ctr" x="480" y="360">sqs · sns · kinesis</text>
+    <rect x="574" y="326" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="654" y="343">GCP REST + JWT</text>
+    <text class="pd ctr" x="654" y="360">gcp-pubsub</text>
+    <rect x="748" y="326" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="828" y="343">Azure REST + SAS</text>
+    <text class="pd ctr" x="828" y="360">azure-service-bus</text>
+  </g>
+
+  <!-- Row 3 -->
+  <g>
+    <rect x="52" y="384" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="132" y="401">ZMTP 3.1</text>
+    <text class="pd ctr" x="132" y="418">zeromq</text>
+    <rect x="226" y="384" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="306" y="401">NSQ TCP</text>
+    <text class="pd ctr" x="306" y="418">nsq</text>
+    <rect x="400" y="384" width="160" height="52" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="pn ctr" x="480" y="401">Beanstalkd text</text>
+    <text class="pd ctr" x="480" y="418">beanstalkd</text>
+    <rect x="574" y="384" width="334" height="52" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
+    <text class="pd" x="586" y="401" style="font-size:9.4px;font-weight:700;fill:#334155">All 20 driver names shipped; one DriverInterface</text>
+    <text class="px" x="586" y="415" style="fill:#B45309">Pulsar / RocketMQ experimental (no real broker)</text>
+    <text class="ns" x="586" y="429">DriverFactory by name · connections cached · no API change</text>
+  </g>
+  <line x1="480" y1="440" x2="480" y2="448" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+
+  <!-- Broker / cloud layer -->
+  <rect x="40" y="448" width="880" height="64" rx="12" fill="#F1F5F9" stroke="#E2E8F0"/>
+  <rect x="56" y="460" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="lane" x="68" y="472">Broker / cloud</text>
+  <text class="lane-en" x="176" y="472">Storage, routing, ack and redelivery</text>
+  <g>
+    <rect x="60" y="478" width="410" height="30" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text class="ns ctr" x="265" y="489">RabbitMQ · Kafka / Redpanda / AutoMQ / Confluent</text>
+    <text class="ns ctr" x="265" y="502">Pulsar · RocketMQ · NATS · Redis · ActiveMQ · Artemis · NSQ · Beanstalkd · ZeroMQ</text>
+    <rect x="490" y="478" width="410" height="30" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text class="ns ctr" x="695" y="489">AWS SQS / SNS / Kinesis · GCP Pub/Sub</text>
+    <text class="ns ctr" x="695" y="502">Azure Service Bus · Azure Event Hubs (Kafka endpoint)</text>
+  </g>
+  <text class="note" x="48" y="530">All 20 driver names shipped · Pulsar / RocketMQ experimental (no real broker) · PHP 8.0–8.5 CI · Composer 2.2+ auto-config</text>
 </svg>

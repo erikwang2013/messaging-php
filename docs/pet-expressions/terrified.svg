@@ -1,9 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 200 200" role="img" aria-labelledby="petTitle petDesc">
   <title id="petTitle">messaging-php 项目宠物 · 机器人信使小递 · 惊恐</title>
   <desc id="petDesc">小递瞪大青色眼睛，嘴巴缩成小圆，双臂惊慌地举起，纸飞机天线向后倒，屏幕两边闪出惊叹号。</desc>
+  <style>
+    /* Animated only when the user allows motion; otherwise the static pose. */
+    @media (prefers-reduced-motion: no-preference){
+      .pet{animation:pet-shiver 2.6s ease-in-out infinite}
+      @keyframes pet-shiver{0%,32%,100%{transform:translateX(0)}8%{transform:translateX(-1.2px)}16%{transform:translateX(1.2px)}24%{transform:translateX(-.8px)}}
+    }
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
   <g stroke-linecap="round" stroke-linejoin="round">
     <ellipse cx="100" cy="186" rx="43" ry="6" fill="#1E2233" opacity=".08"/>
     <ellipse cx="100" cy="187" rx="26" ry="3.2" fill="#1E2233" opacity=".06"/>
+    <g class="pet">
     <g>
       <path d="M85 158 L85 172" fill="none" stroke="#1E2233" stroke-width="13"/>
       <path d="M85 158 L85 172" fill="none" stroke="#9FE0EF" stroke-width="8"/>
@@ -71,6 +80,7 @@
     <g stroke="#A5F3FC" stroke-width="3" fill="none">
       <path d="M42 31 V40"/><path d="M42 46 v1"/>
       <path d="M158 31 V40"/><path d="M158 46 v1"/>
+    </g>
     </g>
   </g>
 </svg>

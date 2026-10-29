@@ -1,9 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 200 200" role="img" aria-labelledby="petTitle petDesc">
   <title id="petTitle">messaging-php 项目宠物 · 机器人信使小递 · 讨好</title>
   <desc id="petDesc">小递睁大水汪汪的青色眼睛，眉毛微微上扬，双手在胸前合拢，像是在认真请求。</desc>
+  <style>
+    /* Animated only when the user allows motion; otherwise the static pose. */
+    @media (prefers-reduced-motion: no-preference){
+      .pet{animation:pet-nod 3.8s ease-in-out infinite}
+      @keyframes pet-nod{0%,48%,100%{transform:translateY(0)}12%{transform:translateY(2.2px)}24%{transform:translateY(0)}36%{transform:translateY(1.6px)}}
+    }
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
   <g stroke-linecap="round" stroke-linejoin="round">
     <ellipse cx="100" cy="186" rx="43" ry="6" fill="#1E2233" opacity=".08"/>
     <ellipse cx="100" cy="187" rx="26" ry="3.2" fill="#1E2233" opacity=".06"/>
+    <g class="pet">
     <g>
       <path d="M85 158 L85 172" fill="none" stroke="#1E2233" stroke-width="13"/>
       <path d="M85 158 L85 172" fill="none" stroke="#9FE0EF" stroke-width="8"/>
@@ -69,5 +78,6 @@
       </g>
     </g>
 
+    </g>
   </g>
 </svg>

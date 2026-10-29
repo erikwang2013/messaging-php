@@ -13,6 +13,8 @@ composer require erikwang2013/messaging-php
 
 本包是 Composer Plugin。安装/更新时若检测到 `yiisoft/yii2`，会自动把默认配置复制到 `config/messaging.php`（已存在则不覆盖）。Yii2 没有 Composer 自动发现，仍需要手动注册组件。
 
+插件通过 `extra.plugin-optional` 声明为可选，但该声明只有 Composer 2.5.3+ 支持：在 2.5.3+ 上未配置 `allow-plugins` 时会跳过插件并继续安装，Composer 2.2–2.5.2 则会安装失败；请保留上面的 `allow-plugins` 命令。插件被跳过时，按本文的手动方式注册组件并合并包内配置即可。
+
 ## 注册组件
 
 ```php

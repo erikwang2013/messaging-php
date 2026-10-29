@@ -1,9 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 200 200" role="img" aria-labelledby="petTitle petDesc">
   <title id="petTitle">messaging-php 项目宠物 · 机器人信使小递 · 吐舌</title>
   <desc id="petDesc">小递眨起一只青色眼睛，吐出粉色小舌头，右手举起来挥了挥，屏幕表情俏皮又得意。</desc>
+  <style>
+    /* Animated only when the user allows motion; otherwise the static pose. */
+    @media (prefers-reduced-motion: no-preference){
+      .pet{animation:pet-float 4s ease-in-out infinite}
+      .tongue{transform-box:view-box;transform-origin:100px 86px;animation:tongue-wiggle 2.6s ease-in-out infinite}
+      @keyframes pet-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+      @keyframes tongue-wiggle{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
+    }
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
   <g stroke-linecap="round" stroke-linejoin="round">
     <ellipse cx="100" cy="186" rx="43" ry="6" fill="#1E2233" opacity=".08"/>
     <ellipse cx="100" cy="187" rx="26" ry="3.2" fill="#1E2233" opacity=".06"/>
+    <g class="pet">
     <g>
       <path d="M85 158 L85 172" fill="none" stroke="#1E2233" stroke-width="13"/>
       <path d="M85 158 L85 172" fill="none" stroke="#9FE0EF" stroke-width="8"/>
@@ -48,7 +59,7 @@
       <rect x="77.5" y="62" width="13" height="16" rx="4" fill="#67E8F9"/><rect x="80.5" y="65" width="3" height="3" rx=".8" fill="#FFFFFF" opacity=".9"/>
       <path d="M108 71 Q116 64 124 71" fill="none" stroke="#67E8F9" stroke-width="4.2"/>
       <path d="M92 82 Q100 91 108 82 Z" fill="#67E8F9" stroke="#A5F3FC" stroke-width="1.3"/>
-      <path d="M96 86 Q100 98 104 86 Z" fill="#FB7185" stroke="#1E2233" stroke-width="1.2"/>
+      <path class="tongue" d="M96 86 Q100 98 104 86 Z" fill="#FB7185" stroke="#1E2233" stroke-width="1.2"/>
     </g>
       <path d="M73 127 C65 132 61 141 60 149" fill="none" stroke="#1E2233" stroke-width="12"/>
       <path d="M73 127 C65 132 61 141 60 149" fill="none" stroke="#9FE0EF" stroke-width="7"/>
@@ -69,6 +80,7 @@
       <path d="M48 44 L50 49 L55 51 L50 53 L48 58 L46 53 L41 51 L46 49 Z" fill="#A5F3FC"/>
       <path d="M152 36 L153.6 40.4 L158 42 L153.6 43.6 L152 48 L150.4 43.6 L146 42 L150.4 40.4 Z" fill="#FBBF24"/>
       <circle cx="44" cy="30" r="1.8" fill="#FB7185"/>
+    </g>
     </g>
   </g>
 </svg>

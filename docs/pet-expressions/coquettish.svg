@@ -1,9 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 200 200" role="img" aria-labelledby="petTitle petDesc">
   <title id="petTitle">messaging-php 项目宠物 · 机器人信使小递 · 撒娇</title>
   <desc id="petDesc">小递左眼亮着青色圆光，右眼眨成弧线，右手托在脸边，屏幕上泛起粉色红晕，头顶飘着两颗爱心。</desc>
+  <style>
+    /* Animated only when the user allows motion; otherwise the static pose. */
+    @media (prefers-reduced-motion: no-preference){
+      .pet{transform-box:view-box;transform-origin:100px 180px;animation:pet-sway 4.8s ease-in-out infinite}
+      @keyframes pet-sway{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
+    }
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
   <g stroke-linecap="round" stroke-linejoin="round">
     <ellipse cx="100" cy="186" rx="43" ry="6" fill="#1E2233" opacity=".08"/>
     <ellipse cx="100" cy="187" rx="26" ry="3.2" fill="#1E2233" opacity=".06"/>
+    <g class="pet">
     <g>
       <path d="M85 158 L85 172" fill="none" stroke="#1E2233" stroke-width="13"/>
       <path d="M85 158 L85 172" fill="none" stroke="#9FE0EF" stroke-width="8"/>
@@ -70,6 +79,7 @@
     <g>
       <path d="M151 34 c-2.6 -3.6 -8 -1.2 -8 3 c0 4 8 9 8 9 c0 0 8 -5 8 -9 c0 -4.2 -5.4 -6.6 -8 -3 Z" fill="#FB7185" opacity=".95"/>
       <path d="M164 51 c-1.8 -2.5 -5.5 -.8 -5.5 2 c0 2.8 5.5 6.2 5.5 6.2 c0 0 5.5 -3.4 5.5 -6.2 c0 -2.8 -3.7 -4.5 -5.5 -2 Z" fill="#FB7185" opacity=".8"/>
+    </g>
     </g>
   </g>
 </svg>

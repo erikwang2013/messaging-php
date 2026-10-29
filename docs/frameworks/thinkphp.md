@@ -11,6 +11,8 @@ composer require erikwang2013/messaging-php
 
 本包是 Composer Plugin。安装/更新时若检测到 `topthink/framework`，会自动把默认配置复制到 `config/messaging.php`（已存在则不覆盖）；ThinkPHP 的 `extra.think` 自动发现仍会注册服务。
 
+插件通过 `extra.plugin-optional` 声明为可选，但该声明只有 Composer 2.5.3+ 支持：在 2.5.3+ 上未配置 `allow-plugins` 时会跳过插件并继续安装，Composer 2.2–2.5.2 则会安装失败；请保留上面的 `allow-plugins` 命令。插件被跳过时，用 `php think vendor:publish` 手动发布配置即可。
+
 ## 注册服务
 
 ### 自动发现（推荐）
@@ -212,7 +214,7 @@ final class ConsumeOrders extends Command
 
 ## 支持的驱动
 
-当前内置六种驱动：`activemq`、`artemis`、`beanstalkd`、`nats`、`nsq`、`redis`。支持矩阵、各驱动配置键与能力差异见 [docs/drivers.md](../drivers.md)；是否支持 ack / requeue / delay / consumer group 以 `$connection->capabilities()` 为准，不支持时驱动会抛 `UnsupportedFeatureException`，不会静默降级。
+内置 20 个驱动名（13 套协议栈）。完整清单、各驱动配置键与能力差异见 [docs/drivers.md](../drivers.md)；是否支持 ack / requeue / delay / consumer group 以 `$connection->capabilities()` 为准，不支持时驱动会抛 `UnsupportedFeatureException`，不会静默降级。
 
 ## 注意事项
 
