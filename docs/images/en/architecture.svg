@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="arch-title arch-desc">
+  <title id="arch-title">messaging-php Architecture</title>
+  <desc id="arch-desc">Four layers from top to bottom: framework adapters, core, driver adapters, and brokers or cloud services. Twenty product names map to 13 protocol stacks, with the 11 shipped P1 and P2 drivers highlighted.</desc>
+  <style>
+    text{font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#14213D}
+    .title{font-size:22px;font-weight:700}
+    .sub{font-size:11.5px;fill:#5B6478}
+    .lane{font-size:12.5px;font-weight:700}
+    .lane-en{font-size:9.5px;fill:#8A94A6}
+    .n{font-size:11.5px;font-weight:600}
+    .ns{font-size:9px;fill:#5B6478}
+    .p1n{font-size:11px;font-weight:700;fill:#92400E}
+    .p1s{font-size:9px;fill:#B45309}
+    .plann{font-size:10px;font-weight:600;fill:#64748B}
+    .plans{font-size:8.4px;fill:#94A3B8}
+    .note{font-size:10px;fill:#5B6478}
+    .ctr{text-anchor:middle}
+  </style>
+  <defs>
+    <marker id="arw-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#2563EB"/>
+    </marker>
+    <marker id="arw-grey" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="540" fill="#FFFFFF"/>
+  <text class="title" x="48" y="42">messaging-php Architecture</text>
+  <text class="sub" x="912" y="42" text-anchor="end">Pure PHP · 20 systems · Unified API</text>
+  <text class="sub" x="48" y="64">Apps depend on Manager / Connection; drivers group by protocol with explicit capabilities</text>
+
+  <!-- 框架适配层 -->
+  <rect x="40" y="80" width="880" height="68" rx="12" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <rect x="56" y="92" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="lane" x="68" y="104">Framework layer</text>
+  <text class="lane-en" x="200" y="104">Optional integration</text>
+  <g>
+    <rect x="61" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text class="n ctr" x="125" y="130">Laravel</text>
+    <rect x="203" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text class="n ctr" x="267" y="130">ThinkPHP</text>
+    <rect x="345" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text class="n ctr" x="409" y="130">webman</text>
+    <rect x="487" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text class="n ctr" x="551" y="130">Hyperf</text>
+    <rect x="629" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text class="n ctr" x="693" y="130">Yii2</text>
+    <rect x="771" y="112" width="128" height="28" rx="7" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text class="n ctr" x="835" y="130">Yii3</text>
+  </g>
+  <line x1="480" y1="148" x2="480" y2="166" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+
+  <!-- 核心层 -->
+  <rect x="40" y="168" width="880" height="66" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+  <rect x="56" y="180" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="lane" x="68" y="192">Core layer</text>
+  <text class="lane-en" x="160" y="192">Protocol agnostic</text>
+  <g>
+    <rect x="76" y="199" width="190" height="27" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="n ctr" x="171" y="216">Config validation</text>
+    <rect x="282" y="199" width="190" height="27" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="n ctr" x="377" y="216">Manager / connections</text>
+    <rect x="488" y="199" width="190" height="27" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="n ctr" x="583" y="216">Connection facade</text>
+    <rect x="694" y="199" width="190" height="27" rx="7" fill="#FFFFFF" stroke="#93C5FD" stroke-width="1.2"/>
+    <text class="n ctr" x="789" y="216">DriverInterface contract</text>
+  </g>
+  <line x1="480" y1="234" x2="480" y2="250" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+
+  <!-- 驱动适配层 -->
+  <rect x="40" y="252" width="880" height="172" rx="12" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <rect x="56" y="264" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="lane" x="68" y="276">Driver layer</text>
+  <text class="lane-en" x="146" y="276">Driver Adapters · 20 driver names / 13 protocol stacks</text>
+  <g>
+    <rect x="57" y="284" width="158" height="48" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="p1n ctr" x="136" y="303">STOMP 1.2</text>
+    <text class="p1s ctr" x="136" y="318">P1 · ActiveMQ / Artemis</text>
+    <rect x="229" y="284" width="158" height="48" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="p1n ctr" x="308" y="303">RESP</text>
+    <text class="p1s ctr" x="308" y="318">P1 · Redis Streams</text>
+    <rect x="401" y="284" width="158" height="48" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="p1n ctr" x="480" y="303">NATS text protocol</text>
+    <text class="p1s ctr" x="480" y="318">P1 · NATS Core</text>
+    <rect x="573" y="284" width="158" height="48" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="p1n ctr" x="652" y="303">NSQ TCP</text>
+    <text class="p1s ctr" x="652" y="318">P1 · nsq</text>
+    <rect x="745" y="284" width="158" height="48" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="p1n ctr" x="824" y="303">Beanstalkd text</text>
+    <text class="p1s ctr" x="824" y="318">P1 · beanstalkd</text>
+  </g>
+  <g>
+    <rect x="53" y="338" width="98" height="46" rx="7" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
+    <text class="plann ctr" x="102" y="355">AMQP 0-9-1</text>
+    <text class="plans ctr" x="102" y="369">RabbitMQ</text>
+    <rect x="161" y="338" width="98" height="46" rx="7" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
+    <text class="plann ctr" x="210" y="355">Kafka</text>
+    <text class="plans ctr" x="210" y="369">5 Kafka products</text>
+    <rect x="269" y="338" width="98" height="46" rx="7" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
+    <text class="plann ctr" x="318" y="355">Pulsar</text>
+    <text class="plans ctr" x="318" y="369">Binary protocol</text>
+    <rect x="377" y="338" width="98" height="46" rx="7" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
+    <text class="plann ctr" x="426" y="355">RocketMQ</text>
+    <text class="plans ctr" x="426" y="369">Remoting</text>
+    <rect x="485" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="p1n ctr" x="534" y="355">AWS</text>
+    <text class="p1s ctr" x="534" y="369">P2 · sqs/sns/kinesis</text>
+    <rect x="593" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="p1n ctr" x="642" y="355">GCP</text>
+    <text class="p1s ctr" x="642" y="369">P2 · gcp-pubsub</text>
+    <rect x="701" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="p1n ctr" x="750" y="355">Azure</text>
+    <text class="p1s ctr" x="750" y="369">P2 · azure-service-bus</text>
+    <rect x="809" y="338" width="98" height="46" rx="7" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
+    <text class="plann ctr" x="858" y="355">ZMTP 3.1</text>
+    <text class="plans ctr" x="858" y="369">ZeroMQ</text>
+  </g>
+  <rect x="57" y="391" width="10" height="10" rx="2" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+  <text class="note" x="73" y="400">P1/P2 shipped: 11 drivers, 8 protocols</text>
+  <rect x="300" y="391" width="10" height="10" rx="2" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+  <text class="note" x="316" y="400">Planned, delivered in phases</text>
+  <text class="note" x="903" y="400" text-anchor="end">DriverFactory by name · lazy cached connections</text>
+  <line x1="480" y1="424" x2="480" y2="442" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
+
+  <!-- Broker / 云服务层 -->
+  <rect x="40" y="444" width="880" height="74" rx="12" fill="#F1F5F9" stroke="#E2E8F0"/>
+  <rect x="56" y="456" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="lane" x="68" y="468">Broker / cloud</text>
+  <text class="lane-en" x="190" y="468">Storage, routing, ack and redelivery</text>
+  <g>
+    <rect x="60" y="474" width="410" height="36" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text class="ns ctr" x="265" y="488">RabbitMQ · Kafka · Pulsar · RocketMQ · NATS</text>
+    <text class="ns ctr" x="265" y="502">ActiveMQ / Artemis · Redis · NSQ · Beanstalkd · ZeroMQ</text>
+    <rect x="490" y="474" width="410" height="36" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text class="ns ctr" x="695" y="488">AWS SQS / SNS / Kinesis · GCP Pub/Sub</text>
+    <text class="ns ctr" x="695" y="502">Azure Service Bus / Event Hubs (Kafka endpoint)</text>
+  </g>
+  <text class="note" x="48" y="534">Highlighted: P1 and P2 shipped; other drivers reuse the same DriverInterface. See docs/drivers.md</text>
+</svg>

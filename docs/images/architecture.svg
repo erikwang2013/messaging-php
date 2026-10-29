@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="arch-title arch-desc">
   <title id="arch-title">messaging-php 架构设计</title>
-  <desc id="arch-desc">自上而下四层：框架适配层、核心层、驱动适配层、Broker 与云服务层。20 个产品名由 13 套协议栈承载，P1 已实现的 6 个驱动名高亮显示。</desc>
+  <desc id="arch-desc">自上而下四层：框架适配层、核心层、驱动适配层、Broker 与云服务层。20 个产品名由 13 套协议栈承载，P1 与 P2 已实现的 11 个驱动名高亮显示。</desc>
   <style>
     text{font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#14213D}
     .title{font-size:22px;font-weight:700}
@@ -104,21 +104,21 @@
     <rect x="377" y="338" width="98" height="46" rx="7" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
     <text class="plann ctr" x="426" y="355">RocketMQ</text>
     <text class="plans ctr" x="426" y="369">Remoting</text>
-    <rect x="485" y="338" width="98" height="46" rx="7" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
-    <text class="plann ctr" x="534" y="355">AWS</text>
-    <text class="plans ctr" x="534" y="369">SQS · SNS · Kinesis</text>
-    <rect x="593" y="338" width="98" height="46" rx="7" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
-    <text class="plann ctr" x="642" y="355">GCP</text>
-    <text class="plans ctr" x="642" y="369">Pub/Sub REST</text>
-    <rect x="701" y="338" width="98" height="46" rx="7" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
-    <text class="plann ctr" x="750" y="355">Azure</text>
-    <text class="plans ctr" x="750" y="369">Service Bus · SAS</text>
+    <rect x="485" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="p1n ctr" x="534" y="355">AWS</text>
+    <text class="p1s ctr" x="534" y="369">P2 · sqs/sns/kinesis</text>
+    <rect x="593" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="p1n ctr" x="642" y="355">GCP</text>
+    <text class="p1s ctr" x="642" y="369">P2 · gcp-pubsub</text>
+    <rect x="701" y="338" width="98" height="46" rx="7" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text class="p1n ctr" x="750" y="355">Azure</text>
+    <text class="p1s ctr" x="750" y="369">P2 · azure-service-bus</text>
     <rect x="809" y="338" width="98" height="46" rx="7" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
     <text class="plann ctr" x="858" y="355">ZMTP 3.1</text>
     <text class="plans ctr" x="858" y="369">ZeroMQ</text>
   </g>
   <rect x="57" y="391" width="10" height="10" rx="2" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
-  <text class="note" x="73" y="400">P1 已实现（6 个驱动名 / 5 类协议）</text>
+  <text class="note" x="73" y="400">P1 + P2 已实现（11 个驱动名 / 8 类协议）</text>
   <rect x="300" y="391" width="10" height="10" rx="2" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
   <text class="note" x="316" y="400">规划中，按阶段实现</text>
   <text class="note" x="903" y="400" text-anchor="end">DriverFactory 按驱动名创建 · 连接懒加载缓存</text>
@@ -137,5 +137,5 @@
     <text class="ns ctr" x="695" y="488">AWS SQS / SNS / Kinesis · GCP Pub/Sub</text>
     <text class="ns ctr" x="695" y="502">Azure Service Bus / Event Hubs（Kafka 端点）</text>
   </g>
-  <text class="note" x="48" y="534">高亮为 P1 已实现；其余驱动复用同一 DriverInterface，完成情况见 docs/drivers.md</text>
+  <text class="note" x="48" y="534">高亮为 P1 与 P2 已实现；其余驱动复用同一 DriverInterface，完成情况见 docs/drivers.md</text>
 </svg>
