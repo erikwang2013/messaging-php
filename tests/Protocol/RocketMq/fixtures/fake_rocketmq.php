@@ -62,9 +62,6 @@ function reply(int $opaque, int $code, array $extFields = [], string $body = '',
     return pack('NN', 4 + strlen($json) + strlen($body), strlen($json)) . $json . $body;
 }
 
-/**
- * @return array<string, mixed>
- */
 function routeBody(int $brokerPort): string
 {
     return (string) json_encode([
