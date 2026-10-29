@@ -58,7 +58,7 @@ TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依�
 
 ## 安装
 
-要求 **PHP >= 8.0**，标准扩展 `openssl`（TLS）与 `zlib`（gzip）即可。PHP 8.0 运行时兼容：CI 在 8.0 上执行语法检查与运行时冒烟测试；完整单元测试在 PHP 8.1+ 上运行（PHPUnit 10 要求 PHP 8.1+）。
+要求 **PHP >= 8.0**，标准扩展 `openssl`（TLS）与 `zlib`（gzip）即可。CI 在 PHP 8.0 上通过 PHPUnit 9.6 运行完整单元/协议测试，PHP 8.1–8.5 使用 PHPUnit 10。
 
 ```bash
 composer config allow-plugins.erikwang2013/messaging-php true
@@ -311,7 +311,7 @@ docker compose --profile redis up -d
 composer test-integration -- --filter RedisStreams
 ```
 
-可用 profile：`redis`、`beanstalkd`、`nsq`、`activemq`、`artemis`、`nats`。连接不上 broker 时相关集成测试会自动 skip，不会阻塞本地开发。CI 在 PHP 8.0 上做语法与运行时冒烟检查，在 PHP 8.1–8.5 上跑单元与协议测试。
+可用 profile：`redis`、`beanstalkd`、`nsq`、`activemq`、`artemis`、`nats`。连接不上 broker 时相关集成测试会自动 skip，不会阻塞本地开发。CI 在 PHP 8.0（PHPUnit 9.6）与 PHP 8.1–8.5（PHPUnit 10）上运行单元与协议测试。
 
 ## 许可证
 

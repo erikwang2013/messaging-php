@@ -58,7 +58,7 @@ Twelve Xiaodi expressions (source files in [docs/pet-expressions](docs/pet-expre
 
 ## Installation
 
-Requires **PHP >= 8.0** plus the standard `openssl` (TLS) and `zlib` (gzip) extensions. PHP 8.0 is runtime compatible: CI runs syntax checks and a runtime smoke test on 8.0, while the full unit suite runs on PHP 8.1+ (PHPUnit 10 requires PHP 8.1+).
+Requires **PHP >= 8.0** plus the standard `openssl` (TLS) and `zlib` (gzip) extensions. CI runs the full unit/protocol suite on PHP 8.0 through PHPUnit 9.6 and on PHP 8.1–8.5 through PHPUnit 10.
 
 ```bash
 composer config allow-plugins.erikwang2013/messaging-php true
@@ -311,7 +311,7 @@ docker compose --profile redis up -d
 composer test-integration -- --filter RedisStreams
 ```
 
-Available profiles: `redis`, `beanstalkd`, `nsq`, `activemq`, `artemis`, `nats`. Integration tests skip automatically when a broker is unreachable, so local development is never blocked. CI runs syntax and runtime smoke checks on PHP 8.0, and unit and protocol tests on PHP 8.1–8.5.
+Available profiles: `redis`, `beanstalkd`, `nsq`, `activemq`, `artemis`, `nats`. Integration tests skip automatically when a broker is unreachable, so local development is never blocked. CI runs unit and protocol tests on PHP 8.0 (PHPUnit 9.6) and PHP 8.1–8.5 (PHPUnit 10).
 
 ## License
 
