@@ -282,3 +282,10 @@ php examples/redis-streams.php       # 每个驱动的示例脚本
 ```
 
 验收：20 个驱动名全部可实例化；支持的驱动在真实容器上完成 publish→receive→ack/reject 往返；docs/drivers.md 的能力表与实际行为逐项一致；`composer require` 不引入任何 broker SDK 或非标准扩展。
+
+## 追加需求（2026-10-29）
+
+- PHP 兼容范围扩展为 8.0–8.5：移除 `readonly`、`never` 等 8.1+ 语法；CI 增加 PHP 8.0 语法检查与运行时冒烟任务。
+- 新增 Laravel、ThinkPHP、webman、Hyperf、Yii2、Yii3 适配器，按各框架惯例提供配置与注册方式。
+- README 增加项目简介、安装说明、目录结构，以及架构设计、功能设计、请求周期、生命周期四张 SVG 图；README 不使用 HTML 标签。
+- 版本顺序调整：v1.2.0 = PHP 8.0 兼容 + 框架适配 + 文档；v1.3.0 = P2 云服务；其后 P3–P6 依次递增。

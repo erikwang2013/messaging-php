@@ -37,6 +37,14 @@
         "phpstan/phpstan": "^1.12 || ^2.1",
         "phpunit/phpunit": "^9.6 || ^10.5"
     },
+    "suggest": {
+        "hyperf/framework": "Required for the Hyperf ConfigProvider.",
+        "laravel/framework": "Required for the Laravel service provider.",
+        "topthink/framework": "Required for the ThinkPHP service.",
+        "workerman/webman-framework": "Required for the webman bootstrap.",
+        "yiisoft/yii2": "Required for the Yii2 component.",
+        "yiisoft/yii": "Required for the Yii3 config plugin."
+    },
     "autoload": {
         "psr-4": {
             "Erikwang2013\\Messaging\\": "src/"
@@ -45,6 +53,34 @@
     "autoload-dev": {
         "psr-4": {
             "Erikwang2013\\Messaging\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Erikwang2013\\Messaging\\Integration\\Laravel\\MessagingServiceProvider"
+            ],
+            "aliases": {
+                "Messaging": "Erikwang2013\\Messaging\\Integration\\Laravel\\Facades\\Messaging"
+            }
+        },
+        "think": {
+            "services": [
+                "Erikwang2013\\Messaging\\Integration\\ThinkPHP\\MessagingService"
+            ],
+            "config": {
+                "messaging": "config/messaging.php"
+            }
+        },
+        "hyperf": {
+            "config": "Erikwang2013\\Messaging\\Integration\\Hyperf\\ConfigProvider"
+        },
+        "config-plugin-options": {
+            "source-directory": "config"
+        },
+        "config-plugin": {
+            "params": "params.php",
+            "di": "di.php"
         }
     },
     "scripts": {

@@ -1,22 +1,58 @@
 # messaging-php
 
-纯 PHP 实现的统一消息队列 / 事件流客户端，一套 `publish / receive / ack` API 覆盖 20 种系统：
+纯 PHP 实现的统一消息队列 / 事件流客户端：一套 `publish / receive / ack` API 覆盖 20 种系统，纯 PHP、无 broker SDK、无扩展依赖。
 
 > RabbitMQ、Kafka、RocketMQ、Pulsar、ActiveMQ、ActiveMQ Artemis、NATS、Redpanda、AutoMQ、Redis Streams、AWS SQS、AWS SNS、AWS Kinesis、Google Cloud Pub/Sub、Azure Service Bus、Azure Event Hubs、ZeroMQ、NSQ、Beanstalkd、Confluent Platform
 
-不依赖 broker SDK，不需要 rdkafka / ext-zmq / ext-redis 等扩展；TCP 协议用 PHP 标准库实现，HTTP 云服务用 Guzzle 直连。
+TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依赖 rdkafka / ext-zmq / ext-redis 等 broker SDK 或扩展，`composer require` 后即可使用。
 
-> 当前进度：**Phase 1**。已支持 Beanstalkd、Redis Streams、NSQ、ActiveMQ、ActiveMQ Artemis、NATS Core；其余驱动按 [实施规划](docs/superpowers/plans/2026-10-29-messaging-php.md) 分阶段实现，完成情况见 [驱动支持矩阵](docs/drivers.md)。
+当前进度：**P1** 已实现 6 个驱动名——ActiveMQ、ActiveMQ Artemis、Redis Streams、NATS Core、NSQ、Beanstalkd。其余驱动按阶段推进，完成情况与能力差异以 [驱动支持矩阵](docs/drivers.md) 为准。
+
+## 项目说明
+
+20 个产品名收敛为 **13 套协议栈**：Kafka、Redpanda、AutoMQ、Confluent、Azure Event Hubs 共用 Kafka 协议；ActiveMQ 与 Artemis 共用 STOMP 驱动，只通过预设区分端口、requeue 与延迟语义；其余系统各自对应一套协议实现。切换 broker 通常只需改 `driver` 与连接配置，业务代码不变。
+
+分层保持小而清晰：`Manager → Connection → DriverInterface`。`Manager` 负责配置与连接缓存，`Connection` 暴露 `publish / publishBatch / receive / consume / capabilities / close`，协议帧、握手、认证与错误映射全部收在 `src/Driver` 下按协议划分的目录内。驱动工厂在创建连接时校验必填配置；连接与握手由各驱动按需建立（Redis、NATS 在工厂阶段即连接，其余驱动首次操作时惰性连接）。配置错误在 `connection()` 阶段就失败，而不是等到第一次发布。
+
+消费模型统一为**拉取式** `receive()`：拉取型协议直接读取，push 型协议（如 STOMP、NATS）在驱动内部缓冲后由 `receive()` 取出；`consume()` 只是 `while` 循环糖。超时返回 `null`，`timeoutMs = 0` 表示阻塞等待。
+
+**能力显式声明，不做静默降级。** 每个驱动通过 `Capabilities` 声明 ack、requeue、delay、consumer group、批量发布、顺序、headers、订阅前置等能力；调用不支持的能力直接抛 `UnsupportedFeatureException`。同时，本库不承诺 exactly-once，投递语义由 broker 与驱动共同决定：
+
+- **NATS Core**：至多一次，无 ack / requeue；消息只投递给发布时已存在的订阅，必须先订阅再发布。
+- **Redis Streams**：`XACK` 确认、消费者组消费；未确认消息留在 PEL，需要 `XAUTOCLAIM` / `XCLAIM` 恢复，不支持同步 re-enqueue。
+- **ActiveMQ Classic**：`reject(true)` 通过“重新 SEND + ACK 原投递”实现，两步之间断线会重复投递。
+- **Artemis**：STOMP NACK 等同 ACK 丢弃（ARTEMIS-1983），不支持 requeue；只能通过断开消费者触发重投。
+- **NSQ**：channel 必须先存在；驱动在首次 `receive()` 时惰性订阅，先发布后订阅的消息会丢失。
+- **Beanstalkd**：内存队列，不支持 headers / key / 批量发布；超过 TTR 未确认会重投。
+
+完整的逐驱动限制与恢复策略见 [docs/drivers.md](docs/drivers.md)。
+
+## 特性
+
+- **一套 API 覆盖 20 系统**：`publish`、`publishBatch`、`receive`、`consume`、`ack`、`reject`。
+- **纯 PHP 传输**：TCP 用 `stream_socket_client`，TLS 与 gzip 基于标准 openssl / zlib（TLS 随驱动逐步开放）；自研 RESP、STOMP 1.2、NATS、NSQ、Beanstalkd 编解码，云服务驱动（P2 规划）将通过 Guzzle 加 SigV4 / JWT / SAS 签名。
+- **能力模型**：`capabilities()` 运行时查询；不支持的能力抛异常，绝不静默忽略。
+- **统一消息对象**：`Message` 支持 JSON、headers、key、delayMs；`ReceivedMessage` 提供 id、key、attempts、raw 与 ack/reject。
+- **多连接管理**：`default` + `connections` 数组配置（每个连接必填 `driver`），连接懒加载并按名缓存；`Manager::extend()` 可注册自定义驱动工厂。
+- **框架适配**：Laravel、ThinkPHP、webman、Hyperf、Yii2、Yii3，均为可选集成，不引入框架依赖。
+- **可测试**：单元测试、假 broker 协议测试、共享契约测试、Docker Compose 集成测试四层。
+- **统一异常**：连接、超时、协议、认证、HTTP 请求、能力缺失各有明确异常类型，全部继承 `MessagingException`。
 
 ## 安装
+
+要求 **PHP >= 8.0**，标准扩展 `openssl`（TLS）与 `zlib`（gzip）即可。
 
 ```bash
 composer require erikwang2013/messaging-php
 ```
 
-要求 PHP >= 8.1，标准扩展 openssl、zlib 即可。
+- 不需要安装 rdkafka、ext-zmq、ext-redis，也不需要任何 broker 官方 SDK。
+- 运行时依赖只有 Guzzle 与 PSR-3 日志接口，均由 Composer 自动安装。
+- 框架适配器内置于同一包，按需使用；不使用任何框架时可直接裸用 PHP。
 
 ## 快速开始
+
+### Redis Streams：发布、消费、确认
 
 ```php
 <?php
@@ -33,59 +69,197 @@ $mq = new Manager([
             'host' => '127.0.0.1',
             'port' => 6379,
             'group' => 'orders',
+            'consumer' => 'worker-1',
         ],
     ],
 ]);
 
 $connection = $mq->connection();
 
-$connection->publish('orders', Message::json(['id' => 1], ['trace' => 'abc']));
+$result = $connection->publish('orders', Message::json(['id' => 1], ['trace' => 'abc']));
+echo $result->id; // Redis Stream ID
 
 while ($message = $connection->receive('orders', new ReceiveOptions(timeoutMs: 5000))) {
     try {
-        // 处理消息
-        $message->ack();
+        // 业务处理
+        $message->ack(); // XACK
     } catch (Throwable $e) {
-        $message->reject(requeue: true);
+        // 不 ACK：消息留在 PEL，由 XAUTOCLAIM / XCLAIM 恢复
+        error_log($e->getMessage());
     }
 }
 ```
 
-`receive()` 是统一的拉取式消费入口；push 型协议会在驱动内部缓冲。`consume()` 只是循环糖：
+目的地（`publish` / `receive` 的第一个参数）即 Redis Stream 的 key。首次接收会自动创建消费者组，并从 `0` 开始消费，因此会读到此前积压的消息。
+
+`consume()` 只是循环糖；处理成功后仍需自行 `ack()`：
 
 ```php
+use Erikwang2013\Messaging\Contract\ConsumeOptions;
+
 $connection->consume('orders', function ($message): void {
-    // 处理消息，处理成功后自行 ack()
+    // 业务处理
     $message->ack();
-}, new ConsumeOptions(timeoutMs: 5000));
+}, new ConsumeOptions(timeoutMs: 5000, maxMessages: 100));
 ```
 
-## 配置
+### NATS Core：先订阅，再发布
 
-采用工作区惯用的数组配置：`default` + `connections.<name>.driver`，其余键由各驱动解释。能力差异（ack / requeue / delay / consumer group / batch）通过 `$connection->capabilities()` 查询，驱动不支持时抛 `UnsupportedFeatureException`，不会静默忽略。
+Core NATS 只把消息投递给发布时已存在的订阅，跨连接消费时尤其要注意顺序：消费端先调用一次 `receive()` 建立订阅，生产端再发布；否则消息直接丢失（至多一次，无持久化）。
 
-## 驱动支持
+```php
+// 假设 connections 中已配置 nats 连接
+$nats = $mq->connection('nats');
 
-见 [docs/drivers.md](docs/drivers.md)。支持级别：
+$nats->receive('orders.created', new ReceiveOptions(timeoutMs: 1)); // 先建立订阅
+$nats->publish('orders.created', new Message('hello'));
 
-- **一等**：纯 PHP 实现，契约测试 + 真实 broker 集成测试
-- **实验**：协议实现范围有限，接口可能调整
-- **受限**：broker 语义本身缺失（如 ZeroMQ 无持久化/ack、SNS 只能发布）
+$message = $nats->receive('orders.created', new ReceiveOptions(timeoutMs: 1000));
+```
 
-## 开发
+NATS Core 的 `ack()` / `reject()` 均抛 `UnsupportedFeatureException`；需要持久化与确认语义时应使用 JetStream（当前未实现）。
+
+## 框架集成
+
+框架适配器随主包提供，不额外安装 Composer 包；只有使用对应框架时才需要该框架本身。配置内容（`default` + `connections`）与 `new Manager([...])` 一致，放置位置与注册方式随框架不同：
+
+```php
+// 放置路径随框架而定，见各框架文档
+return [
+    'default' => 'default',
+    'connections' => [
+        'default' => [
+            'driver' => 'redis',
+            'host' => '127.0.0.1',
+            'port' => 6379,
+            'group' => 'orders',
+        ],
+    ],
+];
+```
+
+| 框架 | 注册方式 | 使用方式 | 详细文档 |
+|---|---|---|---|
+| Laravel | `MessagingServiceProvider` + `Messaging` 门面 | 容器注入 `Manager`，或使用门面 | [docs/frameworks/laravel.md](docs/frameworks/laravel.md) |
+| ThinkPHP | `MessagingService` 服务类 | 容器注入 `Manager` 或 `app('messaging')` | [docs/frameworks/thinkphp.md](docs/frameworks/thinkphp.md) |
+| webman | 插件 bootstrap（每个 worker 启动时执行） | `Messaging::connection()` / `Messaging::instance()` | [docs/frameworks/webman.md](docs/frameworks/webman.md) |
+| Hyperf | `ConfigProvider` 自动发现 + `ManagerFactory` | 容器注入 `Manager`；`vendor:publish` 发布配置 | [docs/frameworks/hyperf.md](docs/frameworks/hyperf.md) |
+| Yii2 | `MessagingComponent` 应用组件 | `Yii::$app->messaging->connection()` | [docs/frameworks/yii2.md](docs/frameworks/yii2.md) |
+| Yii3 | `yiisoft/config`（`config/di.php` + `params.php`） | 容器注入 `Manager` | [docs/frameworks/yii3.md](docs/frameworks/yii3.md) |
+
+## 驱动支持矩阵
+
+20 个产品名由 13 套协议栈承载。完整矩阵、能力差异与阶段状态见 [docs/drivers.md](docs/drivers.md)。
+
+| 阶段 | 驱动名 | 覆盖系统 | 状态 |
+|---|---|---|---|
+| P1 | `beanstalkd` | Beanstalkd | 已实现 |
+| P1 | `redis` | Redis Streams | 已实现 |
+| P1 | `nsq` | NSQ | 已实现 |
+| P1 | `activemq`、`artemis` | ActiveMQ Classic、ActiveMQ Artemis | 已实现 |
+| P1 | `nats` | NATS Core | 已实现（JetStream 未实现） |
+| P2 | `sqs`、`sns`、`kinesis`、`gcp-pubsub`、`azure-service-bus` | AWS、GCP、Azure 云服务 | 规划中 |
+| P3 | `rabbitmq`、`zeromq` | RabbitMQ、ZeroMQ | 规划中 |
+| P4 | `kafka`、`redpanda`、`automq`、`confluent`、`eventhubs` | Kafka 系 5 个产品 | 规划中 |
+| P5 | `pulsar`、`rocketmq` | Apache Pulsar、Apache RocketMQ | 规划中 |
+
+P1 驱动能力速查（`capabilities()` 的实际声明）：
+
+| 驱动 | ack | requeue | delay | consumer group | 关键限制 |
+|---|---|---|---|---|---|
+| `activemq` | ✓ | ✓ | ✓ | ✗ | requeue 为重发 + ACK，可能重复 |
+| `artemis` | ✓ | ✗ | ✓ | ✗ | STOMP NACK 等同丢弃；需先订阅 |
+| `redis` | ✓ | ✗ | ✗ | ✓ | 未确认消息留在 PEL，需 XAUTOCLAIM 恢复 |
+| `nats` | ✗ | ✗ | ✗ | 配置 `queue_group` 时 ✓ | Core 为至多一次，先订阅再发布 |
+| `nsq` | ✓ | ✓ | ✗ | ✗ | channel 必须先存在；发布无 id |
+| `beanstalkd` | ✓ | ✓ | ✓ | ✗ | 不支持 headers / key / 批量 |
+
+逐驱动文档：[Beanstalkd](docs/drivers/beanstalkd.md) · [Redis Streams](docs/drivers/redis-streams.md) · [NSQ](docs/drivers/nsq.md) · [ActiveMQ](docs/drivers/activemq.md) · [Artemis](docs/drivers/artemis.md) · [NATS](docs/drivers/nats.md)
+
+> P1 驱动目前均为明文 TCP，TLS 配置随驱动逐步开放；P2 云服务驱动将使用 HTTPS。
+
+## 架构设计
+
+![messaging-php 架构设计：框架适配层、核心层、按协议分组的驱动适配层、Broker 与云服务层](docs/images/architecture.svg)
+
+自上而下四层：框架适配层只做容器绑定与配置发布；核心层 `Manager / Config / Connection` 与协议无关；驱动适配层按协议分组，20 个驱动名共享 13 套协议实现，Manager 按驱动名选择工厂、创建后的连接按名缓存；最下层是自建 broker 与云服务。图中高亮为 P1 已实现的驱动，其余按阶段推进。所有驱动实现同一个 `DriverInterface`，新增 broker 不需要改公开 API。
+
+## 功能设计
+
+![messaging-php 功能设计：统一 API、能力模型、驱动注册表、纯 PHP 传输、框架集成、测试体系](docs/images/features.svg)
+
+六个能力面围绕同一个契约展开：API 只暴露消息与连接概念，能力模型把 broker 差异显式化，驱动注册表负责按名装配，纯 PHP 传输层吸收协议细节，框架集成与测试体系保证可用性。
+
+## 请求周期
+
+![messaging-php 请求周期：发布路径、消费路径、ack/reject 与失败重投](docs/images/request-cycle.svg)
+
+发布路径：`Message` 经 `Connection::publish` 进入驱动，完成协议编码后写入 broker，返回 `PublishResult`。消费路径：`receive()` 从 broker 拉取并由驱动还原为 `ReceivedMessage`，业务处理成功后 `ack()`；失败时 `reject(requeue: true)` 重新入队，由下一次 `receive()` 重投；`reject(false)` 确认并丢弃。不支持 ack / requeue 的驱动会在能力检查阶段抛异常。
+
+## 生命周期
+
+![messaging-php 生命周期：配置校验、连接创建、能力检查、消费循环、错误映射与重连](docs/images/lifecycle.svg)
+
+连接从配置数组开始：`Config::fromArray()` 校验默认连接与必填 `driver`，`Manager::connection()` 懒加载并按名缓存，驱动工厂完成配置校验，并按驱动策略建立连接与握手。连接就绪后先看 `capabilities()`，再进入 publish / receive / consume 循环；`ack()` 或 `reject()` 提交结果，`close()` 释放连接。断开不会自动重连，捕获异常后需重新 `connection()`；重连会重新执行工厂创建与握手，业务侧应保持幂等。
+
+## 目录结构
+
+```
+messaging-php/
+├── src/
+│   ├── Manager.php                 # 多连接管理、驱动注册表
+│   ├── Connection.php              # publish / receive / consume / capabilities
+│   ├── Config/                     # Config · ConnectionConfig
+│   ├── Contract/                   # DriverInterface · Message · ReceivedMessage · Capabilities 等
+│   ├── Driver/
+│   │   ├── Beanstalkd/             # 文本协议
+│   │   ├── Nats/                   # NATS Core 文本协议
+│   │   ├── Nsq/                    # NSQ TCP 协议
+│   │   ├── Redis/                  # Redis Streams + RESP 编解码
+│   │   └── Stomp/                  # STOMP 1.2 + ActiveMQ / Artemis 预设
+│   ├── Exception/                  # MessagingException 与 6 个子类
+│   ├── Integration/                # 框架适配器
+│   │   ├── Laravel/                # ServiceProvider + Facade
+│   │   ├── ThinkPHP/               # Service
+│   │   ├── Webman/                 # 插件 bootstrap + 静态入口
+│   │   ├── Hyperf/                 # ConfigProvider + ManagerFactory
+│   │   └── Yii2/                   # MessagingComponent + 配置
+│   └── Support/                    # Socket 等底层支撑
+├── config/                         # Laravel / ThinkPHP 配置 · webman 插件 · Yii3 DI
+├── tests/
+│   ├── Unit/                       # 配置、编解码、驱动单元测试
+│   ├── Protocol/                   # stream_socket_server 假 broker 协议测试
+│   ├── Contract/                   # DriverContractTestCase 共享契约基类
+│   └── Integration/                # 真实 broker 容器集成测试
+├── docs/
+│   ├── drivers.md                  # 20 系统支持矩阵与能力差异
+│   ├── drivers/                    # 单驱动配置、限制与示例
+│   ├── frameworks/                 # 六套框架集成文档
+│   └── images/                     # 架构、功能、请求周期、生命周期 SVG
+├── examples/                       # 驱动示例（逐步补充）
+├── docker-compose.yml              # 按 profile 启停各 broker
+├── phpunit.xml
+├── composer.json
+└── README.md
+```
+
+## 测试与开发
 
 ```bash
 composer install
-composer test          # 单元 + 协议测试，无需外部服务
-composer phpstan
+composer test          # tests/Unit + tests/Protocol，无需外部服务
+composer phpstan       # 静态分析
+composer cs            # 代码风格检查
 ```
 
-集成测试按 broker 启动对应容器后运行：
+集成测试连接真实 broker，按 profile 启动容器后运行：
 
 ```bash
 docker compose --profile redis up -d
 composer test-integration -- --filter RedisStreams
 ```
+
+可用 profile：`redis`、`beanstalkd`、`nsq`、`activemq`、`artemis`、`nats`。连接不上 broker 时相关集成测试会自动 skip，不会阻塞本地开发。CI 在 PHP 8.0 上做语法与运行时冒烟检查，在 PHP 8.1–8.5 上跑单元与协议测试。
 
 ## 许可证
 

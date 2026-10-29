@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="600" viewBox="0 0 960 600" role="img" aria-labelledby="life-title life-desc">
+  <title id="life-title">messaging-php 生命周期</title>
+  <desc id="life-desc">连接生命周期：配置校验、Manager 懒加载、驱动查找、工厂创建与握手、能力检查、发布消费循环、ack 或 reject、关闭与重连；右侧为能力门禁、异常映射与重连语义。</desc>
+  <style>
+    text{font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#14213D}
+    .title{font-size:22px;font-weight:700}
+    .sub{font-size:11.5px;fill:#5B6478}
+    .section{font-size:12.5px;font-weight:700}
+    .section-en{font-size:9.5px;fill:#8A94A6}
+    .st{font-size:11.5px;font-weight:600}
+    .ss{font-size:9.3px;fill:#5B6478}
+    .num{font-size:10.5px;font-weight:700;fill:#2563EB}
+    .pn{font-size:12px;font-weight:700}
+    .pt{font-size:9.4px;fill:#475569}
+    .chip{font-size:9px;fill:#1D4ED8}
+    .ex{font-size:9.2px;fill:#1E3A8A;font-weight:600}
+    .cond{font-size:9.2px;fill:#5B6478}
+    .note{font-size:9.2px;fill:#5B6478}
+    .warn{font-size:9.3px;fill:#B45309}
+    .ctr{text-anchor:middle}
+  </style>
+  <defs>
+    <marker id="arw-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#2563EB"/>
+    </marker>
+    <marker id="arw-grey" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#94A3B8"/>
+    </marker>
+    <marker id="arw-amber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#D97706"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="600" fill="#FFFFFF"/>
+  <text class="title" x="48" y="42">messaging-php 生命周期</text>
+  <text class="sub" x="912" y="42" text-anchor="end">Lifecycle · 连接、能力与重连</text>
+  <text class="sub" x="48" y="64">从配置数组到可消费连接：每一步都可失败，失败以明确异常抛出</text>
+
+  <!-- 左侧：连接与消费生命周期 -->
+  <rect x="40" y="86" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="section" x="52" y="98">① 连接与消费生命周期</text>
+  <text class="section-en" x="196" y="98">Connection Lifecycle</text>
+
+  <!-- 步骤 1 -->
+  <rect x="48" y="106" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="127" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="131">1</text>
+  <text class="st" x="88" y="123">配置数组</text>
+  <text class="ss" x="88" y="138">default + connections；每连接必填 driver</text>
+
+  <!-- 步骤 2 -->
+  <rect x="48" y="160" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="181" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="185">2</text>
+  <text class="st" x="88" y="177">Config::fromArray()</text>
+  <text class="ss" x="88" y="192">校验 default、连接名与 driver，非法配置立即失败</text>
+
+  <!-- 步骤 3 -->
+  <rect x="48" y="214" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="235" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="239">3</text>
+  <text class="st" x="88" y="231">Manager::connection(name)</text>
+  <text class="ss" x="88" y="246">懒加载：按连接名创建并缓存 Connection</text>
+
+  <!-- 步骤 4 -->
+  <rect x="48" y="268" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="289" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="293">4</text>
+  <text class="st" x="88" y="285">驱动查找</text>
+  <text class="ss" x="88" y="300">BUILT_IN_DRIVERS 或 Manager::extend() 注册的工厂</text>
+
+  <!-- 步骤 5 -->
+  <rect x="48" y="322" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="343" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="347">5</text>
+  <text class="st" x="88" y="339">DriverFactory::create()</text>
+  <text class="ss" x="88" y="354">校验驱动配置；按驱动策略建立连接与握手</text>
+
+  <!-- 步骤 6 -->
+  <rect x="48" y="376" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="397" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="401">6</text>
+  <text class="st" x="88" y="393">Connection 就绪</text>
+  <text class="ss" x="88" y="408">capabilities() 声明 ack / requeue / delay 等能力边界</text>
+
+  <!-- 步骤 7 -->
+  <rect x="48" y="430" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="451" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="455">7</text>
+  <text class="st" x="88" y="447">publish / receive / consume</text>
+  <text class="ss" x="88" y="462">发布消息，或进入拉取循环；push 协议由驱动缓冲</text>
+
+  <!-- 步骤 8 -->
+  <rect x="48" y="484" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="505" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="509">8</text>
+  <text class="st" x="88" y="501">ack() / reject(requeue)</text>
+  <text class="ss" x="88" y="516">提交结果；失败分支显式处理，不支持的能力抛异常</text>
+
+  <!-- 步骤 9 -->
+  <rect x="48" y="538" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <circle cx="68" cy="559" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+  <text class="num ctr" x="68" y="563">9</text>
+  <text class="st" x="88" y="555">close()</text>
+  <text class="ss" x="88" y="570">关闭当前连接；Manager::close() 关闭全部连接</text>
+
+  <!-- 步骤箭头 -->
+  <line x1="248" y1="148" x2="248" y2="158" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="202" x2="248" y2="212" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="256" x2="248" y2="266" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="310" x2="248" y2="320" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="364" x2="248" y2="374" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="418" x2="248" y2="428" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="472" x2="248" y2="482" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+  <line x1="248" y1="526" x2="248" y2="536" stroke="#2563EB" stroke-width="1.6" marker-end="url(#arw-blue)"/>
+
+  <!-- 消费循环：8 -> 7 -->
+  <path d="M448 505 L462 505 L462 451 L450 451" fill="none" stroke="#D97706" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arw-amber)"/>
+  <text class="warn" x="466" y="482">循环</text>
+
+  <!-- 右侧：能力检查 -->
+  <rect x="496" y="106" width="416" height="136" rx="11" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.3"/>
+  <rect x="512" y="120" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="pn" x="524" y="132">能力检查</text>
+  <text class="section-en" x="586" y="132">Capability Gate</text>
+  <text class="pt" x="512" y="152">capabilities() 返回 8 个布尔能力，调用前先判断：</text>
+  <g>
+    <rect x="512" y="162" width="60" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="542" y="178">ack</text>
+    <rect x="580" y="162" width="74" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="617" y="178">requeue</text>
+    <rect x="662" y="162" width="60" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="692" y="178">delay</text>
+    <rect x="730" y="162" width="104" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="782" y="178">consumerGroups</text>
+    <rect x="512" y="194" width="96" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="560" y="210">batchPublish</text>
+    <rect x="616" y="194" width="72" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="652" y="210">ordering</text>
+    <rect x="696" y="194" width="68" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="730" y="210">headers</text>
+    <rect x="772" y="194" width="62" height="24" rx="12" fill="#EFF6FF" stroke="#BFDBFE"/>
+    <text class="chip ctr" x="803" y="210">订阅前置</text>
+  </g>
+  <text class="warn" x="512" y="234">不支持的能力在调用时抛 UnsupportedFeatureException，不静默降级</text>
+
+  <!-- 右侧：错误映射 -->
+  <rect x="496" y="258" width="416" height="218" rx="11" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
+  <rect x="512" y="272" width="4" height="14" rx="2" fill="#2563EB"/>
+  <text class="pn" x="524" y="284">错误映射</text>
+  <text class="section-en" x="586" y="284">Exception Map</text>
+  <text class="note" x="512" y="304">所有异常继承 MessagingException（RuntimeException）</text>
+
+  <line x1="512" y1="318" x2="896" y2="318" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="334">连接 / 握手失败</text>
+  <text class="cond" x="648" y="334">→</text>
+  <text class="ex" x="666" y="334">ConnectionException</text>
+
+  <line x1="512" y1="342" x2="896" y2="342" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="358">读取超时</text>
+  <text class="cond" x="648" y="358">→</text>
+  <text class="ex" x="666" y="358">TimeoutException</text>
+
+  <line x1="512" y1="366" x2="896" y2="366" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="382">畸形帧 / 协议状态错误</text>
+  <text class="cond" x="648" y="382">→</text>
+  <text class="ex" x="666" y="382">ProtocolException</text>
+
+  <line x1="512" y1="390" x2="896" y2="390" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="406">认证失败</text>
+  <text class="cond" x="648" y="406">→</text>
+  <text class="ex" x="666" y="406">AuthenticationException</text>
+
+  <line x1="512" y1="414" x2="896" y2="414" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="430">HTTP 非 2xx</text>
+  <text class="cond" x="648" y="430">→</text>
+  <text class="ex" x="666" y="430">RequestException</text>
+
+  <line x1="512" y1="438" x2="896" y2="438" stroke="#F1F5F9" stroke-width="1"/>
+  <text class="cond" x="512" y="454">驱动能力缺失</text>
+  <text class="cond" x="648" y="454">→</text>
+  <text class="ex" x="666" y="454">UnsupportedFeatureException</text>
+  <line x1="512" y1="462" x2="896" y2="462" stroke="#F1F5F9" stroke-width="1"/>
+
+  <!-- 右侧：重连语义 -->
+  <rect x="496" y="496" width="416" height="88" rx="11" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.3"/>
+  <rect x="512" y="510" width="4" height="14" rx="2" fill="#D97706"/>
+  <text class="pn" x="524" y="522">重连语义</text>
+  <text class="section-en" x="586" y="522">Reconnect</text>
+  <text class="note" x="512" y="542">连接断开不自动重连：捕获异常后 close()，再 connection() 重建</text>
+  <text class="note" x="512" y="558">消费端保持幂等：ack 前崩溃可能重投，取决于驱动语义</text>
+  <text class="warn" x="512" y="574">重连会重新执行工厂创建与握手，不是透明恢复</text>
+</svg>
