@@ -1,0 +1,60 @@
+{
+    "name": "erikwang2013/messaging-php",
+    "description": "Pure-PHP messaging client for RabbitMQ, Kafka, RocketMQ, Pulsar, ActiveMQ, Artemis, NATS, Redpanda, AutoMQ, Redis Streams, AWS SQS/SNS/Kinesis, Google Pub/Sub, Azure Service Bus/Event Hubs, ZeroMQ, NSQ and Beanstalkd.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "messaging",
+        "queue",
+        "rabbitmq",
+        "kafka",
+        "rocketmq",
+        "pulsar",
+        "activemq",
+        "nats",
+        "redis-streams",
+        "aws-sqs",
+        "pubsub",
+        "azure-service-bus",
+        "zeromq",
+        "nsq",
+        "beanstalkd",
+        "php"
+    ],
+    "authors": [
+        {
+            "name": "erik",
+            "email": "erik@erik.xyz"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "guzzlehttp/guzzle": "^7.0",
+        "psr/log": "^3.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "phpstan/phpstan": "^1.12 || ^2.1",
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Erikwang2013\\Messaging\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Erikwang2013\\Messaging\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --testsuite unit",
+        "test-integration": "phpunit --testsuite integration",
+        "phpstan": "phpstan analyse --no-progress",
+        "cs": "php-cs-fixer fix --dry-run --diff"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable"
+}
