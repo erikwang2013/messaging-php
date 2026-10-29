@@ -82,7 +82,7 @@ This package is also a Composer plugin. Composer 2.2+ requires the `allow-plugin
 | Yii2 | `config/messaging.php` |
 | Yii3 | No copy needed: `yiisoft/config` merges the package config at runtime |
 
-Existing files are never overwritten. If plugins are disabled in a project, use the manual publish commands in each framework document instead.
+Existing files are never overwritten. If the plugin is not allowed, Composer skips it and installation still succeeds; use the manual publish commands in each framework document instead.
 
 ## Quick start
 

@@ -58,6 +58,7 @@
     },
     "extra": {
         "class": "Erikwang2013\\Messaging\\Composer\\Plugin",
+        "plugin-optional": true,
         "laravel": {
             "providers": [
                 "Erikwang2013\\Messaging\\Integration\\Laravel\\MessagingServiceProvider"

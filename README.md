@@ -82,7 +82,7 @@ composer require erikwang2013/messaging-php
 | Yii2 | `config/messaging.php` |
 | Yii3 | 无需复制：`yiisoft/config` 在运行时自动合并包内配置 |
 
-已存在的目标文件不会被覆盖；如需自定义，直接修改复制后的文件。若项目禁止 Composer 插件，可用各框架文档里的手动发布命令替代。
+已存在的目标文件不会被覆盖；如需自定义，直接修改复制后的文件。未允许插件时 Composer 会跳过本插件，安装仍会成功，此时可用各框架文档里的手动发布命令替代。
 
 ## 快速开始
 
