@@ -69,6 +69,7 @@ jobs:
       MESSAGING_GCP_PROJECT: test-project
       MESSAGING_RABBITMQ_USER: messaging
       MESSAGING_RABBITMQ_PASS: messaging
+      MESSAGING_KAFKA_BROKERS: 127.0.0.1:9092
     strategy:
       fail-fast: false
       matrix:
@@ -88,6 +89,9 @@ jobs:
           - profile: rabbitmq
             filter: RabbitMq
             port: 5672
+          - profile: kafka
+            filter: Kafka
+            port: 9092
     steps:
       - uses: actions/checkout@v4
 

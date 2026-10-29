@@ -5,7 +5,7 @@
 | 驱动名 | 覆盖系统 | 协议 | 支持级别 | 状态 |
 |---|---|---|---|---|
 | `rabbitmq` | RabbitMQ | AMQP 0-9-1 | 一等 | 已实现（P3；默认交换机，无 publisher confirm） |
-| `kafka` `redpanda` `automq` `confluent` `eventhubs` | Kafka、Redpanda、AutoMQ、Confluent Platform、Azure Event Hubs（Kafka 端点） | Kafka wire protocol | 一等（Event Hubs 复用 Kafka 端点） | 规划中 |
+| `kafka` `redpanda` `automq` `confluent` `eventhubs` | Kafka、Redpanda、AutoMQ、Confluent Platform、Azure Event Hubs（Kafka 端点） | Kafka wire protocol | 一等（Event Hubs 复用 Kafka 端点） | 已实现（P4；无 SASL，Event Hubs 需 SASL 才可连） |
 | `activemq` `artemis` | ActiveMQ Classic、ActiveMQ Artemis | STOMP 1.2 | 一等 | 已实现（P1） |
 | `pulsar` | Apache Pulsar | Pulsar 二进制协议 | 实验 | 规划中 |
 | `rocketmq` | Apache RocketMQ 4.x/5.x | RocketMQ remoting | 实验 | 规划中 |
