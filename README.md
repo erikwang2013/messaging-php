@@ -186,7 +186,7 @@ return [
 | P4 | `kafka`、`redpanda`、`automq`、`confluent`、`eventhubs` | Kafka 系 5 个产品 | 已实现（无 SASL） |
 | P5 | `pulsar`、`rocketmq` | Apache Pulsar、Apache RocketMQ | 规划中 |
 
-P1–P3 驱动能力速查（`capabilities()` 的实际声明）：
+P1–P4 驱动能力速查（`capabilities()` 的实际声明）：
 
 | 驱动 | ack | requeue | delay | consumer group | 关键限制 |
 |---|---|---|---|---|---|
