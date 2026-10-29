@@ -22,9 +22,11 @@ final class Manager
         'kinesis' => \Erikwang2013\Messaging\Driver\Aws\KinesisFactory::class,
         'nats' => \Erikwang2013\Messaging\Driver\Nats\NatsFactory::class,
         'nsq' => \Erikwang2013\Messaging\Driver\Nsq\NsqFactory::class,
+        'rabbitmq' => \Erikwang2013\Messaging\Driver\RabbitMq\RabbitMqFactory::class,
         'redis' => \Erikwang2013\Messaging\Driver\Redis\RedisStreamsFactory::class,
         'sns' => \Erikwang2013\Messaging\Driver\Aws\SnsFactory::class,
         'sqs' => \Erikwang2013\Messaging\Driver\Aws\SqsFactory::class,
+        'zeromq' => \Erikwang2013\Messaging\Driver\ZeroMq\ZeroMqFactory::class,
     ];
 
     private Config $config;

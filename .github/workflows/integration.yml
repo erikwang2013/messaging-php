@@ -67,6 +67,8 @@ jobs:
       MESSAGING_AWS_SECRET_KEY: test
       MESSAGING_PUBSUB_EMULATOR_HOST: 127.0.0.1:8085
       MESSAGING_GCP_PROJECT: test-project
+      MESSAGING_RABBITMQ_USER: messaging
+      MESSAGING_RABBITMQ_PASS: messaging
     strategy:
       fail-fast: false
       matrix:
@@ -83,6 +85,9 @@ jobs:
           - profile: gcp
             filter: PubSub
             port: 8085
+          - profile: rabbitmq
+            filter: RabbitMq
+            port: 5672
     steps:
       - uses: actions/checkout@v4
 

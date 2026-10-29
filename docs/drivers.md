@@ -4,7 +4,7 @@
 
 | 驱动名 | 覆盖系统 | 协议 | 支持级别 | 状态 |
 |---|---|---|---|---|
-| `rabbitmq` | RabbitMQ | AMQP 0-9-1 | 一等 | 规划中 |
+| `rabbitmq` | RabbitMQ | AMQP 0-9-1 | 一等 | 已实现（P3；默认交换机，无 publisher confirm） |
 | `kafka` `redpanda` `automq` `confluent` `eventhubs` | Kafka、Redpanda、AutoMQ、Confluent Platform、Azure Event Hubs（Kafka 端点） | Kafka wire protocol | 一等（Event Hubs 复用 Kafka 端点） | 规划中 |
 | `activemq` `artemis` | ActiveMQ Classic、ActiveMQ Artemis | STOMP 1.2 | 一等 | 已实现（P1） |
 | `pulsar` | Apache Pulsar | Pulsar 二进制协议 | 实验 | 规划中 |
@@ -16,7 +16,7 @@
 | `kinesis` | AWS Kinesis | AWS JSON API + SigV4 | 一等（简化 checkpoint） | 已实现（P2；契约测试针对脚本化 HTTP 服务） |
 | `gcp-pubsub` | Google Cloud Pub/Sub | REST + 服务账号 JWT | 一等 | 已实现（P2；契约测试针对脚本化 HTTP 服务） |
 | `azure-service-bus` | Azure Service Bus | REST + SAS | 一等 | 已实现（P2；契约测试针对内存/假 HTTP 传输） |
-| `zeromq` | ZeroMQ | ZMTP 3.1（NULL） | 受限 | 规划中 |
+| `zeromq` | ZeroMQ | ZMTP 3.1（NULL） | 受限 | 已实现（P3；PUB/SUB、PUSH/PULL） |
 | `nsq` | NSQ | NSQ TCP | 一等 | 已实现（P1，TCP；HTTP 未实现） |
 | `beanstalkd` | Beanstalkd | Beanstalkd 文本协议 | 一等 | 已实现（P1） |
 

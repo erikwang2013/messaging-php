@@ -35,13 +35,13 @@ TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依�
 
 小递是一只浅蓝色的小象信使，围着 PHP 紫围巾，左爪抱着一封贴着蓝色纸飞机封口的白色信封，长鼻搭在信封上。它把消息从一端送到另一端，就像 messaging-php 用一套 `publish / receive / ack` 把业务代码接到 20 种消息系统、13 套协议栈和 6 个框架适配器上。
 
-12 种表情（源文件在 [docs/pet-expressions](docs/pet-expressions/)）：
+小递的十二种表情（源文件在 [docs/pet-expressions](docs/pet-expressions/)）：
 
-![微笑](docs/pet-expressions/smile.svg) ![欢乐](docs/pet-expressions/joy.svg) ![哭泣](docs/pet-expressions/cry.svg) ![低落](docs/pet-expressions/depressed.svg)
-
-![惊惧](docs/pet-expressions/terrified.svg) ![生气](docs/pet-expressions/angry.svg) ![撒娇](docs/pet-expressions/coquettish.svg) ![可爱](docs/pet-expressions/cute.svg)
-
-![满足](docs/pet-expressions/pleasing.svg) ![敲门](docs/pet-expressions/knocking.svg) ![扶额](docs/pet-expressions/facepalm.svg) ![吐舌](docs/pet-expressions/tongue.svg)
+| 表情 | | | |
+|:---:|:---:|:---:|:---:|
+| ![小递微笑表情](docs/pet-expressions/smile.svg) 微笑 | ![小递欢乐表情](docs/pet-expressions/joy.svg) 欢乐 | ![小递哭泣表情](docs/pet-expressions/cry.svg) 哭泣 | ![小递沮丧表情](docs/pet-expressions/depressed.svg) 沮丧 |
+| ![小递惊恐表情](docs/pet-expressions/terrified.svg) 惊恐 | ![小递生气表情](docs/pet-expressions/angry.svg) 生气 | ![小递撒娇表情](docs/pet-expressions/coquettish.svg) 撒娇 | ![小递卖萌表情](docs/pet-expressions/cute.svg) 卖萌 |
+| ![小递讨好表情](docs/pet-expressions/pleasing.svg) 讨好 | ![小递敲打表情](docs/pet-expressions/knocking.svg) 敲打 | ![小递捂脸表情](docs/pet-expressions/facepalm.svg) 捂脸 | ![小递吐舌表情](docs/pet-expressions/tongue.svg) 吐舌 |
 
 ## 特性
 

@@ -46,6 +46,16 @@ services:
       - "8162:8161"
     profiles: ["artemis"]
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: messaging
+      RABBITMQ_DEFAULT_PASS: messaging
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    profiles: ["rabbitmq"]
+
   nats:
     image: nats:2.10-alpine
     command: ["-js"]
