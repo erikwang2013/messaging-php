@@ -1,0 +1,296 @@
+# messaging-php
+
+[中文](README.md) | English
+
+A unified message queue and event streaming client written in pure PHP: one `publish / receive / ack` API covers 20 systems, with no broker SDKs and no extension dependencies.
+
+> RabbitMQ, Kafka, RocketMQ, Pulsar, ActiveMQ, ActiveMQ Artemis, NATS, Redpanda, AutoMQ, Redis Streams, AWS SQS, AWS SNS, AWS Kinesis, Google Cloud Pub/Sub, Azure Service Bus, Azure Event Hubs, ZeroMQ, NSQ, Beanstalkd, Confluent Platform
+
+TCP protocols are implemented with the PHP standard library, and HTTP cloud services connect directly through Guzzle. No rdkafka, ext-zmq, ext-redis or other broker SDK or extension is required — it works right after `composer require`.
+
+Current progress: **P1–P3** are implemented, covering 13 driver names — ActiveMQ, ActiveMQ Artemis, Redis Streams, NATS Core, NSQ, Beanstalkd, AWS SQS / SNS / Kinesis, Google Cloud Pub/Sub, Azure Service Bus, RabbitMQ and ZeroMQ. The remaining drivers are delivered in phases; see the [driver support matrix](docs/drivers.md) for status and capability differences.
+
+Project site: [https://package.erik.xyz/messaging](https://package.erik.xyz/messaging)
+
+## About
+
+Twenty product names collapse into **13 protocol stacks**: Kafka, Redpanda, AutoMQ, Confluent and Azure Event Hubs share the Kafka protocol; ActiveMQ and Artemis share the STOMP driver, distinguished only by presets for port, requeue and delay semantics; every other system has its own protocol implementation. Switching brokers usually means changing only the `driver` and connection settings, while business code stays the same.
+
+The layering stays small and clear: `Manager → Connection → DriverInterface`. `Manager` owns configuration and the connection cache; `Connection` exposes `publish / publishBatch / receive / consume / capabilities / close`; protocol frames, handshakes, authentication and error mapping all live in per-protocol directories under `src/Driver`. The driver factory validates required configuration when creating a connection, and connections and handshakes are established on demand (Redis and NATS connect during the factory stage; the others connect lazily on first operation). Configuration errors surface at `connection()` instead of waiting until the first publish.
+
+Consumption follows a single pull-based `receive()` model: pull-style protocols read directly, while push-style protocols (such as STOMP and NATS) buffer inside the driver and let `receive()` drain the buffer. `consume()` is just `while`-loop sugar. A timeout returns `null`, and `timeoutMs = 0` blocks indefinitely.
+
+**Capabilities are declared explicitly; nothing degrades silently.** Every driver declares its support for ack, requeue, delay, consumer groups, batch publishing, ordering, headers and the need for an active subscription through `Capabilities`. Calling an unsupported feature throws `UnsupportedFeatureException` directly. The library does not promise exactly-once delivery — semantics are decided by the broker and the driver:
+
+- **NATS Core**: at-most-once, no ack / requeue. Messages are delivered only to subscriptions that exist at publish time, so you must subscribe before publishing.
+- **Redis Streams**: acknowledgement via `XACK`, consumption through consumer groups. Unacknowledged messages stay in the PEL and must be recovered with `XAUTOCLAIM` / `XCLAIM`; there is no synchronous re-enqueue.
+- **ActiveMQ Classic**: `reject(true)` is implemented as a new SEND followed by an ACK of the original delivery. A disconnect between the two steps can duplicate the message.
+- **Artemis**: STOMP NACK is equivalent to ACK and discards the message (ARTEMIS-1983), so requeue is unsupported; redelivery can only be triggered by disconnecting the consumer.
+- **NSQ**: the channel must exist first. The driver subscribes lazily on the first `receive()`, so messages published before that subscription are lost.
+- **Beanstalkd**: in-memory queue with no headers / key / batch publishing. Unacknowledged messages are redelivered after their TTR expires.
+
+See [docs/drivers.md](docs/drivers.md) for complete per-driver limitations and recovery strategies.
+
+## Project pet
+
+![Project pet Xiaodi: a robot messenger with a paper-plane antenna](docs/pet.svg)
+
+Xiaodi is a round light-blue-and-white robot messenger: a dark screen face with cyan pixel eyes, a blue paper-plane antenna on its head, an envelope slot and three P1/P2/P3 status lights on its chest, and a PHP-purple scarf around its neck. Xiaodi carries messages from one end to the other, just as messaging-php connects business code to 20 messaging systems, 13 protocol stacks and 6 framework adapters through a single `publish / receive / ack` API.
+
+Twelve Xiaodi expressions (source files in [docs/pet-expressions](docs/pet-expressions/)):
+
+| Expression | | | |
+|:---:|:---:|:---:|:---:|
+| ![Xiaodi smiling](docs/pet-expressions/smile.svg) Smile | ![Xiaodi joyful](docs/pet-expressions/joy.svg) Joy | ![Xiaodi crying](docs/pet-expressions/cry.svg) Cry | ![Xiaodi depressed](docs/pet-expressions/depressed.svg) Depressed |
+| ![Xiaodi terrified](docs/pet-expressions/terrified.svg) Terrified | ![Xiaodi angry](docs/pet-expressions/angry.svg) Angry | ![Xiaodi acting clingy](docs/pet-expressions/coquettish.svg) Clingy | ![Xiaodi acting cute](docs/pet-expressions/cute.svg) Cute |
+| ![Xiaodi pleasing](docs/pet-expressions/pleasing.svg) Pleasing | ![Xiaodi knocking](docs/pet-expressions/knocking.svg) Knocking | ![Xiaodi facepalming](docs/pet-expressions/facepalm.svg) Facepalm | ![Xiaodi sticking out tongue](docs/pet-expressions/tongue.svg) Tongue out |
+
+## Features
+
+- **One API across 20 systems**: `publish`, `publishBatch`, `receive`, `consume`, `ack` and `reject`.
+- **Pure PHP transport**: TCP runs on `stream_socket_client`; TLS and gzip build on the standard openssl / zlib extensions (TLS is enabled driver by driver). RESP, STOMP 1.2, NATS, NSQ and Beanstalkd codecs are written from scratch, and cloud drivers call Guzzle with SigV4 / JWT / SAS signing.
+- **Capability model**: query at runtime with `capabilities()`; unsupported features throw instead of being silently ignored.
+- **Unified message objects**: `Message` supports JSON, headers, keys and `delayMs`; `ReceivedMessage` exposes id, key, attempts and raw, plus `ack` / `reject`.
+- **Multi-connection management**: `default` plus a `connections` array (each connection requires `driver`); connections are lazy-loaded and cached by name. `Manager::extend()` registers custom driver factories.
+- **Framework adapters**: Laravel, ThinkPHP, webman, Hyperf, Yii2 and Yii3 — all optional integrations with no framework dependency.
+- **Testable at four levels**: unit tests, fake-broker protocol tests, shared contract tests and Docker Compose integration tests.
+- **Unified exceptions**: connection, timeout, protocol, authentication, HTTP request and missing capability each have a dedicated exception type, all extending `MessagingException`.
+
+## Installation
+
+Requires **PHP >= 8.0** plus the standard `openssl` (TLS) and `zlib` (gzip) extensions.
+
+```bash
+composer require erikwang2013/messaging-php
+```
+
+- No rdkafka, ext-zmq or ext-redis installation is needed, and neither is any official broker SDK.
+- The only runtime dependencies are Guzzle and the PSR-3 logging interface, both installed automatically by Composer.
+- Framework adapters ship in the same package and are used on demand; without a framework, use plain PHP directly.
+
+## Quick start
+
+### Redis Streams: publish, consume, ack
+
+```php
+<?php
+
+use Erikwang2013\Messaging\Contract\Message;
+use Erikwang2013\Messaging\Contract\ReceiveOptions;
+use Erikwang2013\Messaging\Manager;
+
+$mq = new Manager([
+    'default' => 'redis',
+    'connections' => [
+        'redis' => [
+            'driver' => 'redis',
+            'host' => '127.0.0.1',
+            'port' => 6379,
+            'group' => 'orders',
+            'consumer' => 'worker-1',
+        ],
+    ],
+]);
+
+$connection = $mq->connection();
+
+$result = $connection->publish('orders', Message::json(['id' => 1], ['trace' => 'abc']));
+echo $result->id; // Redis Stream ID
+
+while ($message = $connection->receive('orders', new ReceiveOptions(timeoutMs: 5000))) {
+    try {
+        // business logic
+        $message->ack(); // XACK
+    } catch (Throwable $e) {
+        // no ACK: the message stays in the PEL and is recovered via XAUTOCLAIM / XCLAIM
+        error_log($e->getMessage());
+    }
+}
+```
+
+The destination (the first argument to `publish` / `receive`) is the Redis Stream key. The first `receive` creates the consumer group automatically and starts from `0`, so any backlog is consumed as well.
+
+`consume()` is only loop sugar; you still call `ack()` yourself after successful processing:
+
+```php
+use Erikwang2013\Messaging\Contract\ConsumeOptions;
+
+$connection->consume('orders', function ($message): void {
+    // business logic
+    $message->ack();
+}, new ConsumeOptions(timeoutMs: 5000, maxMessages: 100));
+```
+
+### NATS Core: subscribe first, then publish
+
+Core NATS delivers messages only to subscriptions that exist at publish time. Ordering matters especially when producer and consumer use separate connections: the consumer calls `receive()` once to establish the subscription, then the producer publishes. Otherwise messages are lost immediately (at-most-once, no persistence).
+
+```php
+// assumes a nats connection is configured in connections
+$nats = $mq->connection('nats');
+
+$nats->receive('orders.created', new ReceiveOptions(timeoutMs: 1)); // establish the subscription first
+$nats->publish('orders.created', new Message('hello'));
+
+$message = $nats->receive('orders.created', new ReceiveOptions(timeoutMs: 1000));
+```
+
+NATS Core's `ack()` / `reject()` both throw `UnsupportedFeatureException`; use JetStream when persistence and acknowledgement semantics are required (not implemented yet).
+
+## Framework integration
+
+Framework adapters are bundled with the main package, so no extra Composer package is required — only the framework itself when you use it. The configuration (`default` + `connections`) matches `new Manager([...])`; where it lives and how it is registered differs by framework:
+
+```php
+// location depends on the framework; see each framework's documentation
+return [
+    'default' => 'default',
+    'connections' => [
+        'default' => [
+            'driver' => 'redis',
+            'host' => '127.0.0.1',
+            'port' => 6379,
+            'group' => 'orders',
+        ],
+    ],
+];
+```
+
+| Framework | Registration | Usage | Documentation |
+|---|---|---|---|
+| Laravel | `MessagingServiceProvider` + `Messaging` facade | Inject `Manager` through the container, or use the facade | [docs/frameworks/laravel.md](docs/frameworks/laravel.md) |
+| ThinkPHP | `MessagingService` service class | Container-injected `Manager` or `app('messaging')` | [docs/frameworks/thinkphp.md](docs/frameworks/thinkphp.md) |
+| webman | Plugin bootstrap (runs when each worker starts) | `Messaging::connection()` / `Messaging::instance()` | [docs/frameworks/webman.md](docs/frameworks/webman.md) |
+| Hyperf | `ConfigProvider` auto-discovery + `ManagerFactory` | Container-injected `Manager`; `vendor:publish` publishes the config | [docs/frameworks/hyperf.md](docs/frameworks/hyperf.md) |
+| Yii2 | `MessagingComponent` application component | `Yii::$app->messaging->connection()` | [docs/frameworks/yii2.md](docs/frameworks/yii2.md) |
+| Yii3 | `yiisoft/config` (`config/di.php` + `params.php`) | Container-injected `Manager` | [docs/frameworks/yii3.md](docs/frameworks/yii3.md) |
+
+## Driver support matrix
+
+Twenty product names are carried by 13 protocol stacks. See [docs/drivers.md](docs/drivers.md) for the full matrix, capability differences and phase status.
+
+| Phase | Driver | Systems covered | Status |
+|---|---|---|---|
+| P1 | `beanstalkd` | Beanstalkd | Implemented |
+| P1 | `redis` | Redis Streams | Implemented |
+| P1 | `nsq` | NSQ | Implemented |
+| P1 | `activemq`, `artemis` | ActiveMQ Classic, ActiveMQ Artemis | Implemented |
+| P1 | `nats` | NATS Core | Implemented (JetStream not implemented) |
+| P2 | `sqs` | AWS SQS | Implemented |
+| P2 | `sns` | AWS SNS | Implemented (publish only) |
+| P2 | `kinesis` | AWS Kinesis | Implemented (simplified checkpoint) |
+| P2 | `gcp-pubsub` | Google Cloud Pub/Sub | Implemented |
+| P2 | `azure-service-bus` | Azure Service Bus | Implemented |
+| P3 | `rabbitmq` | RabbitMQ | Implemented (default exchange) |
+| P3 | `zeromq` | ZeroMQ | Implemented (PUB/SUB, PUSH/PULL) |
+| P4 | `kafka`, `redpanda`, `automq`, `confluent`, `eventhubs` | 5 Kafka-family products | Planned |
+| P5 | `pulsar`, `rocketmq` | Apache Pulsar, Apache RocketMQ | Planned |
+
+P1–P3 driver capability quick reference (the actual `capabilities()` declarations):
+
+| Driver | ack | requeue | delay | consumer group | Key limitations |
+|---|---|---|---|---|---|
+| `activemq` | ✓ | ✓ | ✓ | ✗ | requeue is re-send + ACK; duplicates possible |
+| `artemis` | ✓ | ✗ | ✓ | ✗ | STOMP NACK is a discard; subscribe first |
+| `redis` | ✓ | ✗ | ✗ | ✓ | unacked messages stay in the PEL; recover with XAUTOCLAIM |
+| `nats` | ✗ | ✗ | ✗ | ✓ when `queue_group` is configured | Core is at-most-once; subscribe before publishing |
+| `nsq` | ✓ | ✓ | ✗ | ✗ | the channel must exist first; published messages carry no id |
+| `beanstalkd` | ✓ | ✓ | ✓ | ✗ | no headers / key / batch publish |
+| `sqs` | ✓ | ✓ | ✓ | ✗ | per-message delay unsupported for FIFO; long polling |
+| `sns` | ✗ | ✗ | ✗ | — | publish only |
+| `kinesis` | ✗ (checkpoint) | ✗ | ✗ | shard consumption | in-memory checkpoint + optional callback |
+| `gcp-pubsub` | ✓ | ✓ | ✗ | ✓ | one-message REST pull; attempts is always 1 |
+| `azure-service-bus` | ✓ | ✓ | ✓ | ✗ | peek-lock; entities must exist in advance |
+| `rabbitmq` | ✓ | ✓ | ✗ | ✗ | default exchange; no publisher confirm |
+| `zeromq` | ✗ | ✗ | ✗ | ✗ | PUB/SUB and PUSH/PULL; no persistence or acknowledgement |
+
+Per-driver docs: [Beanstalkd](docs/drivers/beanstalkd.md) · [Redis Streams](docs/drivers/redis-streams.md) · [NSQ](docs/drivers/nsq.md) · [ActiveMQ](docs/drivers/activemq.md) · [Artemis](docs/drivers/artemis.md) · [NATS](docs/drivers/nats.md) · [SQS](docs/drivers/sqs.md) · [SNS](docs/drivers/sns.md) · [Kinesis](docs/drivers/kinesis.md) · [GCP Pub/Sub](docs/drivers/gcp-pubsub.md) · [Azure Service Bus](docs/drivers/azure-service-bus.md) · [RabbitMQ](docs/drivers/rabbitmq.md) · [ZeroMQ](docs/drivers/zeromq.md)
+
+> P1 drivers currently use plaintext TCP; TLS configuration is being enabled driver by driver. P2 cloud drivers use HTTPS.
+
+## Architecture
+
+![messaging-php architecture: framework adapter layer, core layer, protocol-grouped driver adapter layer, and broker and cloud service layer](docs/images/en/architecture.svg)
+
+Four layers from top to bottom. The framework adapter layer only handles container binding and config publishing. The core layer — `Manager / Config / Connection` — is protocol-agnostic. The driver adapter layer is grouped by protocol: 20 driver names share 13 protocol implementations, `Manager` selects a factory by driver name, and created connections are cached by name. At the bottom sit self-hosted brokers and cloud services. P1–P3 drivers are highlighted in the diagram; the rest are delivered in phases. Every driver implements the same `DriverInterface`, so adding a broker does not require changing the public API.
+
+## Feature design
+
+![messaging-php feature design: unified API, capability model, driver registry, pure PHP transport, framework integration, test system](docs/images/en/features.svg)
+
+Six capability areas orbit a single contract: the API exposes only messages and connections, the capability model makes broker differences explicit, the driver registry assembles drivers by name, the pure PHP transport absorbs protocol details, and framework integration plus the test system keep the library usable.
+
+## Request cycle
+
+![messaging-php request cycle: publish path, consume path, ack/reject and failure redelivery](docs/images/en/request-cycle.svg)
+
+Publish path: a `Message` enters the driver through `Connection::publish`, is encoded for the protocol, written to the broker, and a `PublishResult` is returned. Consume path: `receive()` pulls from the broker and the driver reconstructs a `ReceivedMessage`; call `ack()` after successful processing. On failure, `reject(requeue: true)` puts the message back and the next `receive()` redelivers it; `reject(false)` acknowledges and discards it. Drivers that do not support ack / requeue throw during the capability check.
+
+## Lifecycle
+
+![messaging-php lifecycle: config validation, connection creation, capability check, consume loop, error mapping and reconnect](docs/images/en/lifecycle.svg)
+
+A connection starts from a config array: `Config::fromArray()` validates the default connection and the required `driver`, `Manager::connection()` lazily loads and caches by name, and the driver factory completes config validation and establishes the connection and handshake according to the driver's policy. Once ready, check `capabilities()` and enter the publish / receive / consume loop; `ack()` or `reject()` commits the outcome, and `close()` releases the connection. A dropped connection is not reconnected automatically — catch the exception and call `connection()` again. Reconnecting repeats factory creation and handshake, so business logic should stay idempotent.
+
+## Directory structure
+
+```
+messaging-php/
+├── src/
+│   ├── Manager.php                 # multi-connection management, driver registry
+│   ├── Connection.php              # publish / receive / consume / capabilities
+│   ├── Config/                     # Config · ConnectionConfig
+│   ├── Contract/                   # DriverInterface · Message · ReceivedMessage · Capabilities, etc.
+│   ├── Driver/
+│   │   ├── Beanstalkd/             # text protocol
+│   │   ├── Nats/                   # NATS Core text protocol
+│   │   ├── Nsq/                    # NSQ TCP protocol
+│   │   ├── Redis/                  # Redis Streams + RESP codec
+│   │   └── Stomp/                  # STOMP 1.2 + ActiveMQ / Artemis presets
+│   ├── Exception/                  # MessagingException and 6 subclasses
+│   ├── Integration/                # framework adapters
+│   │   ├── Laravel/                # ServiceProvider + Facade
+│   │   ├── ThinkPHP/               # Service
+│   │   ├── Webman/                 # plugin bootstrap + static entry point
+│   │   ├── Hyperf/                 # ConfigProvider + ManagerFactory
+│   │   └── Yii2/                   # MessagingComponent + config
+│   └── Support/                    # Socket and other low-level support
+├── config/                         # Laravel / ThinkPHP config · webman plugin · Yii3 DI
+├── tests/
+│   ├── Unit/                       # config, codec and driver unit tests
+│   ├── Protocol/                   # stream_socket_server fake-broker protocol tests
+│   ├── Contract/                   # DriverContractTestCase shared contract base class
+│   └── Integration/                # real-broker container integration tests
+├── docs/
+│   ├── drivers.md                  # 20-system support matrix and capability differences
+│   ├── drivers/                    # per-driver config, limitations and examples
+│   ├── frameworks/                 # six framework integration docs
+│   └── images/                     # architecture, features, request cycle and lifecycle SVGs
+├── examples/                       # driver examples (added progressively)
+├── docker-compose.yml              # start and stop brokers by profile
+├── phpunit.xml
+├── composer.json
+└── README.md
+```
+
+## Testing and development
+
+```bash
+composer install
+composer test          # tests/Unit + tests/Protocol, no external services required
+composer phpstan       # static analysis
+composer cs            # code style check
+```
+
+Integration tests connect to real brokers. Start the containers by profile, then run:
+
+```bash
+docker compose --profile redis up -d
+composer test-integration -- --filter RedisStreams
+```
+
+Available profiles: `redis`, `beanstalkd`, `nsq`, `activemq`, `artemis`, `nats`. Integration tests skip automatically when a broker is unreachable, so local development is never blocked. CI runs syntax and runtime smoke checks on PHP 8.0, and unit and protocol tests on PHP 8.1–8.5.
+
+## License
+
+MIT; see [LICENSE](LICENSE).

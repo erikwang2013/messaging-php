@@ -1,5 +1,7 @@
 # messaging-php
 
+[English](README_EN.md) | 中文
+
 纯 PHP 实现的统一消息队列 / 事件流客户端：一套 `publish / receive / ack` API 覆盖 20 种系统，纯 PHP、无 broker SDK、无扩展依赖。
 
 > RabbitMQ、Kafka、RocketMQ、Pulsar、ActiveMQ、ActiveMQ Artemis、NATS、Redpanda、AutoMQ、Redis Streams、AWS SQS、AWS SNS、AWS Kinesis、Google Cloud Pub/Sub、Azure Service Bus、Azure Event Hubs、ZeroMQ、NSQ、Beanstalkd、Confluent Platform
@@ -31,9 +33,9 @@ TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依�
 
 ## 项目宠物
 
-![项目宠物小递：一只抱着信封的蓝色小象](docs/pet.svg)
+![项目宠物小递：一台头顶纸飞机天线的机器人信使](docs/pet.svg)
 
-小递是一只浅蓝色的小象信使，围着 PHP 紫围巾，左爪抱着一封贴着蓝色纸飞机封口的白色信封，长鼻搭在信封上。它把消息从一端送到另一端，就像 messaging-php 用一套 `publish / receive / ack` 把业务代码接到 20 种消息系统、13 套协议栈和 6 个框架适配器上。
+小递是一台圆滚滚的浅蓝白色机器人信使：深色屏幕上亮着青色像素眼睛，头顶立着蓝色纸飞机天线，胸口有信封投递口和三盏代表 P1/P2/P3 的状态灯，脖子上围着 PHP 紫围巾。它把消息从一端送到另一端，就像 messaging-php 用一套 `publish / receive / ack` 把业务代码接到 20 种消息系统、13 套协议栈和 6 个框架适配器上。
 
 小递的十二种表情（源文件在 [docs/pet-expressions](docs/pet-expressions/)）：
 
@@ -184,7 +186,7 @@ return [
 | P4 | `kafka`、`redpanda`、`automq`、`confluent`、`eventhubs` | Kafka 系 5 个产品 | 规划中 |
 | P5 | `pulsar`、`rocketmq` | Apache Pulsar、Apache RocketMQ | 规划中 |
 
-P1 / P2 驱动能力速查（`capabilities()` 的实际声明）：
+P1–P3 驱动能力速查（`capabilities()` 的实际声明）：
 
 | 驱动 | ack | requeue | delay | consumer group | 关键限制 |
 |---|---|---|---|---|---|
