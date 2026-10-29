@@ -177,7 +177,8 @@ final class RocketMqDriver implements DriverInterface
                     try {
                         $message = $this->pull($topic, $queues[$index], $deadline);
                     } catch (TimeoutException $exception) {
-                        if ($deadline !== null && microtime(true) >= $deadline) {
+                        // A bounded receive that hit its socket timeout has no message.
+                        if ($deadline !== null) {
                             return null;
                         }
 
