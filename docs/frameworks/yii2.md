@@ -7,10 +7,11 @@
 ## 安装
 
 ```bash
+composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
 
-Yii2 没有 Composer 自动发现，需要手动注册组件。
+本包是 Composer Plugin。安装/更新时若检测到 `yiisoft/yii2`，会自动把默认配置复制到 `config/messaging.php`（已存在则不覆盖）。Yii2 没有 Composer 自动发现，仍需要手动注册组件。
 
 ## 注册组件
 

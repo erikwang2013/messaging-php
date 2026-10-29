@@ -6,11 +6,11 @@
 ## 安装
 
 ```bash
+composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
 
-应用需要 `yiisoft/config`（标准 Yii3 应用模板默认包含）。在应用 `composer.json` 的 `extra`
-中加入（已有这些键时合并到现有数组，不要重复定义）：
+Yii3 遵循 `yiisoft/config` 的自动合并规则，**不需要复制配置文件**；Composer Plugin 检测到 `yiisoft/yii` 时会跳过复制。应用需要 `yiisoft/config`（标准 Yii3 应用模板默认包含）。在应用 `composer.json` 的 `extra` 中加入（已有这些键时合并到现有数组，不要重复定义）：
 
 ```json
 {

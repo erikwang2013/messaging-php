@@ -6,8 +6,11 @@
 ## 安装
 
 ```bash
+composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
+
+本包是 Composer Plugin。安装/更新时若检测到 `hyperf/framework`，会自动把默认配置复制到 `config/autoload/messaging.php`（已存在则不覆盖）；`vendor:publish` 仍可用于重新发布。
 
 在应用 `composer.json` 里登记 ConfigProvider（已有 `extra.hyperf.config` 时把类名追加进数组）：
 

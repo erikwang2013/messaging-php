@@ -13,10 +13,13 @@ webman 是常驻内存、多进程模型，没有服务容器。集成由三部�
 ## 安装
 
 ```bash
+composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
 
-本包暂未提供 webman 插件安装器，需要手动把插件配置复制到应用：
+本包是 Composer Plugin。安装/更新时若检测到 `workerman/webman-framework`，会自动把插件配置复制到 `config/plugin/erikwang2013/messaging-php/`（已存在则不覆盖）。
+
+如果项目禁止 Composer 插件，可手动复制：
 
 ```bash
 mkdir -p config/plugin/erikwang2013/messaging-php

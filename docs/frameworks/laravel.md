@@ -5,8 +5,11 @@ Laravel 适配层只做三件事：合并配置、把 `Erikwang2013\Messaging\Ma
 ## 安装
 
 ```bash
+composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
+
+本包是 Composer Plugin。安装/更新时若检测到 `laravel/framework`，会自动把默认配置复制到 `config/messaging.php`（已存在则不覆盖）。也可以继续使用 `php artisan vendor:publish --tag=messaging-config` 手动发布。
 
 包在 `composer.json` 的 `extra.laravel` 中声明了自动发现信息，Laravel 会据此注册 provider 与 alias：
 

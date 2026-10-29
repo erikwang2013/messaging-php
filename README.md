@@ -61,12 +61,28 @@ TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依�
 要求 **PHP >= 8.0**，标准扩展 `openssl`（TLS）与 `zlib`（gzip）即可。
 
 ```bash
+composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
 
 - 不需要安装 rdkafka、ext-zmq、ext-redis，也不需要任何 broker 官方 SDK。
 - 运行时依赖只有 Guzzle 与 PSR-3 日志接口，均由 Composer 自动安装。
 - 框架适配器内置于同一包，按需使用；不使用任何框架时可直接裸用 PHP。
+
+### 框架配置自动复制
+
+本包同时是 Composer Plugin。Composer 2.2+ 需要先允许插件执行（上面的 `allow-plugins` 命令）；安装或更新时会检测项目里已安装的框架，并按各框架惯例复制默认配置：
+
+| 框架 | 自动复制到 |
+|---|---|
+| Laravel | `config/messaging.php` |
+| ThinkPHP | `config/messaging.php` |
+| webman | `config/plugin/erikwang2013/messaging-php/{app,messaging,bootstrap}.php` |
+| Hyperf | `config/autoload/messaging.php` |
+| Yii2 | `config/messaging.php` |
+| Yii3 | 无需复制：`yiisoft/config` 在运行时自动合并包内配置 |
+
+已存在的目标文件不会被覆盖；如需自定义，直接修改复制后的文件。若项目禁止 Composer 插件，可用各框架文档里的手动发布命令替代。
 
 ## 快速开始
 

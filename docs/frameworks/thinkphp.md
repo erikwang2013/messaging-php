@@ -5,8 +5,11 @@ ThinkPHP 适配层是一个 `think\Service`：从 `config('messaging')` 读取�
 ## 安装
 
 ```bash
+composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
+
+本包是 Composer Plugin。安装/更新时若检测到 `topthink/framework`，会自动把默认配置复制到 `config/messaging.php`（已存在则不覆盖）；ThinkPHP 的 `extra.think` 自动发现仍会注册服务。
 
 ## 注册服务
 

@@ -61,12 +61,28 @@ Twelve Xiaodi expressions (source files in [docs/pet-expressions](docs/pet-expre
 Requires **PHP >= 8.0** plus the standard `openssl` (TLS) and `zlib` (gzip) extensions.
 
 ```bash
+composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
 
 - No rdkafka, ext-zmq or ext-redis installation is needed, and neither is any official broker SDK.
 - The only runtime dependencies are Guzzle and the PSR-3 logging interface, both installed automatically by Composer.
 - Framework adapters ship in the same package and are used on demand; without a framework, use plain PHP directly.
+
+### Automatic framework config
+
+This package is also a Composer plugin. Composer 2.2+ requires the `allow-plugins` command above. On install or update it detects installed frameworks and copies the default config using each framework's convention:
+
+| Framework | Copied to |
+|---|---|
+| Laravel | `config/messaging.php` |
+| ThinkPHP | `config/messaging.php` |
+| webman | `config/plugin/erikwang2013/messaging-php/{app,messaging,bootstrap}.php` |
+| Hyperf | `config/autoload/messaging.php` |
+| Yii2 | `config/messaging.php` |
+| Yii3 | No copy needed: `yiisoft/config` merges the package config at runtime |
+
+Existing files are never overwritten. If plugins are disabled in a project, use the manual publish commands in each framework document instead.
 
 ## Quick start
 
