@@ -41,6 +41,45 @@ final class ManagerTest extends TestCase
         self::assertSame($manager->connection('fake'), $manager->connection('fake'));
     }
 
+    public function test_disconnect_forgets_named_connection(): void
+    {
+        $manager = $this->manager();
+        $connection = $manager->connection('fake');
+
+        $manager->disconnect('fake');
+
+        self::assertNotSame($connection, $manager->connection('fake'));
+    }
+
+    public function test_disconnect_ignores_unknown_connection(): void
+    {
+        $manager = $this->manager();
+        $connection = $manager->connection('fake');
+
+        $manager->disconnect('unknown');
+
+        self::assertSame($connection, $manager->connection('fake'));
+    }
+
+    public function test_disconnect_without_name_forgets_all_connections(): void
+    {
+        $manager = new Manager([
+            'connections' => [
+                'first' => ['driver' => 'fake'],
+                'second' => ['driver' => 'fake'],
+            ],
+        ]);
+        $manager->extend('fake', new FakeDriverFactory());
+
+        $first = $manager->connection('first');
+        $second = $manager->connection('second');
+
+        $manager->disconnect();
+
+        self::assertNotSame($first, $manager->connection('first'));
+        self::assertNotSame($second, $manager->connection('second'));
+    }
+
     public function test_unknown_driver_throws(): void
     {
         $manager = new Manager([

@@ -124,6 +124,7 @@ final class GcpPubSubDriverTest extends TestCase
                 ]],
             ]),
             self::jsonResponse([]),
+            self::jsonResponse([]),
         ]);
 
         $message = $driver->receive('orders', new ReceiveOptions(1000));
@@ -139,20 +140,66 @@ final class GcpPubSubDriverTest extends TestCase
         self::assertSame(1, $pullBody['maxMessages']);
         self::assertFalse($pullBody['returnImmediately']);
 
+        // Pulling a message extends its lease before it is handed to the caller.
+        self::assertCount(2, $this->history);
+        self::assertSame(
+            'http://127.0.0.1:8085/v1/projects/test-project/subscriptions/orders:modifyAckDeadline',
+            (string) $this->history[1]['request']->getUri(),
+        );
+        self::assertSame(
+            ['ackIds' => ['ack-1'], 'ackDeadlineSeconds' => 60],
+            $this->requestJson(1),
+        );
+
         $message->ack();
+
+        self::assertCount(3, $this->history);
+        self::assertSame(
+            'http://127.0.0.1:8085/v1/projects/test-project/subscriptions/orders:acknowledge',
+            (string) $this->history[2]['request']->getUri(),
+        );
+        self::assertSame(['ackIds' => ['ack-1']], $this->requestJson(2));
+    }
+
+    public function test_pull_extends_the_ack_deadline_with_the_configured_seconds(): void
+    {
+        $driver = $this->emulatorDriver(
+            [self::pullResponse('ack-1', 'lease-me'), self::jsonResponse([])],
+            ['ack_deadline_seconds' => 45],
+        );
+
+        $message = $driver->receive('orders', new ReceiveOptions(1000));
+        self::assertNotNull($message);
 
         self::assertCount(2, $this->history);
         self::assertSame(
-            'http://127.0.0.1:8085/v1/projects/test-project/subscriptions/orders:acknowledge',
+            'http://127.0.0.1:8085/v1/projects/test-project/subscriptions/orders:modifyAckDeadline',
             (string) $this->history[1]['request']->getUri(),
         );
-        self::assertSame(['ackIds' => ['ack-1']], $this->requestJson(1));
+        self::assertSame(
+            ['ackIds' => ['ack-1'], 'ackDeadlineSeconds' => 45],
+            $this->requestJson(1),
+        );
+    }
+
+    public function test_zero_ack_deadline_skips_the_extension_call(): void
+    {
+        $driver = $this->emulatorDriver(
+            [self::pullResponse('ack-1', 'no-lease')],
+            ['ack_deadline_seconds' => 0],
+        );
+
+        $message = $driver->receive('orders', new ReceiveOptions(1000));
+        self::assertNotNull($message);
+
+        self::assertCount(1, $this->history);
     }
 
     public function test_reject_with_requeue_resets_the_ack_deadline(): void
     {
         $driver = $this->emulatorDriver([
             self::pullResponse('ack-1', 'retry-me'),
+            self::jsonResponse([]),
             self::jsonResponse([]),
         ]);
 
@@ -162,11 +209,11 @@ final class GcpPubSubDriverTest extends TestCase
 
         self::assertSame(
             'http://127.0.0.1:8085/v1/projects/test-project/subscriptions/orders:modifyAckDeadline',
-            (string) $this->history[1]['request']->getUri(),
+            (string) $this->history[2]['request']->getUri(),
         );
         self::assertSame(
             ['ackIds' => ['ack-1'], 'ackDeadlineSeconds' => 0],
-            $this->requestJson(1),
+            $this->requestJson(2),
         );
     }
 
@@ -174,6 +221,7 @@ final class GcpPubSubDriverTest extends TestCase
     {
         $driver = $this->emulatorDriver([
             self::pullResponse('ack-1', 'drop-me'),
+            self::jsonResponse([]),
             self::jsonResponse([]),
         ]);
 
@@ -183,7 +231,7 @@ final class GcpPubSubDriverTest extends TestCase
 
         self::assertSame(
             'http://127.0.0.1:8085/v1/projects/test-project/subscriptions/orders:acknowledge',
-            (string) $this->history[1]['request']->getUri(),
+            (string) $this->history[2]['request']->getUri(),
         );
     }
 
@@ -213,18 +261,19 @@ final class GcpPubSubDriverTest extends TestCase
         $driver = $this->emulatorDriver([
             self::jsonResponse([]),
             self::pullResponse('ack-1', 'eventual'),
+            self::jsonResponse([]),
         ]);
 
         $message = $driver->receive('orders', new ReceiveOptions(1000));
         self::assertNotNull($message);
         self::assertSame('eventual', $message->body());
-        self::assertCount(2, $this->history);
+        self::assertCount(3, $this->history);
     }
 
     public function test_receive_uses_the_configured_default_subscription(): void
     {
         $driver = $this->emulatorDriver(
-            [self::pullResponse('ack-1', 'hello')],
+            [self::pullResponse('ack-1', 'hello'), self::jsonResponse([])],
             ['subscription' => 'default-sub'],
         );
 

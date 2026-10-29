@@ -15,6 +15,7 @@
 | `queue_group` | 否 | null | 订阅使用的 queue group；非空时 `consumerGroups` 能力为 true |
 | `timeout` | 否 | `5.0` | 连接、握手与帧读取超时（秒） |
 | `headers` | 否 | `true` | 是否启用 headers；服务器不支持时自动降为 false |
+| `buffer_limit` | 否 | `10000` | 每个 destination 的待取消息缓冲上限（正整数）；超限抛 `ProtocolException` |
 
 TLS 暂未开放配置（`tls_required` 固定为 false），TLS 端点留待后续版本。
 
@@ -61,10 +62,12 @@ $message = $connection->receive('orders.created', new ReceiveOptions(1000));
 - 握手：读取 `INFO {json}`，发送 `CONNECT {...}`（含 `headers:true`）与 `PING`，等待 `PONG`。
 - 发布：无 headers 时 `PUB <subject> [reply] <bytes>\r\n<body>\r\n`；有 headers 时
   `HPUB <subject> [reply] <header-bytes> <total-bytes>\r\nNATS/1.0\r\n...\r\n\r\n<body>\r\n`。
-  每次发布后以 `PING`/`PONG` 冲刷，确保已写入服务器。
-- 订阅：每个 destination 懒创建一个订阅 `SUB <subject> [queue] <sid>`，收到
-  `MSG`/`HMSG` 后缓冲，由 `receive()` 取出；`receive()` 的 `timeoutMs` 为 0 时一直阻塞，
-  超时返回 `null`。
+  每次发布后以 `PING`/`PONG` 冲刷，确保已写入服务器。发布/冲刷遇到 `ConnectionException`
+  或 `TimeoutException`（如连接被服务器的 ping 窗口关闭）时，驱动关闭旧 socket、重新握手，
+  并把同一帧重发一次；Core NATS 至多一次，重发可能产生重复投递。
+- 订阅：收到 `MSG`/`HMSG` 后缓冲，由 `receive()` 取出；第一次 `receive()` 某个 destination
+  时才发送 `SUB <subject> [queue] <sid>`，因此**发布前必须先订阅**。`receive()` 的
+  `timeoutMs` 为 0 时一直阻塞，超时返回 `null`。
 - 控制帧：响应服务器心跳 `PING`（回 `PONG`），忽略 `+OK`/`INFO`，`-ERR` 映射为
   `ProtocolException`，认证类错误映射为 `AuthenticationException`。
 - 连接失败抛 `ConnectionException`，读取超时抛 `TimeoutException`（`receive()` 自身的
@@ -74,14 +77,23 @@ $message = $connection->receive('orders.created', new ReceiveOptions(1000));
 ## 语义与限制
 
 - **至多一次**：订阅采用 Core NATS 的即时投递，没有持久化；消费者离线期间的消息会丢失。
-- `ReceivedMessage::ack()` 是空操作（能力仍为 `ack:false`），`reject()` 抛异常。
+- `ReceivedMessage::ack()` 与 `reject()` 都抛 `UnsupportedFeatureException`（能力为
+  `ack:false` / `requeue:false`），驱动不会静默忽略确认请求。
 - Core NATS 没有消息 id / key 概念：驱动在发布时生成 id，并把 id 与 key 编码进
   `Messaging-Id` / `Messaging-Key` 头，接收时还原并从 `headers()` 中移除。因此这两个
-  字段要求服务器与连接双方都支持 headers。
-- header 值在 NATS 线上只能是字符串；数字、布尔值、浮点数会被直接编码，接收时按字面量
-  还原为 int / float / bool。看起来像数字的字符串 header 也会被还原为数字。
-- 驱动的发布会在同连接上先懒创建对应订阅，因此同一连接 `publish()` 后 `receive()` 能取回
-  自己发布的消息；跨连接消费请先启动订阅方。
+  字段要求服务器与连接双方都支持 headers；服务器不支持 headers 时 `publish()` 返回的
+  id 为 `null`。
+- header 值在 NATS 线上只能是字符串：发布时数字、布尔值、浮点数会转成字符串，接收时
+  **一律按字符串返回**（`['attempt' => 2]` 会变成 `['attempt' => '2']`），驱动不会猜测类型。
+- **必须先订阅再发布**（`requiresActiveSubscription: true`）：`publish()` 不会隐式创建
+  订阅。同一连接想取回自己发布的消息，也要先调用一次 `receive()`（即使是 1ms 超时）建立
+  订阅；跨连接消费同理，订阅方必须先启动。
+- **缓冲上限**：每个 destination 最多缓存 `buffer_limit`（默认 10000）条尚未被
+  `receive()` 取走的消息；接收 A 时到达的 B 消息、以及发布冲刷期间到达的消息都会占用
+  该额度。超过上限抛 `ProtocolException`，避免慢消费者无限占用内存。该异常不会被发布重试
+  逻辑当作断线处理。
+- **空闲重连**：服务器关闭空闲连接（ping 窗口）后，下一次 `publish()` 会自动重连并重发
+  一次；重连后旧订阅失效（订阅是连接级的），需要重新 `receive()` 建立。
 - 每次 `publish()` 都做一次 PING/PONG 往返，吞吐低于批量客户端；这是可靠交付边界的取舍。
 - 未配置 `queue_group` 时每个连接都是独立订阅者，消息会广播给所有订阅者。
 

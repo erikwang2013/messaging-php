@@ -95,4 +95,24 @@ final class Manager
 
         $this->connections = [];
     }
+
+    /**
+     * Close and forget a cached connection, so the next connection() call reconnects.
+     * Without a name, closes and forgets every cached connection.
+     */
+    public function disconnect(?string $name = null): void
+    {
+        if ($name === null) {
+            $this->close();
+
+            return;
+        }
+
+        if (!isset($this->connections[$name])) {
+            return;
+        }
+
+        $this->connections[$name]->close();
+        unset($this->connections[$name]);
+    }
 }

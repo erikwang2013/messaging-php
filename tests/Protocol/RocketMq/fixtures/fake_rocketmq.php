@@ -35,6 +35,8 @@ $brokerPort = (int) substr(strrchr((string) stream_socket_get_name($broker, fals
 
 /** @var array<string, array<int, array{body: string, properties: string, physical: int, reconsume: int}>> */
 $store = [];
+/** @var array<string, int> "group|topic|queueId" => committed offset */
+$offsets = [];
 $physical = 1000;
 
 fwrite(STDOUT, sprintf("READY %d %d\n", $nameserverPort, $brokerPort));
@@ -145,8 +147,18 @@ function logEvent(string $logFile, string $line): void
 /**
  * @param array<string, mixed> $header
  */
-function handleClient($client, string $type, array $header, string $body, array &$store, int &$physical, int $brokerPort, string $scenario, string $logFile): void
-{
+function handleClient(
+    $client,
+    string $type,
+    array $header,
+    string $body,
+    array &$store,
+    array &$offsets,
+    int &$physical,
+    int $brokerPort,
+    string $scenario,
+    string $logFile,
+): void {
     $code = (int) $header['code'];
     $opaque = (int) $header['opaque'];
     $ext = is_array($header['extFields'] ?? null) ? $header['extFields'] : [];
@@ -164,8 +176,27 @@ function handleClient($client, string $type, array $header, string $body, array 
 
     switch ($code) {
         case 34: // HEART_BEAT
-            logEvent($logFile, 'broker:34');
+            $heartbeat = json_decode($body, true);
+            $subscription = is_array($heartbeat)
+                ? ($heartbeat['consumerDataSet'][0]['subscriptionDataSet'][0]['topic'] ?? '-')
+                : '-';
+            logEvent($logFile, sprintf('broker:34 topic=%s', $subscription));
             fwrite($client, reply($opaque, 0));
+            fflush($client);
+
+            return;
+
+        case 14: // QUERY_CONSUMER_OFFSET
+            $topic = (string) ($ext['topic'] ?? '');
+            $queueId = (int) ($ext['queueId'] ?? 0);
+            $key = sprintf('%s|%s|%d', $ext['consumerGroup'] ?? '', $topic, $queueId);
+            logEvent($logFile, sprintf('broker:14 topic=%s queue=%d', $topic, $queueId));
+
+            if (isset($offsets[$key])) {
+                fwrite($client, reply($opaque, 0, ['offset' => (string) $offsets[$key]]));
+            } else {
+                fwrite($client, reply($opaque, 22, [], '', 'offset not found'));
+            }
             fflush($client);
 
             return;
@@ -277,6 +308,12 @@ function handleClient($client, string $type, array $header, string $body, array 
                 $ext['queueId'] ?? '-',
                 $ext['commitOffset'] ?? '-',
             ));
+            $offsets[sprintf(
+                '%s|%s|%d',
+                $ext['consumerGroup'] ?? '',
+                $ext['topic'] ?? '',
+                (int) ($ext['queueId'] ?? 0),
+            )] = (int) ($ext['commitOffset'] ?? 0);
             fwrite($client, reply($opaque, 0));
             fflush($client);
 
@@ -406,6 +443,7 @@ while (true) {
                 $header,
                 substr($frame, 8 + $headerLength),
                 $store,
+                $offsets,
                 $physical,
                 $brokerPort,
                 $scenario,

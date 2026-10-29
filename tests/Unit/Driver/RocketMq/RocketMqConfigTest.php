@@ -20,6 +20,7 @@ final class RocketMqConfigTest extends TestCase
         self::assertSame(9876, $config->nameserverPort());
         self::assertSame('messaging', $config->group());
         self::assertSame(10.0, $config->timeout());
+        self::assertSame(30.0, $config->heartbeatInterval());
         self::assertFalse($config->consumeFromFirst());
         self::assertSame(1, $config->pullBatchSize());
     }
@@ -93,6 +94,26 @@ final class RocketMqConfigTest extends TestCase
         RocketMqConfig::fromConnection($this->config([
             'nameserver' => 'localhost',
             'pull_batch_size' => 0,
+        ]));
+    }
+
+    public function test_heartbeat_interval_is_parsed(): void
+    {
+        $config = RocketMqConfig::fromConnection($this->config([
+            'nameserver' => 'localhost',
+            'heartbeat_interval' => 5,
+        ]));
+
+        self::assertSame(5.0, $config->heartbeatInterval());
+    }
+
+    public function test_heartbeat_interval_must_be_at_least_one_second(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        RocketMqConfig::fromConnection($this->config([
+            'nameserver' => 'localhost',
+            'heartbeat_interval' => 0.5,
         ]));
     }
 

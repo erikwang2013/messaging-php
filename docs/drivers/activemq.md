@@ -14,6 +14,7 @@
 | `passcode` | string\|null | `admin` | CONNECT 密码；`null` 时不发送 |
 | `prefix` | string | `/queue/` | 目标名前缀；目标名已以 `/queue/` 或 `/topic/` 开头时原样使用 |
 | `timeout` | float | `5.0` | TCP 连接与 CONNECTED 握手超时（秒）；消费超时由 `ReceiveOptions::timeoutMs` 控制 |
+| `buffer_limit` | int | `10000` | 单个非当前目标的未读消息缓冲上限（条）；超出时断开连接并抛 `ConnectionException` |
 
 ```php
 use Erikwang2013\Messaging\Contract\Message;
@@ -62,7 +63,8 @@ ActiveMQ Classic 把 STOMP `NACK` 当作 poison ACK：STOMP `SEND` 默认发布�
 - 非空 body 自动写 `content-length`，二进制 body（含 NUL）安全往返。
 - 握手：`STOMP` + `accept-version:1.2`、`host`、`login`/`passcode`、`heart-beat:0,0`（关闭心跳）。CONNECT ERROR 抛 `AuthenticationException`；版本协商失败抛 `ProtocolException`。
 - 发布：`SEND` + `destination` + 自定义 header；`Message::key` 写入 `correlation-id`。`PublishResult::id` 是客户端生成的 32 位十六进制 id，同时写入 `x-messaging-id`；broker 不提供同步发布回执。
-- 消费：每个目标保持一个持久 `SUBSCRIBE`（`id: sub-N`、`ack:client-individual`）；一次 `receive()` 只返回该目标的消息，其它目标的 MESSAGE 帧缓冲复用。
+- 消费：每个目标保持一个持久 `SUBSCRIBE`（`id: sub-N`、`ack:client-individual`）；一次 `receive()` 只返回该目标的消息，其它目标的 MESSAGE 帧按目标缓冲复用。
+- 跨目标缓冲上限：单个非当前目标的未读消息达到 `buffer_limit`（默认 10000）时，驱动断开连接并抛 `ConnectionException`；未确认消息由 broker 重投。上限按目标分别计数，不同目标的数量本身不设上限。
 - 超时：`timeoutMs = 0` 永久阻塞；`> 0` 到期返回 `null`。读到半个帧后超时视为连接失步，抛 `ConnectionException` 并丢弃连接。
 - `ack()` 发送 `ACK id:<MESSAGE 的 ack/message-id>`；`reject(false)` 也发 `ACK`。ACK 闭包绑定连接代次，重连后旧消息再确认会抛 `ConnectionException`（broker 会重投未确认消息）。
 - ERROR 帧在 `receive()` 时抛 `ProtocolException` 并断开；下次调用重新连接并重新订阅已跟踪的目标。`close()` 尽力发送 `DISCONNECT`。

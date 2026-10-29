@@ -113,6 +113,55 @@ final class NatsDriverProtocolTest extends TestCase
         $message->ack();
     }
 
+    public function test_buffer_limit_rejects_unread_messages_during_publish(): void
+    {
+        $driver = $this->driver($this->startServer('normal'), ['buffer_limit' => 1]);
+        $this->subscribe($driver, 'proto.buffered');
+
+        $driver->publish('proto.buffered', new Message('one'));
+
+        $this->expectException(ProtocolException::class);
+        $this->expectExceptionMessage('buffer_limit');
+        $driver->publish('proto.buffered', new Message('two'));
+    }
+
+    public function test_buffer_limit_rejects_messages_for_other_destinations(): void
+    {
+        $driver = $this->driver($this->startServer('burst'), ['buffer_limit' => 1]);
+
+        // The server pushes three messages; receive() returns the first and
+        // leaves the rest unread.
+        $first = $driver->receive('proto.b', new ReceiveOptions(500));
+        self::assertNotNull($first);
+        self::assertSame('burst-1', $first->body());
+
+        // Receiving A drains the remaining B messages into B's buffer; the
+        // second one exceeds buffer_limit and must fail instead of growing.
+        $this->expectException(ProtocolException::class);
+        $this->expectExceptionMessage('buffer_limit');
+        $driver->receive('proto.a', new ReceiveOptions(500));
+    }
+
+    public function test_publish_reconnects_and_retries_after_idle_disconnect(): void
+    {
+        $driver = $this->driver($this->startServer('reconnect'));
+
+        // The fake server closed the connection right after the handshake;
+        // publish must reconnect and retry once.
+        $result = $driver->publish('proto.reconnect', new Message('after-reconnect'));
+        self::assertNotNull($result->id);
+
+        // Subscriptions are connection-scoped and must be rebuilt afterwards.
+        $this->subscribe($driver, 'proto.reconnect');
+        $driver->publish('proto.reconnect', new Message('second'));
+        $message = $driver->receive('proto.reconnect', new ReceiveOptions(500));
+
+        self::assertNotNull($message);
+        self::assertSame('second', $message->body());
+
+        $driver->close();
+    }
+
     public function test_authorization_errors_are_reported(): void
     {
         $port = $this->startServer('error');

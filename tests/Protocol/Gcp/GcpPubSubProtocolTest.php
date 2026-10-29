@@ -10,6 +10,7 @@ use Erikwang2013\Messaging\Contract\ReceiveOptions;
 use Erikwang2013\Messaging\Driver\Gcp\GcpPubSubDriver;
 use Erikwang2013\Messaging\Exception\ProtocolException;
 use Erikwang2013\Messaging\Exception\RequestException;
+use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
 
 final class GcpPubSubProtocolTest extends TestCase
@@ -24,10 +25,13 @@ final class GcpPubSubProtocolTest extends TestCase
 
     private ?GcpPubSubDriver $driver = null;
 
+    private ?int $port = null;
+
     protected function tearDown(): void
     {
         $this->driver?->close();
         $this->driver = null;
+        $this->port = null;
 
         if (is_resource($this->process)) {
             proc_terminate($this->process);
@@ -132,7 +136,44 @@ final class GcpPubSubProtocolTest extends TestCase
         $driver->publish('orders', new Message('hello'));
     }
 
-    private function brokerDriver(string $mode = 'normal'): GcpPubSubDriver
+    public function test_pull_extends_the_ack_deadline(): void
+    {
+        $driver = $this->brokerDriver('normal', ['ack_deadline_seconds' => 45]);
+        $driver->publish('orders', new Message('lease-me'));
+
+        $message = $driver->receive('orders', new ReceiveOptions(1000));
+        self::assertNotNull($message);
+
+        $modify = [];
+        foreach ($this->requests() as $request) {
+            if (str_ends_with($request['path'], ':modifyAckDeadline')) {
+                $modify[] = $request;
+            }
+        }
+
+        self::assertCount(1, $modify);
+        self::assertSame(['ackIds' => ['a-1'], 'ackDeadlineSeconds' => 45], $modify[0]['body']);
+        $message->ack();
+    }
+
+    public function test_zero_ack_deadline_skips_the_extension(): void
+    {
+        $driver = $this->brokerDriver('normal', ['ack_deadline_seconds' => 0]);
+        $driver->publish('orders', new Message('no-lease'));
+
+        $message = $driver->receive('orders', new ReceiveOptions(1000));
+        self::assertNotNull($message);
+
+        foreach ($this->requests() as $request) {
+            self::assertStringNotContainsString(':modifyAckDeadline', $request['path']);
+        }
+        $message->ack();
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function brokerDriver(string $mode = 'normal', array $options = []): GcpPubSubDriver
     {
         $port = $this->startServer($mode);
 
@@ -141,9 +182,23 @@ final class GcpPubSubProtocolTest extends TestCase
             'project_id' => 'test-project',
             'emulator_host' => '127.0.0.1:' . $port,
             'timeout' => 2.0,
-        ]));
+        ] + $options));
 
         return $this->driver;
+    }
+
+    /**
+     * @return list<array{method: string, path: string, body: mixed}>
+     */
+    private function requests(): array
+    {
+        self::assertNotNull($this->port, 'Fake Pub/Sub server is not running.');
+        $response = (new Client())->request('GET', 'http://127.0.0.1:' . $this->port . '/__state');
+        $data = json_decode((string) $response->getBody(), true);
+        self::assertIsArray($data);
+        self::assertIsArray($data['requests'] ?? null);
+
+        return array_values($data['requests']);
     }
 
     private function startServer(string $mode): int
@@ -169,6 +224,7 @@ final class GcpPubSubProtocolTest extends TestCase
 
         $port = (int) trim($line);
         self::assertGreaterThan(0, $port);
+        $this->port = $port;
 
         return $port;
     }

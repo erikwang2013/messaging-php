@@ -151,7 +151,7 @@ final class PulsarTest extends DriverContractTestCase
         $message->ack();
     }
 
-    public function test_batch_publish_is_unsupported(): void
+    public function test_batch_publish_when_supported(): void
     {
         $this->expectException(UnsupportedFeatureException::class);
 

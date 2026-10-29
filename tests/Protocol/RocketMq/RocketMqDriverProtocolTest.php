@@ -184,6 +184,60 @@ final class RocketMqDriverProtocolTest extends TestCase
         $driver->publish($this->topic, new Message('hello'));
     }
 
+    public function test_heartbeat_is_repeated_and_carries_the_subscription(): void
+    {
+        $driver = $this->start('roundtrip', ['heartbeat_interval' => 1]);
+
+        $driver->publish($this->topic, new Message('beat'));
+        $message = $driver->receive($this->topic, new ReceiveOptions(1000));
+        self::assertNotNull($message);
+        $message->ack();
+
+        // The heartbeat is due again after one second; an empty receive keeps pulling.
+        usleep(1_100_000);
+        self::assertNull($driver->receive($this->topic, new ReceiveOptions(300)));
+
+        $heartbeats = array_values(array_filter(
+            $this->logLines(),
+            fn (string $line): bool => str_starts_with($line, 'broker:34 '),
+        ));
+        self::assertGreaterThanOrEqual(2, count($heartbeats));
+        self::assertStringContainsString('topic=' . $this->topic, $heartbeats[0]);
+    }
+
+    public function test_a_new_consumer_resumes_from_the_committed_offset(): void
+    {
+        $driver = $this->start('roundtrip');
+
+        $driver->publish($this->topic, new Message('first'));
+        $driver->publish($this->topic, new Message('second'));
+
+        $first = $driver->receive($this->topic, new ReceiveOptions(1000));
+        self::assertNotNull($first);
+        self::assertSame('first', $first->body());
+        $first->ack();
+
+        // consume_from=last alone would skip straight to the end; the committed offset wins.
+        $fresh = (new RocketMqFactory())->create(ConnectionConfig::fromArray('rocketmq', [
+            'driver' => 'rocketmq',
+            'nameserver' => '127.0.0.1:' . $this->nameserverPort,
+            'group' => $this->group,
+            'timeout' => 0.5,
+            'consume_from' => 'last',
+        ]));
+
+        $second = $fresh->receive($this->topic, new ReceiveOptions(1000));
+        self::assertNotNull($second);
+        self::assertSame('second', $second->body());
+        $second->ack();
+        $fresh->close();
+
+        self::assertNotEmpty(array_filter(
+            $this->logLines(),
+            fn (string $line): bool => str_contains($line, 'broker:14 topic=' . $this->topic . ' queue=0'),
+        ));
+    }
+
     public function test_receive_returns_null_when_the_pull_times_out(): void
     {
         $driver = $this->start('pull_timeout');
@@ -196,7 +250,10 @@ final class RocketMqDriverProtocolTest extends TestCase
         self::assertNotEmpty(array_filter($lines, fn (string $line): bool => str_starts_with($line, 'broker:11 ')));
     }
 
-    private function start(string $scenario): DriverInterface
+    /**
+     * @param array<string, mixed> $overrides
+     */
+    private function start(string $scenario, array $overrides = []): DriverInterface
     {
         $fixture = __DIR__ . '/fixtures/fake_rocketmq.php';
         $command = [PHP_BINARY, $fixture, $scenario, $this->logFile];
@@ -224,7 +281,7 @@ final class RocketMqDriverProtocolTest extends TestCase
         $this->nameserverPort = (int) $matches[1];
         $this->brokerPort = (int) $matches[2];
 
-        $config = ConnectionConfig::fromArray('rocketmq', [
+        $config = ConnectionConfig::fromArray('rocketmq', $overrides + [
             'driver' => 'rocketmq',
             'nameserver' => '127.0.0.1:' . $this->nameserverPort,
             'group' => $this->group,

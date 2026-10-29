@@ -16,7 +16,7 @@ TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依�
 
 20 个产品名收敛为 **13 套协议栈**：Kafka、Redpanda、AutoMQ、Confluent、Azure Event Hubs 共用 Kafka 协议；ActiveMQ 与 Artemis 共用 STOMP 驱动，只通过预设区分端口、requeue 与延迟语义；其余系统各自对应一套协议实现。切换 broker 通常只需改 `driver` 与连接配置，业务代码不变。
 
-分层保持小而清晰：`Manager → Connection → DriverInterface`。`Manager` 负责配置与连接缓存，`Connection` 暴露 `publish / publishBatch / receive / consume / capabilities / close`，协议帧、握手、认证与错误映射全部收在 `src/Driver` 下按协议划分的目录内。驱动工厂在创建连接时校验必填配置；连接与握手由各驱动按需建立（Redis、NATS 在工厂阶段即连接，其余驱动首次操作时惰性连接）。配置错误在 `connection()` 阶段就失败，而不是等到第一次发布。
+分层保持小而清晰：`Manager → Connection → DriverInterface`。`Manager` 负责配置与连接缓存，`Connection` 暴露 `publish / publishBatch / receive / consume / capabilities / close`，协议帧、握手、认证与错误映射全部收在 `src/Driver` 下按协议划分的目录内。驱动工厂在创建连接时校验必填配置；连接与握手由各驱动按需建立（Redis、NATS、RabbitMQ 在工厂阶段即连接，其余驱动首次操作时惰性连接）。配置错误在 `connection()` 阶段就失败，而不是等到第一次发布。
 
 消费模型统一为**拉取式** `receive()`：拉取型协议直接读取，push 型协议（如 STOMP、NATS）在驱动内部缓冲后由 `receive()` 取出；`consume()` 只是 `while` 循环糖。超时返回 `null`，`timeoutMs = 0` 表示阻塞等待。
 
@@ -58,7 +58,7 @@ TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依�
 
 ## 安装
 
-要求 **PHP >= 8.0**，标准扩展 `openssl`（TLS）与 `zlib`（gzip）即可。
+要求 **PHP >= 8.0**，标准扩展 `openssl`（TLS）与 `zlib`（gzip）即可。PHP 8.0 运行时兼容：CI 在 8.0 上执行语法检查与运行时冒烟测试；完整单元测试在 PHP 8.1+ 上运行（PHPUnit 10 要求 PHP 8.1+）。
 
 ```bash
 composer config allow-plugins.erikwang2013/messaging-php true
@@ -82,7 +82,7 @@ composer require erikwang2013/messaging-php
 | Yii2 | `config/messaging.php` |
 | Yii3 | 无需复制：`yiisoft/config` 在运行时自动合并包内配置 |
 
-已存在的目标文件不会被覆盖；如需自定义，直接修改复制后的文件。未允许插件时 Composer 会跳过本插件，安装仍会成功，此时可用各框架文档里的手动发布命令替代。
+已存在的目标文件不会被覆盖；如需自定义，直接修改复制后的文件。插件通过 `extra.plugin-optional` 声明为可选，但该声明只有 Composer 2.5.3+ 支持：在 2.5.3+ 上未配置 `allow-plugins` 时会跳过插件且安装继续成功；Composer 2.2–2.5.2 不支持该声明，未配置 `allow-plugins` 时安装仍会失败。因此请保留上面的 `allow-plugins` 命令。若插件被跳过，可用各框架文档里的手动发布命令替代。
 
 ## 快速开始
 
@@ -252,7 +252,7 @@ P1–P5 驱动能力速查（`capabilities()` 的实际声明）：
 
 ![messaging-php 生命周期：配置校验、连接创建、能力检查、消费循环、错误映射与重连](docs/images/lifecycle.svg)
 
-连接从配置数组开始：`Config::fromArray()` 校验默认连接与必填 `driver`，`Manager::connection()` 懒加载并按名缓存，驱动工厂完成配置校验，并按驱动策略建立连接与握手。连接就绪后先看 `capabilities()`，再进入 publish / receive / consume 循环；`ack()` 或 `reject()` 提交结果，`close()` 释放连接。断开不会自动重连，捕获异常后需重新 `connection()`；重连会重新执行工厂创建与握手，业务侧应保持幂等。
+连接从配置数组开始：`Config::fromArray()` 校验默认连接与必填 `driver`，`Manager::connection()` 懒加载并按名缓存，驱动工厂完成配置校验，并按驱动策略建立连接与握手。连接就绪后先看 `capabilities()`，再进入 publish / receive / consume 循环；`ack()` 或 `reject()` 提交结果，`close()` 释放连接。断开不会自动重连：Manager 会继续缓存已关闭的连接，捕获异常后需先调用 `$manager->disconnect('name')`（或 `$manager->close()` 关闭并清空全部缓存连接）将其从缓存移除，再调用 `connection()` 才会重新执行工厂创建与握手；无参 `disconnect()` 等同于 `close()`。业务侧应保持幂等。
 
 ## 目录结构
 

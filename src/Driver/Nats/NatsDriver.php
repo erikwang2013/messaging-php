@@ -34,6 +34,7 @@ final class NatsDriver implements DriverInterface
     private ?string $queueGroup;
     private float $timeout;
     private bool $headersEnabled;
+    private int $bufferLimit;
     private LoggerInterface $logger;
 
     private ?Socket $socket = null;
@@ -56,6 +57,7 @@ final class NatsDriver implements DriverInterface
         $this->port = self::portOption($config);
         $this->timeout = self::timeoutOption($config);
         $this->headersEnabled = self::headersOption($config);
+        $this->bufferLimit = self::bufferLimitOption($config);
         $this->queueGroup = self::queueGroupOption($config);
         $this->user = self::nullableStringOption($config, 'user');
         $this->pass = self::nullableStringOption($config, 'pass');
@@ -141,8 +143,22 @@ final class NatsDriver implements DriverInterface
             $frame = NatsProtocol::publishFrame($destination, $message->body);
         }
 
-        $this->socket()->write($frame);
-        $this->flush();
+        try {
+            $this->socket()->write($frame);
+            $this->flush();
+        } catch (ConnectionException $exception) {
+            // Idle connections are closed by the server's ping window. Core
+            // NATS is at-most-once, so resending once after reconnect is
+            // acceptable even if the first attempt was delivered.
+            $this->logger->debug('NATS publish failed, reconnecting and retrying once.', [
+                'destination' => $destination,
+                'exception' => $exception->getMessage(),
+            ]);
+
+            $this->reconnect();
+            $this->socket()->write($frame);
+            $this->flush();
+        }
 
         // Without headers there is nowhere to carry the client-side id.
         return new PublishResult($destination, $this->supportsHeaders() ? $id : null);
@@ -196,7 +212,7 @@ final class NatsDriver implements DriverInterface
                     if ($owner === $destination) {
                         return $message;
                     }
-                    $this->buffer[$owner][] = $message;
+                    $this->bufferMessage($owner, $message);
                     break;
                 case 'PING':
                     $this->socket()->write(NatsProtocol::PONG);
@@ -292,6 +308,21 @@ final class NatsDriver implements DriverInterface
         $this->awaitPong();
     }
 
+    /**
+     * Drops the dead connection and re-establishes it. Subscriptions are
+     * connection-scoped, so they are forgotten and recreated lazily; already
+     * delivered messages stay buffered for the caller.
+     */
+    private function reconnect(): void
+    {
+        $this->socket?->close();
+        $this->socket = null;
+        $this->sidToDestination = [];
+        $this->destinationToSid = [];
+        $this->nextSid = 0;
+        $this->connect();
+    }
+
     private function ensureSubscribed(string $destination): void
     {
         if (isset($this->destinationToSid[$destination])) {
@@ -348,7 +379,22 @@ final class NatsDriver implements DriverInterface
             throw new ProtocolException(sprintf('Received a message for unknown subscription [%s].', $frame['sid']));
         }
 
-        $this->buffer[$owner][] = $this->toReceivedMessage($frame);
+        $this->bufferMessage($owner, $this->toReceivedMessage($frame));
+    }
+
+    private function bufferMessage(string $destination, ReceivedMessage $message): void
+    {
+        if (count($this->buffer[$destination] ?? []) >= $this->bufferLimit) {
+            // ProtocolException (not ConnectionException) so publish() does
+            // not mistake local backpressure for a dead socket and reconnect.
+            throw new ProtocolException(sprintf(
+                'NATS driver buffer_limit [%d] reached for destination [%s]; receive pending messages before publishing more.',
+                $this->bufferLimit,
+                $destination,
+            ));
+        }
+
+        $this->buffer[$destination][] = $message;
     }
 
     /**
@@ -437,6 +483,22 @@ final class NatsDriver implements DriverInterface
         }
 
         return $headers;
+    }
+
+    private static function bufferLimitOption(ConnectionConfig $config): int
+    {
+        $limit = $config->get('buffer_limit', 10000);
+        if (is_string($limit) && ctype_digit($limit)) {
+            $limit = (int) $limit;
+        }
+        if (!is_int($limit) || $limit < 1) {
+            throw new \InvalidArgumentException(sprintf(
+                'Connection [%s] requires [buffer_limit] to be a positive integer.',
+                $config->name(),
+            ));
+        }
+
+        return $limit;
     }
 
     private static function queueGroupOption(ConnectionConfig $config): ?string

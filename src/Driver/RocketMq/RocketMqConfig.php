@@ -20,6 +20,7 @@ final class RocketMqConfig
         private string $group,
         private ?string $defaultTopic,
         private float $timeout,
+        private float $heartbeatInterval,
         private bool $consumeFromFirst,
         private int $pullBatchSize,
     ) {
@@ -54,6 +55,14 @@ final class RocketMqConfig
             ));
         }
 
+        $heartbeatInterval = $config->get('heartbeat_interval', 30.0);
+        if (!(is_int($heartbeatInterval) || is_float($heartbeatInterval)) || $heartbeatInterval < 1) {
+            throw new \InvalidArgumentException(sprintf(
+                'Connection [%s] option [heartbeat_interval] must be a number of seconds >= 1.',
+                $config->name(),
+            ));
+        }
+
         $consumeFrom = $config->get('consume_from', 'last');
         if ($consumeFrom !== 'last' && $consumeFrom !== 'first') {
             throw new \InvalidArgumentException(sprintf(
@@ -76,6 +85,7 @@ final class RocketMqConfig
             $group,
             $topic,
             (float) $timeout,
+            (float) $heartbeatInterval,
             $consumeFrom === 'first',
             $pullBatchSize,
         );
@@ -153,6 +163,11 @@ final class RocketMqConfig
     public function timeout(): float
     {
         return $this->timeout;
+    }
+
+    public function heartbeatInterval(): float
+    {
+        return $this->heartbeatInterval;
     }
 
     public function consumeFromFirst(): bool

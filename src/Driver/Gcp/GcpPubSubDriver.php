@@ -38,6 +38,7 @@ final class GcpPubSubDriver implements DriverInterface
     private string $project;
     private string $endpoint;
     private float $timeout;
+    private int $ackDeadlineSeconds;
     private ?string $defaultSubscription;
     private ClientInterface $http;
     private ?ServiceAccountTokenProvider $auth;
@@ -84,6 +85,15 @@ final class GcpPubSubDriver implements DriverInterface
             ));
         }
         $this->defaultSubscription = $subscription;
+
+        $ackDeadline = $config->get('ack_deadline_seconds', 60);
+        if (!is_int($ackDeadline) || $ackDeadline < 0 || $ackDeadline > 600) {
+            throw new \InvalidArgumentException(sprintf(
+                'Connection [%s] option [ack_deadline_seconds] must be an integer between 0 and 600.',
+                $config->name(),
+            ));
+        }
+        $this->ackDeadlineSeconds = $ackDeadline;
 
         $this->logger = $logger;
         $this->http = $http ?? new Client(['http_errors' => false]);
@@ -244,6 +254,11 @@ final class GcpPubSubDriver implements DriverInterface
 
         $id = $message['messageId'] ?? null;
         $key = $message['orderingKey'] ?? null;
+
+        if ($this->ackDeadlineSeconds > 0) {
+            // Extend the lease past the subscription default so handlers have a known window.
+            $this->modifyAckDeadline($subscription, $ackId, $this->ackDeadlineSeconds);
+        }
 
         return new ReceivedMessage(
             body: $body,

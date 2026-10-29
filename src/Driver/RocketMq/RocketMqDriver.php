@@ -20,8 +20,8 @@ use Psr\Log\LoggerInterface;
 /**
  * Synchronous short-polling pull consumer and producer over the RocketMQ 4.x remoting protocol.
  *
- * Offsets are tracked in memory per driver instance and committed through
- * UPDATE_CONSUMER_OFFSET on ack/reject; QUERY_CONSUMER_OFFSET is not used.
+ * Offsets are tracked in memory per driver instance, committed through
+ * UPDATE_CONSUMER_OFFSET on ack/reject, and loaded from the broker on the first pull.
  */
 final class RocketMqDriver implements DriverInterface
 {
@@ -38,7 +38,7 @@ final class RocketMqDriver implements DriverInterface
     /** @var array<string, RocketMqConnection> */
     private array $connections = [];
 
-    /** @var array<string, true> */
+    /** @var array<string, float> address => last heartbeat timestamp */
     private array $heartbeats = [];
 
     /**
@@ -352,6 +352,8 @@ final class RocketMqDriver implements DriverInterface
      */
     private function pull(string $destination, array $queue, ?float $deadline): ?array
     {
+        $this->ensureHeartbeat($queue['address'], $destination);
+
         $key = self::offsetKey($queue['address'], $queue['queueId']);
         $offset = $this->offsets[$queue['topic']][$key] ?? $this->initialOffset($queue);
         $requestDeadline = $deadline === null ? null : min($deadline, microtime(true) + $this->config->timeout());
@@ -369,7 +371,7 @@ final class RocketMqDriver implements DriverInterface
             'subscription' => '',
             'subVersion' => '0',
             'expressionType' => 'TAG',
-        ], '', $requestDeadline, true);
+        ], '', $requestDeadline);
 
         $code = $response->code();
         if ($code === RocketMqProtocol::PULL_NOT_FOUND || $code === RocketMqProtocol::PULL_RETRY_IMMEDIATELY) {
@@ -422,6 +424,32 @@ final class RocketMqDriver implements DriverInterface
      */
     private function initialOffset(array $queue): int
     {
+        $response = $this->brokerRequest($queue['address'], RocketMqProtocol::QUERY_CONSUMER_OFFSET, [
+            'consumerGroup' => $this->config->group(),
+            'topic' => $queue['topic'],
+            'queueId' => (string) $queue['queueId'],
+        ]);
+
+        if ($response->code() === RocketMqProtocol::QUERY_NOT_FOUND) {
+            $offset = $this->fallbackOffset($queue);
+        } else {
+            RocketMqError::throwFor($response, 'query consumer offset');
+            $offset = $response->extInt('offset', -1);
+            if ($offset < 0) {
+                $offset = $this->fallbackOffset($queue);
+            }
+        }
+
+        $this->offsets[$queue['topic']][self::offsetKey($queue['address'], $queue['queueId'])] = $offset;
+
+        return $offset;
+    }
+
+    /**
+     * @param array{address: string, topic: string, queueId: int, retry: bool} $queue
+     */
+    private function fallbackOffset(array $queue): int
+    {
         // Retry queues always start at the min offset so a message sent back before the
         // retry topic was first seen is not skipped by consume_from=last.
         $code = $queue['retry'] || $this->config->consumeFromFirst()
@@ -431,13 +459,10 @@ final class RocketMqDriver implements DriverInterface
         $response = $this->brokerRequest($queue['address'], $code, [
             'topic' => $queue['topic'],
             'queueId' => (string) $queue['queueId'],
-        ], '', null, true);
+        ]);
         RocketMqError::throwFor($response, 'query offset');
 
-        $offset = $response->extInt('offset');
-        $this->offsets[$queue['topic']][self::offsetKey($queue['address'], $queue['queueId'])] = $offset;
-
-        return $offset;
+        return $response->extInt('offset');
     }
 
     /**
@@ -524,7 +549,7 @@ final class RocketMqDriver implements DriverInterface
             'originTopic' => $originTopic,
             'unitMode' => 'false',
             'maxReconsumeTimes' => '0',
-        ], '', null, true);
+        ], '', null);
 
         RocketMqError::throwFor($response, 'send message back');
     }
@@ -541,7 +566,7 @@ final class RocketMqDriver implements DriverInterface
             'topic' => $topic,
             'queueId' => (string) $queueId,
             'commitOffset' => (string) $offset,
-        ], '', null, true);
+        ], '', null);
         RocketMqError::throwFor($response, 'update consumer offset');
 
         $this->committed[$topic][$key] = $offset;
@@ -556,12 +581,9 @@ final class RocketMqDriver implements DriverInterface
         array $extFields,
         string $body = '',
         ?float $deadline = null,
-        bool $consumer = false,
     ): RocketMqCommand {
         try {
-            $connection = $consumer ? $this->consumerConnection($address) : $this->connection($address);
-
-            return $connection->request($code, $extFields, $body, $deadline);
+            return $this->connection($address)->request($code, $extFields, $body, $deadline);
         } catch (ConnectionException | ProtocolException $exception) {
             $this->forgetConnection($address);
 
@@ -584,23 +606,16 @@ final class RocketMqDriver implements DriverInterface
         return $connection;
     }
 
-    private function consumerConnection(string $address): RocketMqConnection
+    private function ensureHeartbeat(string $address, string $topic): void
     {
-        $connection = $this->connection($address);
-        if (!isset($this->heartbeats[$address])) {
-            try {
-                $response = $connection->request(RocketMqProtocol::HEART_BEAT, [], $this->heartbeatBody());
-            } catch (ConnectionException | ProtocolException $exception) {
-                $this->forgetConnection($address);
-
-                throw $exception;
-            }
-
-            RocketMqError::throwFor($response, 'heartbeat');
-            $this->heartbeats[$address] = true;
+        $last = $this->heartbeats[$address] ?? null;
+        if ($last !== null && microtime(true) - $last < $this->config->heartbeatInterval()) {
+            return;
         }
 
-        return $connection;
+        $response = $this->brokerRequest($address, RocketMqProtocol::HEART_BEAT, [], $this->heartbeatBody($topic));
+        RocketMqError::throwFor($response, 'heartbeat');
+        $this->heartbeats[$address] = microtime(true);
     }
 
     private function forgetConnection(string $address): void
@@ -631,7 +646,7 @@ final class RocketMqDriver implements DriverInterface
         return $this->nameserver;
     }
 
-    private function heartbeatBody(): string
+    private function heartbeatBody(string $topic): string
     {
         $data = [
             'clientID' => $this->clientId,
@@ -642,7 +657,11 @@ final class RocketMqDriver implements DriverInterface
                 'consumeFromWhere' => $this->config->consumeFromFirst()
                     ? 'CONSUME_FROM_FIRST_OFFSET'
                     : 'CONSUME_FROM_LAST_OFFSET',
-                'subscriptionDataSet' => [],
+                'subscriptionDataSet' => [[
+                    'topic' => $topic,
+                    'subString' => '*',
+                    'classFilterMode' => false,
+                ]],
                 'unitMode' => false,
             ]],
         ];

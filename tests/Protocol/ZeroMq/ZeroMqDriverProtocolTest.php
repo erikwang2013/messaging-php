@@ -138,6 +138,20 @@ final class ZeroMqDriverProtocolTest extends TestCase
         $driver->close();
     }
 
+    public function test_buffer_limit_throws_for_non_target_destination(): void
+    {
+        $driver = $this->driver($this->startPeer('relay'), ['buffer_limit' => 1]);
+
+        $this->subscribe($driver, 'proto.a');
+        $this->subscribe($driver, 'proto.b');
+
+        $driver->publish('proto.b', new Message('one'));
+        $driver->publish('proto.b', new Message('two'));
+
+        $this->expectException(ProtocolException::class);
+        $driver->receive('proto.a', new ReceiveOptions(1000));
+    }
+
     public function test_receive_returns_null_on_timeout(): void
     {
         $driver = $this->driver($this->startPeer('relay'));

@@ -25,6 +25,7 @@ final class PresetTest extends TestCase
         self::assertSame('AMQ_SCHEDULED_DELAY', $preset->delayHeader);
         self::assertFalse($preset->delayIsAbsolute);
         self::assertFalse($preset->requiresActiveSubscription);
+        self::assertSame(10000, $preset->bufferLimit);
     }
 
     public function test_artemis_preset(): void
@@ -38,6 +39,7 @@ final class PresetTest extends TestCase
         self::assertSame('AMQ_SCHEDULED_DELAY', $preset->delayHeader);
         self::assertFalse($preset->delayIsAbsolute);
         self::assertTrue($preset->requiresActiveSubscription);
+        self::assertSame(10000, $preset->bufferLimit);
     }
 
     public function test_active_mq_capabilities(): void
@@ -94,6 +96,17 @@ final class PresetTest extends TestCase
             'driver' => 'activemq',
             'host' => '127.0.0.1',
             'timeout' => 0,
+        ]));
+    }
+
+    public function test_invalid_buffer_limit_is_rejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new ActiveMqFactory())->create(ConnectionConfig::fromArray('amq', [
+            'driver' => 'activemq',
+            'host' => '127.0.0.1',
+            'buffer_limit' => 0,
         ]));
     }
 

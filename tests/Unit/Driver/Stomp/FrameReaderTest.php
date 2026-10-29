@@ -31,8 +31,13 @@ final class FrameReaderTest extends TestCase
         fwrite($writer, StompFrame::encode(new StompFrame('MESSAGE', ['message-id' => '1'], 'one')));
         fwrite($writer, StompFrame::encode(new StompFrame('MESSAGE', ['message-id' => '2'], 'two')));
 
-        self::assertSame('one', $reader->readFrame(1.0)?->body);
-        self::assertSame('two', $reader->readFrame(1.0)?->body);
+        $first = $reader->readFrame(1.0);
+        self::assertNotNull($first);
+        self::assertSame('one', $first->body);
+
+        $second = $reader->readFrame(1.0);
+        self::assertNotNull($second);
+        self::assertSame('two', $second->body);
     }
 
     public function test_skips_heartbeat_lines_between_frames(): void

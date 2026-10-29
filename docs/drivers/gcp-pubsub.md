@@ -16,6 +16,7 @@
         'credentials_file' => '/etc/gcp/sa.json',      // 与 credentials_json 二选一
         // 'credentials_json' => '{...service account JSON...}',
         'subscription' => 'orders-default',            // 可选：receive('') 的默认订阅
+        'ack_deadline_seconds' => 60,                  // 可选：拉取后延长租约（秒），0 关闭
         'endpoint' => 'https://pubsub.googleapis.com', // 可选
         'timeout' => 30.0,                             // 可选：普通请求超时（秒）
     ],
@@ -30,7 +31,8 @@
 | `emulator_host` | 否 | `null` | 如 `127.0.0.1:8085`；设置后使用 `http://` 且不认证 |
 | `endpoint` | 否 | `https://pubsub.googleapis.com` | API 根地址；显式设置时优先于 emulator 推导值 |
 | `subscription` | 否 | `null` | `receive('')` 时使用的订阅名 |
-| `timeout` | 否 | `30.0` | 发布、ack、token 交换的 HTTP 超时（秒）；`receive()` 使用调用方超时 |
+| `ack_deadline_seconds` | 否 | `60` | 拉取到消息后调用 `:modifyAckDeadline` 延长租约的秒数，整数 0–600；`0` 关闭这次额外请求 |
+| `timeout` | 否 | `30.0` | 发布、ack、租约续期、token 交换的 HTTP 超时（秒）；`receive()` 的 pull 请求使用调用方超时 |
 
 `publish()` 的 `destination` 是 **topic**，`receive()` 的 `destination` 是 **subscription**。
 Pub/Sub 不要求两者同名，但集成测试使用同名资源以便复用契约测试。
@@ -98,6 +100,9 @@ while ($message = $conn->receive('orders-subscription', new ReceiveOptions(5000)
   `PublishResult::id` 为服务端返回的 `messageIds[i]`。
 - **接收**：`POST /v1/projects/{project}/subscriptions/{sub}:pull`，
   body `{"maxMessages":1, "returnImmediately":false}`，返回 `receivedMessages[0]`。
+  - 拉取成功后、返回 `ReceivedMessage` 前，若 `ack_deadline_seconds > 0`，先调用
+    `:modifyAckDeadline` 把该消息租约延长到配置秒数（默认 60），避免处理时间超过订阅默认
+    ack deadline（通常 10 秒）而被重复投递。每次成功拉取因此多一次 HTTP 请求。
   - `timeoutMs > 0`：在该期限内轮询（每次请求以剩余时间作为 HTTP 超时），期限内无消息返回 `null`。
   - `timeoutMs = 0`：循环长轮询（单次 HTTP 超时 95 秒，Pub/Sub 服务端约 90 秒返回空响应），
     直到收到消息；网络错误抛 `ConnectionException`。
@@ -110,6 +115,9 @@ while ($message = $conn->receive('orders-subscription', new ReceiveOptions(5000)
 ## 限制
 
 - **仅 REST pull，不使用 streaming pull**：每条 `receive()` 最多取一条消息；高吞吐场景建议多进程/多 worker 并行拉取。
+- **长任务受租约限制**：消息必须在 `ack_deadline_seconds`（默认 60 秒，最大 600）内处理完并
+  ack/reject，否则 Pub/Sub 会重新投递并产生重复。处理更久请调大该值；超过 600 秒需拆分任务或
+  自行实现续租（驱动不在处理期间再次续租）。
 - **无 exactly-once**：Pub/Sub 默认至少一次投递；重复消息需消费端自行幂等。
 - **不管理 dead-letter policy**：订阅的 dead-letter 配置需在 GCP 侧预建，驱动不读取 `deliveryAttempt`。
 - **不管理 topic/subscription**：不自动创建、不自动删除；`receive()` 对不存在的订阅返回 `RequestException`（404）。

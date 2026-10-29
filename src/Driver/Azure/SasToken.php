@@ -71,8 +71,8 @@ final class SasToken
             throw new \InvalidArgumentException('The SAS expiry must be a UNIX timestamp.');
         }
 
-        // The string to sign is the URL-encoded resource URI, a newline, then the expiry.
-        $encodedResource = rawurlencode($resourceUri);
+        // The string to sign is the URL-encoded lowercase resource URI, a newline, then the expiry.
+        $encodedResource = rawurlencode(strtolower($resourceUri));
         $signature = base64_encode(hash_hmac('sha256', $encodedResource . "\n" . $expires, $key, true));
 
         return sprintf(

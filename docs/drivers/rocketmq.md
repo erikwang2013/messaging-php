@@ -19,6 +19,7 @@ $manager = new Manager([
             'group' => 'messaging',           // 消费组/生产者组名，默认 messaging
             'topic' => null,                  // 默认 topic；destination 为空字符串时使用
             'timeout' => 10.0,                // 连接与单次请求读超时（秒），默认 10.0
+            'heartbeat_interval' => 30.0,     // 重复发送 HEART_BEAT 的间隔（秒），默认 30，最小 1
             'consume_from' => 'last',         // last 或 first，默认 last
             'pull_batch_size' => 1,           // 单次 PULL_MESSAGE 的 maxMsgNums，默认 1
         ],
@@ -58,9 +59,10 @@ remoting 帧格式：`totalLen(4) + headerLen(4) + JSON header + body`。`totalL
 |---|---|---|
 | SEND_MESSAGE | 10 | 发布；extFields 含 producerGroup、topic、queueId、sysFlag、bornTimestamp、flag、properties、defaultTopic、defaultTopicQueueNums |
 | PULL_MESSAGE | 11 | 拉取；consumerGroup、topic、queueId、queueOffset、maxMsgNums、sysFlag（只带 SUBSCRIPTION 位）、subscription |
+| QUERY_CONSUMER_OFFSET | 14 | 每个队列首次拉取前查询 broker 已提交位点；未找到时按 `consume_from` 回退 |
 | UPDATE_CONSUMER_OFFSET | 15 | ack/reject 提交位点 |
 | GET_MAX_OFFSET / GET_MIN_OFFSET | 30 / 31 | 首次拉取时按 `consume_from` 确定起始位点 |
-| HEART_BEAT | 34 | 注册消费组、触发 `%RETRY%group` topic 创建 |
+| HEART_BEAT | 34 | 注册消费组与订阅、触发 `%RETRY%group` topic 创建；按间隔重复发送 |
 | CONSUMER_SEND_MSG_BACK | 36 | requeue；携带物理 offset、group、delayLevel、originMsgId、originTopic |
 | GET_ROUTEINFO_BY_TOPIC | 105 | 从 nameserver 查询 TopicRouteData |
 
@@ -68,12 +70,13 @@ remoting 帧格式：`totalLen(4) + headerLen(4) + JSON header + body`。`totalL
 
 发布流程：先查 topic 路由；topic 尚不存在时回退到 `TBW102` 默认 topic 的路由发送，由 broker 自动建 topic，随后刷新路由。带 key 时按 `crc32(key)` 选择写队列，否则轮询。成功响应的 `msgId`、`queueId`、`queueOffset` 放在 `PublishResult::$raw`。
 
-消费流程：短轮询（每轮间隔 20–50ms），按 queue 轮转 PULL_MESSAGE；解析 broker 返回的连续存储消息记录（magic `0xDAA320A7` / `0xDAA320AB`，含 IPv6 host 标志位）。不发送 long-polling 的 suspend 标志。同时消费 `%RETRY%group`，按消息属性 `RETRY_TOPIC` 归还原 destination；retry 队列始终从最小位点开始，避免漏掉刚 requeue 的消息。压缩消息（compressed flag）抛 `UnsupportedFeatureException`。
+消费流程：短轮询（每轮间隔 20–50ms），按 queue 轮转 PULL_MESSAGE；解析 broker 返回的连续存储消息记录（magic `0xDAA320A7` / `0xDAA320AB`，含 IPv6 host 标志位）。不发送 long-polling 的 suspend 标志。每个队列第一次拉取前先用 QUERY_CONSUMER_OFFSET 查询 broker 已提交位点，没有已提交位点时才按 `consume_from` 取 min/max；retry 队列在无已提交位点时始终从最小位点开始，避免漏掉刚 requeue 的消息。同时消费 `%RETRY%group`，按消息属性 `RETRY_TOPIC` 归还原 destination。压缩消息（compressed flag）抛 `UnsupportedFeatureException`。
 
 ## 语义
 
 - **发布**：同步发送，一次一条。失败直接抛异常，不自动重试；重试可能产生重复消息。
-- **消费位点**：位点保存在驱动实例内存中，首次拉取时按 `consume_from` 取 min/max offset，ack/reject 时提交。不调用 `QUERY_CONSUMER_OFFSET`，进程重启后不会从 broker 已提交位点恢复；`consume_from=last` 会跳过重启前未提交的消息。需要跨进程恢复位点时应使用 `consume_from=first` 或外部记录。
+- **消费位点**：每个队列首次拉取前调用 `QUERY_CONSUMER_OFFSET`；broker 返回已提交位点（>= 0）时从该位点继续，否则按 `consume_from` 取 min/max（retry 队列取 min）。ack/reject 时通过 `UPDATE_CONSUMER_OFFSET` 提交。进程重启后会从 broker 已提交位点恢复，崩溃前已拉取但未 ack 的消息会重新投递。
+- **心跳**：按 `heartbeat_interval`（默认 30 秒，最小 1 秒）对每个 broker 地址重复发送 `HEART_BEAT`，`subscriptionDataSet` 携带当前 destination 的订阅（`subString` 为 `*`），避免空闲消费者被 broker 移除；连接断开后下次拉取会重新注册。
 - **ack / reject**：`ack()` 与 `reject(false)` 提交 `queueOffset + 1`；提交是单调的，旧位点不会覆盖新位点。`reject(true)` 先 send-back，再提交原队列位点；send-back 失败会回退本地拉取位点并抛出异常，消息不会被静默丢弃。
 - **重试**：broker 固定把 send-back 消息投递到 `%RETRY%group`，驱动自动消费并还原 topic，`attempts()` 递增。重试延迟固定为 broker 延迟级别 1（1 秒），不读取消息头里的 `DELAY` 级别。
 - **延迟发布**：`delayMs` 选择不小于请求值的最小 broker 延迟级别：1s、5s、10s、30s、1m、2m…10m、20m、30m、1h、2h 共 18 级。请求超过 2 小时会抛异常。
@@ -88,7 +91,7 @@ remoting 帧格式：`totalLen(4) + headerLen(4) + JSON header + body`。`totalL
 - 不支持批量发布、批量拉取之外的高级流控/消费重平衡；`pull_batch_size > 1` 时多余消息缓存在进程内。
 - 不支持压缩消息体；接收压缩消息会抛 `UnsupportedFeatureException`。
 - 不支持 broker 端 long polling（suspend），空闲时按 20–50ms 间隔短轮询，队列多时请求量较大。
-- 不持久化消费位点，详见上文“消费位点”。
+- 心跳只在拉取前按间隔发送；驱动实例完全没有 `receive()` 调用时不会在后台发送心跳。
 - 只有 master broker 参与读写；不支持从 slave 拉取、broker 切换时的自动重选和 `suggestWhichBrokerId` 重定向。
 - 延迟只支持 broker 默认的 18 个级别，不支持自定义 `messageDelayLevel` 的时间表。
 - 不检查 `defaultTopicQueueNums` 与 broker 配置的差异；依赖 `autoCreateTopicEnable=true` 或预建 topic。

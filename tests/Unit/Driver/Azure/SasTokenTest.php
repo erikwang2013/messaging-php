@@ -34,6 +34,23 @@ final class SasTokenTest extends TestCase
         );
     }
 
+    public function test_generate_canonicalises_the_resource_uri_to_lowercase(): void
+    {
+        $token = SasToken::generate(
+            'https://Example.ServiceBus.Windows.Net/Orders',
+            self::KEY_NAME,
+            self::KEY,
+            1700000000,
+        );
+
+        self::assertSame(
+            'SharedAccessSignature sr=https%3A%2F%2Fexample.servicebus.windows.net%2Forders'
+            . '&sig=5f3Kb%2FOMKHeq4U%2FMFKS18IFughjgA9a8m1uGh5SslZA%3D'
+            . '&se=1700000000&skn=RootManageSharedAccessKey',
+            $token,
+        );
+    }
+
     public function test_generate_encodes_a_namespace_resource(): void
     {
         $token = SasToken::generate(

@@ -92,6 +92,13 @@ final class NatsDriverTest extends TestCase
         $this->driver(['queue_group' => 'two words']);
     }
 
+    public function test_invalid_buffer_limit_is_rejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->driver(['buffer_limit' => 0]);
+    }
+
     /**
      * @param array<string, mixed> $options
      */

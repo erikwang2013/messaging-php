@@ -155,6 +155,47 @@ final class GcpPubSubFactoryTest extends TestCase
         ]));
     }
 
+    public function test_ack_deadline_seconds_accepts_the_valid_range(): void
+    {
+        foreach ([0, 60, 600] as $seconds) {
+            $driver = (new GcpPubSubFactory())->create($this->config([
+                'project_id' => 'test-project',
+                'emulator_host' => '127.0.0.1:8085',
+                'ack_deadline_seconds' => $seconds,
+            ]));
+
+            self::assertInstanceOf(GcpPubSubDriver::class, $driver);
+        }
+    }
+
+    public function test_ack_deadline_seconds_must_be_an_integer(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('[ack_deadline_seconds]');
+
+        (new GcpPubSubFactory())->create($this->config([
+            'project_id' => 'test-project',
+            'emulator_host' => '127.0.0.1:8085',
+            'ack_deadline_seconds' => '60',
+        ]));
+    }
+
+    public function test_ack_deadline_seconds_must_be_between_zero_and_600(): void
+    {
+        foreach ([-1, 601] as $seconds) {
+            try {
+                (new GcpPubSubFactory())->create($this->config([
+                    'project_id' => 'test-project',
+                    'emulator_host' => '127.0.0.1:8085',
+                    'ack_deadline_seconds' => $seconds,
+                ]));
+                self::fail('Expected an InvalidArgumentException.');
+            } catch (\InvalidArgumentException $exception) {
+                self::assertStringContainsString('[ack_deadline_seconds]', $exception->getMessage());
+            }
+        }
+    }
+
     /**
      * @param array<string, mixed> $options
      */

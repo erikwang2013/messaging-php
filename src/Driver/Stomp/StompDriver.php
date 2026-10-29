@@ -56,6 +56,7 @@ final class StompDriver implements DriverInterface
     private ?string $passcode;
     private string $prefix;
     private float $connectTimeout;
+    private int $bufferLimit;
     private Capabilities $capabilities;
     private LoggerInterface $logger;
 
@@ -95,6 +96,15 @@ final class StompDriver implements DriverInterface
             throw new \InvalidArgumentException('The STOMP [timeout] option must be a positive number.');
         }
         $this->connectTimeout = (float) $timeout;
+
+        $bufferLimit = $config->get('buffer_limit', $preset->bufferLimit);
+        if (is_string($bufferLimit) && ctype_digit($bufferLimit)) {
+            $bufferLimit = (int) $bufferLimit;
+        }
+        if (!is_int($bufferLimit) || $bufferLimit < 1) {
+            throw new \InvalidArgumentException('The STOMP [buffer_limit] option must be a positive integer.');
+        }
+        $this->bufferLimit = $bufferLimit;
 
         $this->capabilities = new Capabilities(
             ack: true,
@@ -167,6 +177,17 @@ final class StompDriver implements DriverInterface
                     $messageDestination = $this->messageDestination($frame);
                     if ($messageDestination === $target) {
                         return $this->wrapMessage($frame);
+                    }
+                    if (count($this->pending[$messageDestination] ?? []) >= $this->bufferLimit) {
+                        $this->disconnect();
+                        throw new ConnectionException(sprintf(
+                            'STOMP [buffer_limit] of %d unread messages reached for destination [%s] while waiting '
+                            . 'for [%s]. Consume that destination before reading others; the connection was reset '
+                            . 'and unacknowledged messages will be redelivered.',
+                            $this->bufferLimit,
+                            $messageDestination,
+                            $target,
+                        ));
                     }
                     $this->pending[$messageDestination][] = $frame;
                     break;

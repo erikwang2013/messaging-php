@@ -16,6 +16,7 @@ final class RocketMqProtocol
 
     public const SEND_MESSAGE = 10;
     public const PULL_MESSAGE = 11;
+    public const QUERY_CONSUMER_OFFSET = 14;
     public const UPDATE_CONSUMER_OFFSET = 15;
     public const GET_MAX_OFFSET = 30;
     public const GET_MIN_OFFSET = 31;
@@ -32,6 +33,7 @@ final class RocketMqProtocol
     public const PULL_NOT_FOUND = 19;
     public const PULL_RETRY_IMMEDIATELY = 20;
     public const PULL_OFFSET_MOVED = 21;
+    public const QUERY_NOT_FOUND = 22;
     public const FLOW_CONTROL = 215;
 
     public const DEFAULT_TOPIC = 'TBW102';

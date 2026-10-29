@@ -17,6 +17,7 @@ final class Preset
         public ?string $delayHeader,
         public bool $delayIsAbsolute,
         public bool $requiresActiveSubscription = false,
+        public int $bufferLimit = 10000,
     ) {
     }
 }

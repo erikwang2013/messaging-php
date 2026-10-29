@@ -131,6 +131,20 @@ final class ZeroMqDriverTest extends TestCase
         $this->driver(['tcp_nodelay' => 'yes']);
     }
 
+    public function test_non_positive_buffer_limit_is_rejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->driver(['buffer_limit' => 0]);
+    }
+
+    public function test_non_integer_buffer_limit_is_rejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->driver(['buffer_limit' => '10']);
+    }
+
     public function test_factory_does_not_connect_eagerly(): void
     {
         $driver = (new ZeroMqFactory())->create(ConnectionConfig::fromArray('zeromq', [

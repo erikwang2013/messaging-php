@@ -36,6 +36,7 @@ final class ZeroMqDriver implements DriverInterface
     private ?string $identity;
     private float $timeout;
     private bool $tcpNoDelay;
+    private int $bufferLimit;
     private LoggerInterface $logger;
 
     private ?ZmtpConnection $publisher = null;
@@ -55,6 +56,7 @@ final class ZeroMqDriver implements DriverInterface
         $this->identity = self::nullableStringOption($config, 'identity');
         $this->timeout = self::timeoutOption($config);
         $this->tcpNoDelay = self::tcpNoDelayOption($config);
+        $this->bufferLimit = self::bufferLimitOption($config);
         $this->logger = $logger ?? new NullLogger();
     }
 
@@ -117,6 +119,15 @@ final class ZeroMqDriver implements DriverInterface
                 );
                 if ($incoming['destination'] === $destination) {
                     return $message;
+                }
+
+                // Bound per-destination buffering so a flood for one topic cannot exhaust memory.
+                if (count($this->buffer[$incoming['destination']] ?? []) >= $this->bufferLimit) {
+                    throw new ProtocolException(sprintf(
+                        'ZeroMQ buffer limit of %d messages reached for destination [%s].',
+                        $this->bufferLimit,
+                        $incoming['destination'],
+                    ));
                 }
 
                 // A message for another subscribed topic: keep it for that destination.
@@ -331,6 +342,19 @@ final class ZeroMqDriver implements DriverInterface
         }
 
         return $tcpNoDelay;
+    }
+
+    private static function bufferLimitOption(ConnectionConfig $config): int
+    {
+        $limit = $config->get('buffer_limit', 10_000);
+        if (!is_int($limit) || $limit < 1) {
+            throw new \InvalidArgumentException(sprintf(
+                'Connection [%s] requires [buffer_limit] to be a positive integer.',
+                $config->name(),
+            ));
+        }
+
+        return $limit;
     }
 
     private static function nullableStringOption(ConnectionConfig $config, string $key): ?string

@@ -12,6 +12,7 @@ use Erikwang2013\Messaging\Driver\Stomp\ActiveMqFactory;
 use Erikwang2013\Messaging\Driver\Stomp\ArtemisFactory;
 use Erikwang2013\Messaging\Driver\Stomp\StompFrame;
 use Erikwang2013\Messaging\Exception\AuthenticationException;
+use Erikwang2013\Messaging\Exception\ConnectionException;
 use Erikwang2013\Messaging\Exception\ProtocolException;
 use Erikwang2013\Messaging\Exception\UnsupportedFeatureException;
 use PHPUnit\Framework\TestCase;
@@ -241,6 +242,24 @@ final class StompProtocolTest extends TestCase
 
         self::assertNotNull($send);
         self::assertSame('500', $send->header('AMQ_SCHEDULED_DELAY'));
+
+        $driver->close();
+    }
+
+    public function test_non_target_buffer_limit_resets_the_connection(): void
+    {
+        $driver = $this->createDriver('activemq', $this->startServer('echo'), ['buffer_limit' => 2]);
+        $driver->publish('busy', new Message('b1'));
+        $driver->publish('busy', new Message('b2'));
+        $driver->publish('busy', new Message('b3'));
+
+        try {
+            $driver->receive('quiet', new ReceiveOptions(2000));
+            self::fail('The non-target destination buffer limit must be enforced.');
+        } catch (ConnectionException $exception) {
+            self::assertStringContainsString('buffer_limit', $exception->getMessage());
+            self::assertStringContainsString('/queue/busy', $exception->getMessage());
+        }
 
         $driver->close();
     }

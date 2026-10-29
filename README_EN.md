@@ -16,7 +16,7 @@ Project site: [https://package.erik.xyz/messaging](https://package.erik.xyz/mess
 
 Twenty product names collapse into **13 protocol stacks**: Kafka, Redpanda, AutoMQ, Confluent and Azure Event Hubs share the Kafka protocol; ActiveMQ and Artemis share the STOMP driver, distinguished only by presets for port, requeue and delay semantics; every other system has its own protocol implementation. Switching brokers usually means changing only the `driver` and connection settings, while business code stays the same.
 
-The layering stays small and clear: `Manager → Connection → DriverInterface`. `Manager` owns configuration and the connection cache; `Connection` exposes `publish / publishBatch / receive / consume / capabilities / close`; protocol frames, handshakes, authentication and error mapping all live in per-protocol directories under `src/Driver`. The driver factory validates required configuration when creating a connection, and connections and handshakes are established on demand (Redis and NATS connect during the factory stage; the others connect lazily on first operation). Configuration errors surface at `connection()` instead of waiting until the first publish.
+The layering stays small and clear: `Manager → Connection → DriverInterface`. `Manager` owns configuration and the connection cache; `Connection` exposes `publish / publishBatch / receive / consume / capabilities / close`; protocol frames, handshakes, authentication and error mapping all live in per-protocol directories under `src/Driver`. The driver factory validates required configuration when creating a connection, and connections and handshakes are established on demand (Redis, NATS and RabbitMQ connect during the factory stage; the others connect lazily on first operation). Configuration errors surface at `connection()` instead of waiting until the first publish.
 
 Consumption follows a single pull-based `receive()` model: pull-style protocols read directly, while push-style protocols (such as STOMP and NATS) buffer inside the driver and let `receive()` drain the buffer. `consume()` is just `while`-loop sugar. A timeout returns `null`, and `timeoutMs = 0` blocks indefinitely.
 
@@ -58,7 +58,7 @@ Twelve Xiaodi expressions (source files in [docs/pet-expressions](docs/pet-expre
 
 ## Installation
 
-Requires **PHP >= 8.0** plus the standard `openssl` (TLS) and `zlib` (gzip) extensions.
+Requires **PHP >= 8.0** plus the standard `openssl` (TLS) and `zlib` (gzip) extensions. PHP 8.0 is runtime compatible: CI runs syntax checks and a runtime smoke test on 8.0, while the full unit suite runs on PHP 8.1+ (PHPUnit 10 requires PHP 8.1+).
 
 ```bash
 composer config allow-plugins.erikwang2013/messaging-php true
@@ -82,7 +82,7 @@ This package is also a Composer plugin. Composer 2.2+ requires the `allow-plugin
 | Yii2 | `config/messaging.php` |
 | Yii3 | No copy needed: `yiisoft/config` merges the package config at runtime |
 
-Existing files are never overwritten. If the plugin is not allowed, Composer skips it and installation still succeeds; use the manual publish commands in each framework document instead.
+Existing files are never overwritten; to customise the config, edit the copied file. The plugin declares itself optional through `extra.plugin-optional`, but only Composer 2.5.3+ understands that declaration: on 2.5.3+ the plugin is skipped and installation still succeeds when `allow-plugins` is not configured, while Composer 2.2–2.5.2 does not support it and still fails without `allow-plugins`. Keep the `allow-plugins` command above. If the plugin is skipped, use the manual publish commands in each framework document instead.
 
 ## Quick start
 
@@ -252,7 +252,7 @@ Publish path: a `Message` enters the driver through `Connection::publish`, is en
 
 ![messaging-php lifecycle: config validation, connection creation, capability check, consume loop, error mapping and reconnect](docs/images/en/lifecycle.svg)
 
-A connection starts from a config array: `Config::fromArray()` validates the default connection and the required `driver`, `Manager::connection()` lazily loads and caches by name, and the driver factory completes config validation and establishes the connection and handshake according to the driver's policy. Once ready, check `capabilities()` and enter the publish / receive / consume loop; `ack()` or `reject()` commits the outcome, and `close()` releases the connection. A dropped connection is not reconnected automatically — catch the exception and call `connection()` again. Reconnecting repeats factory creation and handshake, so business logic should stay idempotent.
+A connection starts from a config array: `Config::fromArray()` validates the default connection and the required `driver`, `Manager::connection()` lazily loads and caches by name, and the driver factory completes config validation and establishes the connection and handshake according to the driver's policy. Once ready, check `capabilities()` and enter the publish / receive / consume loop; `ack()` or `reject()` commits the outcome, and `close()` releases the connection. A dropped connection is not reconnected automatically — the manager keeps the closed connection cached, so after catching the exception call `$manager->disconnect('name')` (or `$manager->close()` to release every cached connection) before calling `connection()` again. Only then does `connection()` repeat factory creation and handshake; `disconnect()` with no argument is equivalent to `close()`. Business logic should stay idempotent.
 
 ## Directory structure
 

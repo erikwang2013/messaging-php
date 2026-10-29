@@ -27,6 +27,7 @@ fflush(STDOUT);
 
 $messages = [];
 $pending = [];
+$requests = [];
 $nextMessageId = 0;
 $nextAckId = 0;
 
@@ -37,6 +38,15 @@ while (($client = stream_socket_accept($server, 30.0)) !== false) {
         continue;
     }
     [$method, $path, $body] = $request;
+
+    if ($method === 'GET' && $path === '/__state') {
+        // Inspection endpoint for protocol assertions; not part of the Pub/Sub API.
+        respond($client, 200, json_encode(['requests' => $requests], JSON_THROW_ON_ERROR));
+        fclose($client);
+        continue;
+    }
+
+    $requests[] = ['method' => $method, 'path' => $path, 'body' => json_decode($body, true)];
 
     if ($mode === 'error') {
         respond($client, 500, '{"error":{"code":500,"message":"emulator exploded","status":"INTERNAL"}}');

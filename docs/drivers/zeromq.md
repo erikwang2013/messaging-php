@@ -14,6 +14,7 @@
 | `identity` | 否 | null | ZMTP READY 中携带的 `Identity` 元数据 |
 | `timeout` | 否 | `5.0` | 连接、握手与单次帧读取超时（秒） |
 | `tcp_nodelay` | 否 | `true` | 启用 TCP_NODELAY。订阅帧很小，关闭后可能被 Nagle 延迟 |
+| `buffer_limit` | 否 | `10000` | 每个非目标 destination 在内存中最多缓存的消息数；超出时抛 `ProtocolException` |
 
 ```php
 use Erikwang2013\Messaging\Contract\Message;
@@ -68,6 +69,7 @@ $connection->publish('orders.created', new Message('hello'));
 ## 语义与限制
 
 - **至多一次**：消息只存在于 TCP 缓冲区，订阅者离线、慢消费或对端重启都会丢失消息，没有重放。
+- **有界缓冲**：`receive()` 会为其他已订阅 destination 暂存消息，每个 destination 最多 `buffer_limit` 条，超限抛 `ProtocolException`。缓冲仅在内存中，`close()` 或进程退出后丢失，不会持久化。
 - **慢加入（slow joiner）**：SUB 的订阅需要先到达 PUB 端；先发布后订阅会丢消息。请使用独立的订阅进程并先完成首次 `receive()`（或短 timeout 调用）再发布。
 - **topic 是消息前缀**：这是 ZeroMQ PUB/SUB 的原生过滤语义。第三方发布者必须把 topic 放在 body 开头；`receive()` 会剥离子服务最长匹配的订阅前缀作为消息 body。若两个 destination 存在前缀关系（如 `orders` 与 `orders.eu`），按最长匹配路由。
 - **同一实例双连接**：因为一个 ZeroMQ socket 只有一种角色，同时发布和接收会向同一 host:port 建立两条独立连接。多数 libzmq 端点无法在同一端口同时提供 PUB 与 SUB（或 PUSH 与 PULL），生产环境请让发布端、订阅端分别指向对端，或部署一个双角色中继/网关。

@@ -94,7 +94,8 @@ $conn->publish('orders', new Message('retry', [], null, 30_000)); // 30 秒后�
 SharedAccessSignature sr={urlencode(resourceURI)}&sig={urlencode(base64(HMAC-SHA256(key, urlencode(resourceURI) + "\n" + expiry)))}&se={expiry}&skn={urlencode(keyName)}
 ```
 
-- `resourceURI` 为 `{endpoint}/{实体路径}`（队列，或 topic 用于发布）；签名字符串中的 URI 先做 URL 编码。
+- `resourceURI` 为 `{endpoint}/{实体路径}`（队列，或 topic 用于发布）；先转小写，再做 URL 编码后参与签名，
+  `sr=` 也使用同一小写形式（Azure 按小写规范校验签名）。
 - `expiry` 为 UNIX 秒；token 有效期 3600 秒，剩余 300 秒时自动刷新。
 - 每个实体路径单独缓存 token；所有请求携带 `Authorization: SharedAccessSignature ...`。
 - key 按 Azure 门户字符串原样参与 HMAC，不做 base64 解码。
@@ -170,7 +171,7 @@ SharedAccessSignature sr={urlencode(resourceURI)}&sig={urlencode(base64(HMAC-SHA
   返回 `null` 后由 `consume()` 循环；高吞吐场景建议多进程并行。
 - **Service Bus emulator 不支持 REST data-plane**，因此集成测试默认使用内存假传输；
   真实 Azure 测试为可选，且队列必须预建。
-- 实体名大小写不敏感；驱动保留调用方传入的大小写（SAS 资源 URI 与请求路径一致）。
+- 实体名大小写不敏感；请求路径保留调用方传入的大小写，但 SAS 始终用小写规范化的资源 URI 签名。
 - 自定义 header 名按 HTTP 语义大小写不敏感；返回时保留服务端返回的写法。
 
 ## 错误映射
