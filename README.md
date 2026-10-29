@@ -8,7 +8,7 @@
 
 TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依赖 rdkafka / ext-zmq / ext-redis 等 broker SDK 或扩展，`composer require` 后即可使用。
 
-当前进度：**P1–P4** 已实现 18 个驱动名——ActiveMQ、ActiveMQ Artemis、Redis Streams、NATS Core、NSQ、Beanstalkd、AWS SQS / SNS / Kinesis、Google Cloud Pub/Sub、Azure Service Bus、RabbitMQ、ZeroMQ、Kafka、Redpanda、AutoMQ、Confluent Platform、Azure Event Hubs。剩余 Pulsar 与 RocketMQ 按 P5 推进，完成情况与能力差异以 [驱动支持矩阵](docs/drivers.md) 为准。
+当前进度：**P1–P5 全部完成**，20 个驱动名全部实现——ActiveMQ、ActiveMQ Artemis、Redis Streams、NATS Core、NSQ、Beanstalkd、AWS SQS / SNS / Kinesis、Google Cloud Pub/Sub、Azure Service Bus、RabbitMQ、ZeroMQ、Kafka、Redpanda、AutoMQ、Confluent Platform、Azure Event Hubs、Pulsar、RocketMQ。完成情况与能力差异以 [驱动支持矩阵](docs/drivers.md) 为准。
 
 项目站点：[https://package.erik.xyz/messaging](https://package.erik.xyz/messaging)
 
@@ -184,9 +184,10 @@ return [
 | P3 | `rabbitmq` | RabbitMQ | 已实现（默认交换机） |
 | P3 | `zeromq` | ZeroMQ | 已实现（PUB/SUB、PUSH/PULL） |
 | P4 | `kafka`、`redpanda`、`automq`、`confluent`、`eventhubs` | Kafka 系 5 个产品 | 已实现（无 SASL） |
-| P5 | `pulsar`、`rocketmq` | Apache Pulsar、Apache RocketMQ | 规划中 |
+| P5 | `pulsar` | Apache Pulsar | 已实现（实验；未跑真实 broker） |
+| P5 | `rocketmq` | Apache RocketMQ | 已实现（实验；未跑真实 broker） |
 
-P1–P4 驱动能力速查（`capabilities()` 的实际声明）：
+P1–P5 驱动能力速查（`capabilities()` 的实际声明）：
 
 | 驱动 | ack | requeue | delay | consumer group | 关键限制 |
 |---|---|---|---|---|---|
@@ -204,8 +205,12 @@ P1–P4 驱动能力速查（`capabilities()` 的实际声明）：
 | `rabbitmq` | ✓ | ✓ | ✗ | ✗ | 默认交换机；无 publisher confirm |
 | `zeromq` | ✗ | ✗ | ✗ | ✗ | PUB/SUB、PUSH/PULL；无持久化/确认 |
 | `kafka` 系 | ✓（提交 offset） | ✓（seek 回退） | ✗ | ✓ | 仅 PLAINTEXT/TLS、gzip；无 SASL |
+| `pulsar` | ✓ | ✓（negative ack） | ✓ | ✓ | 实验；无 batching/压缩/schema |
+| `rocketmq` | ✓ | ✓（重试队列） | ✓（延迟等级） | ✓ | 实验；4.x remoting |
 
-逐驱动文档：[Beanstalkd](docs/drivers/beanstalkd.md) · [Redis Streams](docs/drivers/redis-streams.md) · [NSQ](docs/drivers/nsq.md) · [ActiveMQ](docs/drivers/activemq.md) · [Artemis](docs/drivers/artemis.md) · [NATS](docs/drivers/nats.md) · [SQS](docs/drivers/sqs.md) · [SNS](docs/drivers/sns.md) · [Kinesis](docs/drivers/kinesis.md) · [GCP Pub/Sub](docs/drivers/gcp-pubsub.md) · [Azure Service Bus](docs/drivers/azure-service-bus.md) · [RabbitMQ](docs/drivers/rabbitmq.md) · [ZeroMQ](docs/drivers/zeromq.md) · [Kafka](docs/drivers/kafka.md)
+13 套协议栈已全部实现并覆盖 20 个驱动名。
+
+逐驱动文档：[Beanstalkd](docs/drivers/beanstalkd.md) · [Redis Streams](docs/drivers/redis-streams.md) · [NSQ](docs/drivers/nsq.md) · [ActiveMQ](docs/drivers/activemq.md) · [Artemis](docs/drivers/artemis.md) · [NATS](docs/drivers/nats.md) · [SQS](docs/drivers/sqs.md) · [SNS](docs/drivers/sns.md) · [Kinesis](docs/drivers/kinesis.md) · [GCP Pub/Sub](docs/drivers/gcp-pubsub.md) · [Azure Service Bus](docs/drivers/azure-service-bus.md) · [RabbitMQ](docs/drivers/rabbitmq.md) · [ZeroMQ](docs/drivers/zeromq.md) · [Kafka](docs/drivers/kafka.md) · [Pulsar](docs/drivers/pulsar.md) · [RocketMQ](docs/drivers/rocketmq.md)
 
 > P1 驱动目前均为明文 TCP，TLS 配置随驱动逐步开放；P2 云服务驱动将使用 HTTPS。
 
@@ -213,7 +218,7 @@ P1–P4 驱动能力速查（`capabilities()` 的实际声明）：
 
 ![messaging-php 架构设计：框架适配层、核心层、按协议分组的驱动适配层、Broker 与云服务层](docs/images/architecture.svg)
 
-自上而下四层：框架适配层只做容器绑定与配置发布；核心层 `Manager / Config / Connection` 与协议无关；驱动适配层按协议分组，20 个驱动名共享 13 套协议实现，Manager 按驱动名选择工厂、创建后的连接按名缓存；最下层是自建 broker 与云服务。图中高亮为 P1–P4 已实现的驱动，其余按阶段推进。所有驱动实现同一个 `DriverInterface`，新增 broker 不需要改公开 API。
+自上而下四层：框架适配层只做容器绑定与配置发布；核心层 `Manager / Config / Connection` 与协议无关；驱动适配层按协议分组，20 个驱动名共享 13 套协议实现，Manager 按驱动名选择工厂、创建后的连接按名缓存；最下层是自建 broker 与云服务。图中全部 20 个驱动名均已实现并高亮。所有驱动实现同一个 `DriverInterface`，新增 broker 不需要改公开 API。
 
 ## 功能设计
 

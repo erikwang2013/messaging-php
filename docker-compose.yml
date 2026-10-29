@@ -56,6 +56,14 @@ services:
       - "15672:15672"
     profiles: ["rabbitmq"]
 
+  pulsar:
+    image: apachepulsar/pulsar:latest
+    command: bin/pulsar standalone
+    ports:
+      - "6650:6650"
+      - "8080:8080"
+    profiles: ["pulsar"]
+
   redpanda:
     image: redpandadata/redpanda:latest
     command:

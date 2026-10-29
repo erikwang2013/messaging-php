@@ -7,8 +7,8 @@
 | `rabbitmq` | RabbitMQ | AMQP 0-9-1 | 一等 | 已实现（P3；默认交换机，无 publisher confirm） |
 | `kafka` `redpanda` `automq` `confluent` `eventhubs` | Kafka、Redpanda、AutoMQ、Confluent Platform、Azure Event Hubs（Kafka 端点） | Kafka wire protocol | 一等（Event Hubs 复用 Kafka 端点） | 已实现（P4；无 SASL，Event Hubs 需 SASL 才可连） |
 | `activemq` `artemis` | ActiveMQ Classic、ActiveMQ Artemis | STOMP 1.2 | 一等 | 已实现（P1） |
-| `pulsar` | Apache Pulsar | Pulsar 二进制协议 | 实验 | 规划中 |
-| `rocketmq` | Apache RocketMQ 4.x/5.x | RocketMQ remoting | 实验 | 规划中 |
+| `pulsar` | Apache Pulsar | Pulsar 二进制协议 | 实验 | 已实现（P5；未跑真实 broker） |
+| `rocketmq` | Apache RocketMQ 4.x/5.x | RocketMQ remoting | 实验 | 已实现（P5；未跑真实 broker） |
 | `nats` | NATS Core + JetStream | NATS 文本协议 | 一等（Core）/ 实验（JetStream） | Core 已实现（P1）；JetStream 未实现 |
 | `redis` | Redis Streams | RESP | 一等 | 已实现（P1） |
 | `sqs` | AWS SQS | AWS JSON API + SigV4 | 一等 | 已实现（P2；契约测试针对脚本化 HTTP 服务） |

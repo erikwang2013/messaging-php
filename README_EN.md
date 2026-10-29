@@ -8,7 +8,7 @@ A unified message queue and event streaming client written in pure PHP: one `pub
 
 TCP protocols are implemented with the PHP standard library, and HTTP cloud services connect directly through Guzzle. No rdkafka, ext-zmq, ext-redis or other broker SDK or extension is required — it works right after `composer require`.
 
-Current progress: **P1–P4** are implemented, covering 18 driver names — ActiveMQ, ActiveMQ Artemis, Redis Streams, NATS Core, NSQ, Beanstalkd, AWS SQS / SNS / Kinesis, Google Cloud Pub/Sub, Azure Service Bus, RabbitMQ, ZeroMQ, Kafka, Redpanda, AutoMQ, Confluent Platform and Azure Event Hubs. Pulsar and RocketMQ remain in P5; see the [driver support matrix](docs/drivers.md) for status and capability differences.
+**All P1–P5 phases are complete**, covering all 20 driver names — ActiveMQ, ActiveMQ Artemis, Redis Streams, NATS Core, NSQ, Beanstalkd, AWS SQS / SNS / Kinesis, Google Cloud Pub/Sub, Azure Service Bus, RabbitMQ, ZeroMQ, Kafka, Redpanda, AutoMQ, Confluent Platform, Azure Event Hubs, Pulsar and RocketMQ. See the [driver support matrix](docs/drivers.md) for status and capability differences.
 
 Project site: [https://package.erik.xyz/messaging](https://package.erik.xyz/messaging)
 
@@ -184,9 +184,10 @@ Twenty product names are carried by 13 protocol stacks. See [docs/drivers.md](do
 | P3 | `rabbitmq` | RabbitMQ | Implemented (default exchange) |
 | P3 | `zeromq` | ZeroMQ | Implemented (PUB/SUB, PUSH/PULL) |
 | P4 | `kafka`, `redpanda`, `automq`, `confluent`, `eventhubs` | 5 Kafka-family products | Implemented (no SASL) |
-| P5 | `pulsar`, `rocketmq` | Apache Pulsar, Apache RocketMQ | Planned |
+| P5 | `pulsar` | Apache Pulsar | Implemented (experimental; no live broker run) |
+| P5 | `rocketmq` | Apache RocketMQ | Implemented (experimental; no live broker run) |
 
-P1–P4 driver capability quick reference (the actual `capabilities()` declarations):
+P1–P5 driver capability quick reference (the actual `capabilities()` declarations):
 
 | Driver | ack | requeue | delay | consumer group | Key limitations |
 |---|---|---|---|---|---|
@@ -204,8 +205,12 @@ P1–P4 driver capability quick reference (the actual `capabilities()` declarati
 | `rabbitmq` | ✓ | ✓ | ✗ | ✗ | default exchange; no publisher confirm |
 | `zeromq` | ✗ | ✗ | ✗ | ✗ | PUB/SUB and PUSH/PULL; no persistence or acknowledgement |
 | `kafka` family | ✓ (offset commit) | ✓ (seek back) | ✗ | ✓ | PLAINTEXT/TLS and gzip only; no SASL |
+| `pulsar` | ✓ | ✓ (negative ack) | ✓ | ✓ | Experimental; no batching/compression/schema |
+| `rocketmq` | ✓ | ✓ (retry queue) | ✓ (delay level) | ✓ | Experimental; 4.x remoting |
 
-Per-driver docs: [Beanstalkd](docs/drivers/beanstalkd.md) · [Redis Streams](docs/drivers/redis-streams.md) · [NSQ](docs/drivers/nsq.md) · [ActiveMQ](docs/drivers/activemq.md) · [Artemis](docs/drivers/artemis.md) · [NATS](docs/drivers/nats.md) · [SQS](docs/drivers/sqs.md) · [SNS](docs/drivers/sns.md) · [Kinesis](docs/drivers/kinesis.md) · [GCP Pub/Sub](docs/drivers/gcp-pubsub.md) · [Azure Service Bus](docs/drivers/azure-service-bus.md) · [RabbitMQ](docs/drivers/rabbitmq.md) · [ZeroMQ](docs/drivers/zeromq.md) · [Kafka](docs/drivers/kafka.md)
+All 13 protocol stacks now cover the 20 driver names.
+
+Per-driver docs: [Beanstalkd](docs/drivers/beanstalkd.md) · [Redis Streams](docs/drivers/redis-streams.md) · [NSQ](docs/drivers/nsq.md) · [ActiveMQ](docs/drivers/activemq.md) · [Artemis](docs/drivers/artemis.md) · [NATS](docs/drivers/nats.md) · [SQS](docs/drivers/sqs.md) · [SNS](docs/drivers/sns.md) · [Kinesis](docs/drivers/kinesis.md) · [GCP Pub/Sub](docs/drivers/gcp-pubsub.md) · [Azure Service Bus](docs/drivers/azure-service-bus.md) · [RabbitMQ](docs/drivers/rabbitmq.md) · [ZeroMQ](docs/drivers/zeromq.md) · [Kafka](docs/drivers/kafka.md) · [Pulsar](docs/drivers/pulsar.md) · [RocketMQ](docs/drivers/rocketmq.md)
 
 > P1 drivers currently use plaintext TCP; TLS configuration is being enabled driver by driver. P2 cloud drivers use HTTPS.
 
@@ -213,7 +218,7 @@ Per-driver docs: [Beanstalkd](docs/drivers/beanstalkd.md) · [Redis Streams](doc
 
 ![messaging-php architecture: framework adapter layer, core layer, protocol-grouped driver adapter layer, and broker and cloud service layer](docs/images/en/architecture.svg)
 
-Four layers from top to bottom. The framework adapter layer only handles container binding and config publishing. The core layer — `Manager / Config / Connection` — is protocol-agnostic. The driver adapter layer is grouped by protocol: 20 driver names share 13 protocol implementations, `Manager` selects a factory by driver name, and created connections are cached by name. At the bottom sit self-hosted brokers and cloud services. P1–P4 drivers are highlighted in the diagram; the rest are delivered in phases. Every driver implements the same `DriverInterface`, so adding a broker does not require changing the public API.
+Four layers from top to bottom. The framework adapter layer only handles container binding and config publishing. The core layer — `Manager / Config / Connection` — is protocol-agnostic. The driver adapter layer is grouped by protocol: 20 driver names share 13 protocol implementations, `Manager` selects a factory by driver name, and created connections are cached by name. At the bottom sit self-hosted brokers and cloud services. All 20 driver names are implemented and highlighted in the diagram. Every driver implements the same `DriverInterface`, so adding a broker does not require changing the public API.
 
 ## Feature design
 

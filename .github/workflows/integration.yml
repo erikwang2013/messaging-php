@@ -70,6 +70,7 @@ jobs:
       MESSAGING_RABBITMQ_USER: messaging
       MESSAGING_RABBITMQ_PASS: messaging
       MESSAGING_KAFKA_BROKERS: 127.0.0.1:9092
+      MESSAGING_PULSAR_URL: pulsar://127.0.0.1:6650
     strategy:
       fail-fast: false
       matrix:
@@ -92,6 +93,9 @@ jobs:
           - profile: kafka
             filter: Kafka
             port: 9092
+          - profile: pulsar
+            filter: Pulsar
+            port: 6650
     steps:
       - uses: actions/checkout@v4
 
