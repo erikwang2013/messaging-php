@@ -100,11 +100,10 @@ final class BeanstalkdDriverTest extends TestCase
      */
     private function driver(array $options = []): BeanstalkdDriver
     {
-        $driver = (new BeanstalkdFactory())->create(ConnectionConfig::fromArray('test', [
+        $driver = (new BeanstalkdFactory())->create(ConnectionConfig::fromArray('test', array_merge([
             'driver' => 'beanstalkd',
             'host' => '127.0.0.1',
-            ...$options,
-        ]));
+        ], $options)));
 
         self::assertInstanceOf(BeanstalkdDriver::class, $driver);
 
