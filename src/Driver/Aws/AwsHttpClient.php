@@ -38,7 +38,7 @@ final class AwsHttpClient
     }
 
     /**
-     * Regional endpoint (or the configured LocalStack override) with a trailing slash.
+     * Regional endpoint (or the configured AWS-compatible endpoint override) with a trailing slash.
      */
     public function endpoint(string $service): string
     {

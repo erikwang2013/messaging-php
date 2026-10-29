@@ -27,7 +27,7 @@ final class SqsTest extends DriverContractTestCase
         try {
             $this->queueUrl = AwsTestSupport::createQueue($this->queueName);
         } catch (ConnectionException|TimeoutException $exception) {
-            self::markTestSkipped('LocalStack is not available: ' . $exception->getMessage());
+            self::markTestSkipped('AWS-compatible endpoint is not available: ' . $exception->getMessage());
         }
 
         $this->driver = $this->createDriver();

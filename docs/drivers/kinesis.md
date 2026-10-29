@@ -7,11 +7,10 @@ Kinesis 是分片、可重放的消息流，没有队列式 ack/requeue。本驱
 
 ## 配置
 
-`Manager` 的内置驱动表可能尚未包含 AWS 驱动，使用前注册一次：
+`kinesis` 已内置于 `Manager` 的驱动表，直接取连接即可：
 
 ```php
 use Erikwang2013\Messaging\Manager;
-use Erikwang2013\Messaging\Driver\Aws\KinesisFactory;
 
 $manager = new Manager([
     'default' => 'kinesis',
@@ -22,14 +21,12 @@ $manager = new Manager([
             'access_key' => 'AKIA...',                     // 可省略，回退到 AWS_ACCESS_KEY_ID
             'secret_key' => '...',                         // 可省略，回退到 AWS_SECRET_ACCESS_KEY
             'session_token' => null,                       // 可选，或 AWS_SESSION_TOKEN
-            'endpoint' => null,                            // 可选，LocalStack 如 http://127.0.0.1:4566
+            'endpoint' => null,                            // 可选，AWS 兼容端点（本地 Moto：http://127.0.0.1:5000）
             'timeout' => 30.0,                             // HTTP 超时（秒），默认 30.0
             'checkpoint' => null,                          // 可选 callable(string $stream, string $shard, string $sequence)
         ],
     ],
 ]);
-$manager->extend('kinesis', new KinesisFactory());
-
 $conn = $manager->connection('kinesis');
 ```
 
@@ -81,5 +78,5 @@ docker compose --profile aws up -d
 vendor/bin/phpunit --testsuite integration --filter KinesisTest
 ```
 
-集成测试会创建单分片流并等待 `ACTIVE`，LocalStack 不可用时自动 skip。
+集成测试会创建单分片流并等待 `ACTIVE`，端点不可用时自动 skip。
 环境变量同 [SQS](./sqs.md#测试)。

@@ -13,7 +13,7 @@ use Erikwang2013\Messaging\Driver\Aws\SnsFactory;
 use Erikwang2013\Messaging\Driver\Aws\SqsFactory;
 
 /**
- * LocalStack helpers shared by the AWS integration tests.
+ * AWS-compatible endpoint (Moto) helpers shared by the AWS integration tests.
  */
 final class AwsTestSupport
 {
@@ -26,7 +26,7 @@ final class AwsTestSupport
             'region' => getenv('MESSAGING_AWS_REGION') ?: 'us-east-1',
             'access_key' => getenv('MESSAGING_AWS_ACCESS_KEY') ?: 'test',
             'secret_key' => getenv('MESSAGING_AWS_SECRET_KEY') ?: 'test',
-            'endpoint' => getenv('MESSAGING_AWS_ENDPOINT') ?: 'http://127.0.0.1:4566',
+            'endpoint' => getenv('MESSAGING_AWS_ENDPOINT') ?: 'http://127.0.0.1:5000',
             'timeout' => 5.0,
         ];
     }

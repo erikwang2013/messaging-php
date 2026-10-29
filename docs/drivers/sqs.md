@@ -4,11 +4,10 @@
 
 ## 配置
 
-`Manager` 的内置驱动表可能尚未包含 AWS 驱动，使用前注册一次：
+`sqs` 已内置于 `Manager` 的驱动表，直接取连接即可：
 
 ```php
 use Erikwang2013\Messaging\Manager;
-use Erikwang2013\Messaging\Driver\Aws\SqsFactory;
 
 $manager = new Manager([
     'default' => 'sqs',
@@ -19,14 +18,12 @@ $manager = new Manager([
             'access_key' => 'AKIA...',                     // 可省略，回退到 AWS_ACCESS_KEY_ID
             'secret_key' => '...',                         // 可省略，回退到 AWS_SECRET_ACCESS_KEY
             'session_token' => null,                       // 可选，或 AWS_SESSION_TOKEN
-            'endpoint' => null,                            // 可选，LocalStack 如 http://127.0.0.1:4566
+            'endpoint' => null,                            // 可选，AWS 兼容端点（本地 Moto：http://127.0.0.1:5000）
             'timeout' => 30.0,                             // HTTP 超时（秒），默认 30.0
             'visibility_timeout' => 30,                    // 接收后的可见性超时（秒），默认 30
         ],
     ],
 ]);
-$manager->extend('sqs', new SqsFactory());
-
 $conn = $manager->connection('sqs');
 ```
 
@@ -78,6 +75,7 @@ docker compose --profile aws up -d
 vendor/bin/phpunit --testsuite integration --filter SqsTest
 ```
 
-集成测试读取 `MESSAGING_AWS_ENDPOINT`（默认 `http://127.0.0.1:4566`）、`MESSAGING_AWS_REGION`
-（默认 `us-east-1`）、`MESSAGING_AWS_ACCESS_KEY` / `MESSAGING_AWS_SECRET_KEY`（默认 `test`），
-LocalStack 不可用时自动 skip。
+集成测试读取 `MESSAGING_AWS_ENDPOINT`（默认 `http://127.0.0.1:5000`，即 `docker compose --profile aws`
+启动的 Moto）、`MESSAGING_AWS_REGION`（默认 `us-east-1`）、`MESSAGING_AWS_ACCESS_KEY` /
+`MESSAGING_AWS_SECRET_KEY`（默认 `test`），端点不可用时自动 skip。使用 LocalStack 时把端点设为
+`http://127.0.0.1:4566`。

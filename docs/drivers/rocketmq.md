@@ -8,7 +8,6 @@
 
 ```php
 use Erikwang2013\Messaging\Manager;
-use Erikwang2013\Messaging\Driver\RocketMq\RocketMqFactory;
 
 $manager = new Manager([
     'default' => 'rocketmq',
@@ -25,9 +24,6 @@ $manager = new Manager([
         ],
     ],
 ]);
-
-// Manager.php 的内置驱动表尚未包含 RocketMQ；需要显式注册。
-$manager->extend('rocketmq', new RocketMqFactory());
 
 $conn = $manager->connection('rocketmq');
 ```

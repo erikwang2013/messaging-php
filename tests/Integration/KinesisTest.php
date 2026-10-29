@@ -28,7 +28,7 @@ final class KinesisTest extends DriverContractTestCase
             AwsTestSupport::createStream($this->streamName);
             AwsTestSupport::waitForStream($this->streamName);
         } catch (ConnectionException|TimeoutException $exception) {
-            self::markTestSkipped('LocalStack is not available: ' . $exception->getMessage());
+            self::markTestSkipped('AWS-compatible endpoint is not available: ' . $exception->getMessage());
         }
 
         $this->driver = $this->createDriver();

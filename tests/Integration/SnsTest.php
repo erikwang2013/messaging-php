@@ -28,7 +28,7 @@ final class SnsTest extends TestCase
         try {
             $this->topicArn = AwsTestSupport::createTopic($name);
         } catch (ConnectionException|TimeoutException $exception) {
-            self::markTestSkipped('LocalStack is not available: ' . $exception->getMessage());
+            self::markTestSkipped('AWS-compatible endpoint is not available: ' . $exception->getMessage());
         }
 
         $this->driver = AwsTestSupport::driver('sns');

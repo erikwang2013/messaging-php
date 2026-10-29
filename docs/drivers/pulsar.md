@@ -6,7 +6,6 @@
 
 ```php
 use Erikwang2013\Messaging\Manager;
-use Erikwang2013\Messaging\Driver\Pulsar\PulsarFactory;
 
 $manager = new Manager([
     'default' => 'pulsar',
@@ -23,9 +22,6 @@ $manager = new Manager([
         ],
     ],
 ]);
-
-// Manager 尚未内置 pulsar，需要先注册工厂，再取连接。
-$manager->extend('pulsar', new PulsarFactory());
 
 $conn = $manager->connection('pulsar');
 ```

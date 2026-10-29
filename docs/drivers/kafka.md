@@ -6,11 +6,6 @@
 
 ```php
 use Erikwang2013\Messaging\Manager;
-use Erikwang2013\Messaging\Driver\Kafka\KafkaFactory;
-use Erikwang2013\Messaging\Driver\Kafka\RedpandaFactory;
-use Erikwang2013\Messaging\Driver\Kafka\AutoMqFactory;
-use Erikwang2013\Messaging\Driver\Kafka\ConfluentFactory;
-use Erikwang2013\Messaging\Driver\Kafka\EventHubsFactory;
 
 $manager = new Manager([
     'default' => 'kafka',
@@ -31,13 +26,6 @@ $manager = new Manager([
         ],
     ],
 ]);
-
-// Manager.php 的内置驱动表尚未包含 Kafka；按当前文件权限，需要显式注册。
-$manager->extend('kafka', new KafkaFactory());
-$manager->extend('redpanda', new RedpandaFactory());
-$manager->extend('automq', new AutoMqFactory());
-$manager->extend('confluent', new ConfluentFactory());
-$manager->extend('eventhubs', new EventHubsFactory());
 
 $conn = $manager->connection('kafka');
 ```
