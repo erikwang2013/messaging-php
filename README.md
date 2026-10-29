@@ -6,7 +6,7 @@
 
 TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依赖 rdkafka / ext-zmq / ext-redis 等 broker SDK 或扩展，`composer require` 后即可使用。
 
-当前进度：**P1** 已实现 6 个驱动名——ActiveMQ、ActiveMQ Artemis、Redis Streams、NATS Core、NSQ、Beanstalkd。其余驱动按阶段推进，完成情况与能力差异以 [驱动支持矩阵](docs/drivers.md) 为准。
+当前进度：**P1 + P2** 已实现 11 个驱动名——ActiveMQ、ActiveMQ Artemis、Redis Streams、NATS Core、NSQ、Beanstalkd、AWS SQS / SNS / Kinesis、Google Cloud Pub/Sub、Azure Service Bus。其余驱动按阶段推进，完成情况与能力差异以 [驱动支持矩阵](docs/drivers.md) 为准。
 
 ## 项目说明
 
@@ -30,7 +30,7 @@ TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依�
 ## 特性
 
 - **一套 API 覆盖 20 系统**：`publish`、`publishBatch`、`receive`、`consume`、`ack`、`reject`。
-- **纯 PHP 传输**：TCP 用 `stream_socket_client`，TLS 与 gzip 基于标准 openssl / zlib（TLS 随驱动逐步开放）；自研 RESP、STOMP 1.2、NATS、NSQ、Beanstalkd 编解码，云服务驱动（P2 规划）将通过 Guzzle 加 SigV4 / JWT / SAS 签名。
+- **纯 PHP 传输**：TCP 用 `stream_socket_client`，TLS 与 gzip 基于标准 openssl / zlib（TLS 随驱动逐步开放）；自研 RESP、STOMP 1.2、NATS、NSQ、Beanstalkd 编解码，云服务驱动通过 Guzzle 加 SigV4 / JWT / SAS 签名。
 - **能力模型**：`capabilities()` 运行时查询；不支持的能力抛异常，绝不静默忽略。
 - **统一消息对象**：`Message` 支持 JSON、headers、key、delayMs；`ReceivedMessage` 提供 id、key、attempts、raw 与 ack/reject。
 - **多连接管理**：`default` + `connections` 数组配置（每个连接必填 `driver`），连接懒加载并按名缓存；`Manager::extend()` 可注册自定义驱动工厂。
@@ -158,12 +158,16 @@ return [
 | P1 | `nsq` | NSQ | 已实现 |
 | P1 | `activemq`、`artemis` | ActiveMQ Classic、ActiveMQ Artemis | 已实现 |
 | P1 | `nats` | NATS Core | 已实现（JetStream 未实现） |
-| P2 | `sqs`、`sns`、`kinesis`、`gcp-pubsub`、`azure-service-bus` | AWS、GCP、Azure 云服务 | 规划中 |
+| P2 | `sqs` | AWS SQS | 已实现 |
+| P2 | `sns` | AWS SNS | 已实现（仅发布） |
+| P2 | `kinesis` | AWS Kinesis | 已实现（简化 checkpoint） |
+| P2 | `gcp-pubsub` | Google Cloud Pub/Sub | 已实现 |
+| P2 | `azure-service-bus` | Azure Service Bus | 已实现 |
 | P3 | `rabbitmq`、`zeromq` | RabbitMQ、ZeroMQ | 规划中 |
 | P4 | `kafka`、`redpanda`、`automq`、`confluent`、`eventhubs` | Kafka 系 5 个产品 | 规划中 |
 | P5 | `pulsar`、`rocketmq` | Apache Pulsar、Apache RocketMQ | 规划中 |
 
-P1 驱动能力速查（`capabilities()` 的实际声明）：
+P1 / P2 驱动能力速查（`capabilities()` 的实际声明）：
 
 | 驱动 | ack | requeue | delay | consumer group | 关键限制 |
 |---|---|---|---|---|---|
@@ -173,8 +177,13 @@ P1 驱动能力速查（`capabilities()` 的实际声明）：
 | `nats` | ✗ | ✗ | ✗ | 配置 `queue_group` 时 ✓ | Core 为至多一次，先订阅再发布 |
 | `nsq` | ✓ | ✓ | ✗ | ✗ | channel 必须先存在；发布无 id |
 | `beanstalkd` | ✓ | ✓ | ✓ | ✗ | 不支持 headers / key / 批量 |
+| `sqs` | ✓ | ✓ | ✓ | ✗ | FIFO 逐条 delay 不支持；长轮询 |
+| `sns` | ✗ | ✗ | ✗ | — | 仅 publish |
+| `kinesis` | ✗（checkpoint） | ✗ | ✗ | 分片消费 | 内存 checkpoint + 可选回调 |
+| `gcp-pubsub` | ✓ | ✓ | ✗ | ✓ | 单条 REST pull；attempts 恒为 1 |
+| `azure-service-bus` | ✓ | ✓ | ✓ | ✗ | peek-lock；实体需预先存在 |
 
-逐驱动文档：[Beanstalkd](docs/drivers/beanstalkd.md) · [Redis Streams](docs/drivers/redis-streams.md) · [NSQ](docs/drivers/nsq.md) · [ActiveMQ](docs/drivers/activemq.md) · [Artemis](docs/drivers/artemis.md) · [NATS](docs/drivers/nats.md)
+逐驱动文档：[Beanstalkd](docs/drivers/beanstalkd.md) · [Redis Streams](docs/drivers/redis-streams.md) · [NSQ](docs/drivers/nsq.md) · [ActiveMQ](docs/drivers/activemq.md) · [Artemis](docs/drivers/artemis.md) · [NATS](docs/drivers/nats.md) · [SQS](docs/drivers/sqs.md) · [SNS](docs/drivers/sns.md) · [Kinesis](docs/drivers/kinesis.md) · [GCP Pub/Sub](docs/drivers/gcp-pubsub.md) · [Azure Service Bus](docs/drivers/azure-service-bus.md)
 
 > P1 驱动目前均为明文 TCP，TLS 配置随驱动逐步开放；P2 云服务驱动将使用 HTTPS。
 
@@ -182,7 +191,7 @@ P1 驱动能力速查（`capabilities()` 的实际声明）：
 
 ![messaging-php 架构设计：框架适配层、核心层、按协议分组的驱动适配层、Broker 与云服务层](docs/images/architecture.svg)
 
-自上而下四层：框架适配层只做容器绑定与配置发布；核心层 `Manager / Config / Connection` 与协议无关；驱动适配层按协议分组，20 个驱动名共享 13 套协议实现，Manager 按驱动名选择工厂、创建后的连接按名缓存；最下层是自建 broker 与云服务。图中高亮为 P1 已实现的驱动，其余按阶段推进。所有驱动实现同一个 `DriverInterface`，新增 broker 不需要改公开 API。
+自上而下四层：框架适配层只做容器绑定与配置发布；核心层 `Manager / Config / Connection` 与协议无关；驱动适配层按协议分组，20 个驱动名共享 13 套协议实现，Manager 按驱动名选择工厂、创建后的连接按名缓存；最下层是自建 broker 与云服务。图中高亮为 P1 / P2 已实现的驱动，其余按阶段推进。所有驱动实现同一个 `DriverInterface`，新增 broker 不需要改公开 API。
 
 ## 功能设计
 

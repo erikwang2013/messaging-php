@@ -16,10 +16,15 @@ final class Manager
     private const BUILT_IN_DRIVERS = [
         'activemq' => \Erikwang2013\Messaging\Driver\Stomp\ActiveMqFactory::class,
         'artemis' => \Erikwang2013\Messaging\Driver\Stomp\ArtemisFactory::class,
+        'azure-service-bus' => \Erikwang2013\Messaging\Driver\Azure\ServiceBusFactory::class,
         'beanstalkd' => \Erikwang2013\Messaging\Driver\Beanstalkd\BeanstalkdFactory::class,
-        'redis' => \Erikwang2013\Messaging\Driver\Redis\RedisStreamsFactory::class,
+        'gcp-pubsub' => \Erikwang2013\Messaging\Driver\Gcp\GcpPubSubFactory::class,
+        'kinesis' => \Erikwang2013\Messaging\Driver\Aws\KinesisFactory::class,
         'nats' => \Erikwang2013\Messaging\Driver\Nats\NatsFactory::class,
         'nsq' => \Erikwang2013\Messaging\Driver\Nsq\NsqFactory::class,
+        'redis' => \Erikwang2013\Messaging\Driver\Redis\RedisStreamsFactory::class,
+        'sns' => \Erikwang2013\Messaging\Driver\Aws\SnsFactory::class,
+        'sqs' => \Erikwang2013\Messaging\Driver\Aws\SqsFactory::class,
     ];
 
     private Config $config;

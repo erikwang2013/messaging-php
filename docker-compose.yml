@@ -53,3 +53,18 @@ services:
       - "4222:4222"
       - "8222:8222"
     profiles: ["nats"]
+
+  moto:
+    image: motoserver/moto:latest
+    ports:
+      - "5000:5000"
+    profiles: ["aws"]
+
+  pubsub-emulator:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "gcloud beta emulators pubsub start --host-port=0.0.0.0:8085 --project=test-project"
+    ports:
+      - "8085:8085"
+    profiles: ["gcp"]

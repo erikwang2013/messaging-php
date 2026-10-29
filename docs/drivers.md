@@ -11,11 +11,11 @@
 | `rocketmq` | Apache RocketMQ 4.x/5.x | RocketMQ remoting | 实验 | 规划中 |
 | `nats` | NATS Core + JetStream | NATS 文本协议 | 一等（Core）/ 实验（JetStream） | Core 已实现（P1）；JetStream 未实现 |
 | `redis` | Redis Streams | RESP | 一等 | 已实现（P1） |
-| `sqs` | AWS SQS | AWS JSON API + SigV4 | 一等 | 规划中 |
-| `sns` | AWS SNS | AWS Query API + SigV4 | 仅发布 | 规划中 |
-| `kinesis` | AWS Kinesis | AWS JSON API + SigV4 | 一等（简化 checkpoint） | 规划中 |
-| `gcp-pubsub` | Google Cloud Pub/Sub | REST + 服务账号 JWT | 一等 | 规划中 |
-| `azure-service-bus` | Azure Service Bus | REST + SAS | 一等 | 规划中 |
+| `sqs` | AWS SQS | AWS JSON API + SigV4 | 一等 | 已实现（P2；契约测试针对脚本化 HTTP 服务） |
+| `sns` | AWS SNS | AWS Query API + SigV4 | 仅发布 | 已实现（P2；仅发布） |
+| `kinesis` | AWS Kinesis | AWS JSON API + SigV4 | 一等（简化 checkpoint） | 已实现（P2；契约测试针对脚本化 HTTP 服务） |
+| `gcp-pubsub` | Google Cloud Pub/Sub | REST + 服务账号 JWT | 一等 | 已实现（P2；契约测试针对脚本化 HTTP 服务） |
+| `azure-service-bus` | Azure Service Bus | REST + SAS | 一等 | 已实现（P2；契约测试针对内存/假 HTTP 传输） |
 | `zeromq` | ZeroMQ | ZMTP 3.1（NULL） | 受限 | 规划中 |
 | `nsq` | NSQ | NSQ TCP | 一等 | 已实现（P1，TCP；HTTP 未实现） |
 | `beanstalkd` | Beanstalkd | Beanstalkd 文本协议 | 一等 | 已实现（P1） |
