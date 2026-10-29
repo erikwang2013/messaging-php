@@ -1,0 +1,99 @@
+name: Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  fast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: redis
+            filter: RedisStreams
+            port: 6379
+          - profile: beanstalkd
+            filter: Beanstalkd
+            port: 11300
+          - profile: nsq
+            filter: Nsq
+            port: 4150
+          - profile: nats
+            filter: Nats
+            port: 4222
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - run: composer install --no-interaction --prefer-dist
+
+      - run: docker compose --profile ${{ matrix.profile }} up -d
+
+      - name: Wait for broker
+        run: |
+          for i in $(seq 1 60); do
+            if (echo > /dev/tcp/127.0.0.1/${{ matrix.port }}) >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose --profile ${{ matrix.profile }} logs
+          exit 1
+
+      - run: vendor/bin/phpunit --testsuite integration --filter ${{ matrix.filter }}
+
+      - if: always()
+        run: docker compose --profile ${{ matrix.profile }} down -v
+
+  heavy:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: activemq
+            filter: ActiveMq
+            port: 61613
+          - profile: artemis
+            filter: Artemis
+            port: 61614
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - run: composer install --no-interaction --prefer-dist
+
+      - run: docker compose --profile ${{ matrix.profile }} up -d
+
+      - name: Wait for broker
+        run: |
+          for i in $(seq 1 60); do
+            if (echo > /dev/tcp/127.0.0.1/${{ matrix.port }}) >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose --profile ${{ matrix.profile }} logs
+          exit 1
+
+      - run: vendor/bin/phpunit --testsuite integration --filter ${{ matrix.filter }}
+
+      - if: always()
+        run: docker compose --profile ${{ matrix.profile }} down -v

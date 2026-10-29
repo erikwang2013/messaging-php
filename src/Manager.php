@@ -12,6 +12,16 @@ use Psr\Log\NullLogger;
 
 final class Manager
 {
+    /** @var array<string, class-string<DriverFactoryInterface>> */
+    private const BUILT_IN_DRIVERS = [
+        'activemq' => \Erikwang2013\Messaging\Driver\Stomp\ActiveMqFactory::class,
+        'artemis' => \Erikwang2013\Messaging\Driver\Stomp\ArtemisFactory::class,
+        'beanstalkd' => \Erikwang2013\Messaging\Driver\Beanstalkd\BeanstalkdFactory::class,
+        'redis' => \Erikwang2013\Messaging\Driver\Redis\RedisStreamsFactory::class,
+        'nats' => \Erikwang2013\Messaging\Driver\Nats\NatsFactory::class,
+        'nsq' => \Erikwang2013\Messaging\Driver\Nsq\NsqFactory::class,
+    ];
+
     private readonly Config $config;
     private readonly LoggerInterface $logger;
 
@@ -47,10 +57,18 @@ final class Manager
         $connectionConfig = $this->config->connection($name);
         $driverName = $connectionConfig->driver();
 
-        $factory = $this->factories[$driverName] ?? throw new ConnectionException(sprintf(
-            'Unsupported driver [%s]. Register it with Manager::extend().',
-            $driverName,
-        ));
+        $factory = $this->factories[$driverName] ?? null;
+        if ($factory === null) {
+            $factoryClass = self::BUILT_IN_DRIVERS[$driverName] ?? null;
+            if ($factoryClass === null || !class_exists($factoryClass)) {
+                throw new ConnectionException(sprintf(
+                    'Unsupported driver [%s]. Register it with Manager::extend().',
+                    $driverName,
+                ));
+            }
+
+            $factory = new $factoryClass();
+        }
 
         return new Connection($name, $factory->create($connectionConfig, $this->logger));
     }

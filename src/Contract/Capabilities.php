@@ -14,6 +14,7 @@ final class Capabilities
         public readonly bool $batchPublish = false,
         public readonly bool $ordering = false,
         public readonly bool $headers = true,
+        public readonly bool $requiresActiveSubscription = false,
     ) {
     }
 }

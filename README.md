@@ -6,7 +6,7 @@
 
 不依赖 broker SDK，不需要 rdkafka / ext-zmq / ext-redis 等扩展；TCP 协议用 PHP 标准库实现，HTTP 云服务用 Guzzle 直连。
 
-> 当前进度：**Phase 0（核心骨架）**。驱动按 [实施规划](docs/superpowers/plans/2026-10-29-messaging-php.md) 分阶段实现，完成情况见 [驱动支持矩阵](docs/drivers.md)。
+> 当前进度：**Phase 1**。已支持 Beanstalkd、Redis Streams、NSQ、ActiveMQ、ActiveMQ Artemis、NATS Core；其余驱动按 [实施规划](docs/superpowers/plans/2026-10-29-messaging-php.md) 分阶段实现，完成情况见 [驱动支持矩阵](docs/drivers.md)。
 
 ## 安装
 
@@ -26,15 +26,13 @@ use Erikwang2013\Messaging\Contract\ReceiveOptions;
 use Erikwang2013\Messaging\Manager;
 
 $mq = new Manager([
-    'default' => 'rabbit',
+    'default' => 'redis',
     'connections' => [
-        'rabbit' => [
-            'driver' => 'rabbitmq',
+        'redis' => [
+            'driver' => 'redis',
             'host' => '127.0.0.1',
-            'port' => 5672,
-            'username' => 'guest',
-            'password' => 'guest',
-            'vhost' => '/',
+            'port' => 6379,
+            'group' => 'orders',
         ],
     ],
 ]);

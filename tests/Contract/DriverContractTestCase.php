@@ -29,18 +29,28 @@ abstract class DriverContractTestCase extends TestCase
 
     public function test_publish_and_receive_roundtrip(): void
     {
+        $this->subscribeIfNeeded($this->destination);
+
         $result = $this->driver->publish($this->destination, new Message('hello'));
         self::assertSame($this->destination, $result->destination);
-        self::assertNotNull($result->id);
 
         $message = $this->driver->receive($this->destination, new ReceiveOptions(100));
         self::assertNotNull($message);
         self::assertSame('hello', $message->body());
-        self::assertSame($result->id, $message->id());
+
+        // Brokers that assign an id only on delivery (e.g. NSQ) return null here.
+        if ($result->id !== null) {
+            self::assertSame($result->id, $message->id());
+        }
     }
 
     public function test_ack_removes_message(): void
     {
+        if (!$this->driver->capabilities()->ack) {
+            self::markTestSkipped('Driver does not support acknowledgements.');
+        }
+
+        $this->subscribeIfNeeded($this->destination);
         $this->driver->publish($this->destination, new Message('ack-me'));
         $message = $this->driver->receive($this->destination, new ReceiveOptions(100));
         self::assertNotNull($message);
@@ -55,6 +65,7 @@ abstract class DriverContractTestCase extends TestCase
             self::markTestSkipped('Driver does not support requeue.');
         }
 
+        $this->subscribeIfNeeded($this->destination);
         $this->driver->publish($this->destination, new Message('retry-me'));
         $first = $this->driver->receive($this->destination, new ReceiveOptions(100));
         self::assertNotNull($first);
@@ -76,6 +87,7 @@ abstract class DriverContractTestCase extends TestCase
             self::markTestSkipped('Driver does not support headers.');
         }
 
+        $this->subscribeIfNeeded($this->destination);
         $this->driver->publish($this->destination, new Message(
             'payload',
             ['trace' => 'abc', 'attempt' => 2],
@@ -84,18 +96,49 @@ abstract class DriverContractTestCase extends TestCase
 
         $message = $this->driver->receive($this->destination, new ReceiveOptions(100));
         self::assertNotNull($message);
-        self::assertSame(['trace' => 'abc', 'attempt' => 2], $message->headers());
+        self::assertSame(
+            $this->stringifyHeaders(['trace' => 'abc', 'attempt' => 2]),
+            $this->stringifyHeaders($message->headers()),
+        );
         self::assertSame('key-1', $message->key());
     }
 
     public function test_binary_body_is_preserved(): void
     {
         $body = "\x00\x01\xffbinary";
+        $this->subscribeIfNeeded($this->destination);
         $this->driver->publish($this->destination, new Message($body));
 
         $message = $this->driver->receive($this->destination, new ReceiveOptions(100));
         self::assertNotNull($message);
         self::assertSame($body, $message->body());
+    }
+
+    /**
+     * Fire-and-forget brokers only deliver to subscriptions created before the publish.
+     */
+    private function subscribeIfNeeded(string $destination): void
+    {
+        if ($this->driver->capabilities()->requiresActiveSubscription) {
+            $this->driver->receive($destination, new ReceiveOptions(1));
+        }
+    }
+
+    /**
+     * Several broker protocols carry headers as strings; compare scalar values
+     * by their string form so drivers need not invent types on the wire.
+     *
+     * @param array<string, mixed> $headers
+     * @return array<string, mixed>
+     */
+    private function stringifyHeaders(array $headers): array
+    {
+        ksort($headers);
+
+        return array_map(
+            static fn (mixed $value): mixed => is_scalar($value) ? (string) $value : $value,
+            $headers,
+        );
     }
 
     public function test_batch_publish_when_supported(): void
@@ -104,6 +147,7 @@ abstract class DriverContractTestCase extends TestCase
             self::markTestSkipped('Driver does not support batch publishing.');
         }
 
+        $this->subscribeIfNeeded($this->destination);
         $results = $this->driver->publishBatch($this->destination, [
             new Message('one'),
             new Message('two'),

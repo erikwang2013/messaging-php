@@ -1,0 +1,55 @@
+name: messaging-php
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    profiles: ["redis"]
+
+  beanstalkd:
+    image: schickling/beanstalkd:latest
+    ports:
+      - "11300:11300"
+    profiles: ["beanstalkd"]
+
+  nsqlookupd:
+    image: nsqio/nsq:v1.3.0
+    command: /nsqlookupd
+    ports:
+      - "4160:4160"
+      - "4161:4161"
+    profiles: ["nsq"]
+
+  nsqd:
+    image: nsqio/nsq:v1.3.0
+    command: /nsqd --broadcast-address=127.0.0.1 --lookupd-tcp-address=nsqlookupd:4160
+    ports:
+      - "4150:4150"
+      - "4151:4151"
+    depends_on:
+      - nsqlookupd
+    profiles: ["nsq"]
+
+  activemq:
+    image: apache/activemq-classic:latest
+    ports:
+      - "61613:61613"
+      - "8161:8161"
+    profiles: ["activemq"]
+
+  artemis:
+    image: apache/artemis:latest
+    ports:
+      - "61616:61616"
+      - "61614:61613"
+      - "8162:8161"
+    profiles: ["artemis"]
+
+  nats:
+    image: nats:2.10-alpine
+    command: ["-js"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    profiles: ["nats"]
