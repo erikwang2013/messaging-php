@@ -18,7 +18,10 @@ final class ManagerFactory
     {
         // String id instead of the ConfigInterface constant: this package does not depend on
         // hyperf/framework, so loading the class must not require Hyperf to be installed.
-        $config = $container->get('Hyperf\Contract\ConfigInterface')->get('messaging', []);
+        $config = $container->get('Hyperf\Contract\ConfigInterface')->get('messaging');
+        if ($config === null) {
+            $config = require __DIR__ . '/config/messaging.php';
+        }
         if (!is_array($config)) {
             throw new \RuntimeException('The [messaging] config must be an array.');
         }

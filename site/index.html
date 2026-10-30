@@ -1583,7 +1583,8 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
       <a href="#about" data-section="about">项目</a>
       <a href="#features" data-section="features">能力</a>
       <a href="#versions" data-section="versions">版本</a>
-      <a href="#docs" data-section="docs">文档</a>
+      <a href="docs.html">文档</a>
+      <a href="drivers.html">驱动</a>
       <a class="nav-lang" href="en.html" hreflang="en" lang="en">EN</a>
     </nav>
     <div class="header-actions">
@@ -1692,7 +1693,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
       <article class="feature-card reveal feature-card--ink" style="--delay:165ms">
         <svg class="icon" aria-hidden="true"><use href="#i-layers"></use></svg>
         <h3>框架适配</h3>
-        <p>Laravel、ThinkPHP、webman、Hyperf、Yii2 与 Yii3；Composer 安装时自动复制各框架配置。</p>
+        <p>Laravel、ThinkPHP、webman、Hyperf、Yii2 与 Yii3；Composer 安装后按各框架原生机制自动注册。</p>
       </article>
       <article class="feature-card reveal feature-card--pet" style="--delay:220ms">
         <svg class="icon" aria-hidden="true"><use href="#i-layout"></use></svg>
@@ -1703,7 +1704,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
       <article class="feature-card reveal" style="--delay:275ms">
         <svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>
         <h3>四层测试</h3>
-        <p>742 项单元/协议测试，加假 broker、契约与重型 Docker 集成矩阵。</p>
+        <p>739 项单元/协议测试，加假 broker、契约与重型 Docker 集成矩阵。</p>
       </article>
       </div>
     </div>
@@ -1725,7 +1726,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
       </div>
       <div class="milestone reveal" style="--delay:60ms">
         <div class="milestone-ver">v1.7.0<time datetime="2026-10-30">2026-10-30</time></div>
-        <div><h3>框架配置自动复制</h3><p>Composer Plugin 按框架规则复制配置，Yii3 自动合并。</p></div>
+        <div><h3>框架自动注册</h3><p>按各框架原生 Composer 规则自动注册与加载配置，无需手动操作。</p></div>
         <img class="milestone-pet" src="assets/img/pet/expressions/pleasing.svg" width="360" height="360" alt="" aria-hidden="true" loading="lazy" decoding="async">
       </div>
       <div class="milestone reveal" style="--delay:120ms">
@@ -1846,17 +1847,16 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
     <div class="wrap">
       <div class="section-head reveal">
         <h2 id="docs-title">安装与使用</h2>
-        <p>先安装，再用 Redis Streams 跑通发布、消费与确认。</p>
+        <p>先安装，再用 Redis Streams 跑通发布、消费与确认；完整安装、框架集成与驱动矩阵见文档页。</p>
       </div>
       <div class="docs-panel reveal">
         <div class="docs-tabs" role="tablist" aria-label="语言">
         <button class="docs-tab is-active" type="button" role="tab" id="docs-tab-php" aria-selected="true" aria-controls="docs-panel-php" data-tab="php" tabindex="0">PHP</button>
         </div>
         <div class="docs-pane is-active" id="docs-panel-php" role="tabpanel" aria-labelledby="docs-tab-php">
-          <div class="docs-meta"><span>PHP &gt;= 8.0 / Composer</span><a href="https://github.com/erikwang2013/messaging-php#readme" target="_blank" rel="noopener">完整 README <svg class="icon icon-xs" aria-hidden="true"><use href="#i-external"></use></svg></a></div>
+          <div class="docs-meta"><span>PHP &gt;= 8.0 / Composer</span><span class="docs-meta-links"><a href="docs.html">完整文档 <svg class="icon icon-xs" aria-hidden="true"><use href="#i-arrow"></use></svg></a><a href="https://github.com/erikwang2013/messaging-php#readme" target="_blank" rel="noopener">完整 README <svg class="icon icon-xs" aria-hidden="true"><use href="#i-external"></use></svg></a></span></div>
           <div class="docs-code-grid">
-            <div class="code-block code-block--install"><span class="code-label">安装</span><pre><code>composer config allow-plugins.erikwang2013/messaging-php true
-composer require erikwang2013/messaging-php</code></pre></div>
+            <div class="code-block code-block--install"><span class="code-label">安装</span><pre><code>composer require erikwang2013/messaging-php</code></pre></div>
             <div class="code-block"><span class="code-label">最小示例</span><pre><code>use Erikwang2013\Messaging\Contract\Message;
 use Erikwang2013\Messaging\Contract\ReceiveOptions;
 use Erikwang2013\Messaging\Manager;

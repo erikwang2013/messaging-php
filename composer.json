@@ -1,7 +1,7 @@
 {
     "name": "erikwang2013/messaging-php",
     "description": "Pure-PHP messaging client for RabbitMQ, Kafka, RocketMQ, Pulsar, ActiveMQ, Artemis, NATS, Redpanda, AutoMQ, Redis Streams, AWS SQS/SNS/Kinesis, Google Pub/Sub, Azure Service Bus/Event Hubs, ZeroMQ, NSQ and Beanstalkd.",
-    "type": "composer-plugin",
+    "type": "yii2-extension",
     "license": "MIT",
     "keywords": [
         "messaging",
@@ -29,7 +29,6 @@
     ],
     "require": {
         "php": ">=8.0",
-        "composer-plugin-api": "^2.0",
         "guzzlehttp/guzzle": "^7.0",
         "psr/log": "^3.0"
     },
@@ -57,8 +56,7 @@
         }
     },
     "extra": {
-        "class": "Erikwang2013\\Messaging\\Composer\\Plugin",
-        "plugin-optional": true,
+        "bootstrap": "Erikwang2013\\Messaging\\Integration\\Yii2\\Bootstrap",
         "laravel": {
             "providers": [
                 "Erikwang2013\\Messaging\\Integration\\Laravel\\MessagingServiceProvider"

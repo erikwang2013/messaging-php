@@ -6,29 +6,10 @@
 ## 安装
 
 ```bash
-composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
 
-Yii3 遵循 `yiisoft/config` 的自动合并规则，**不需要复制配置文件**；Composer Plugin 不会为 Yii3 复制配置。应用需要 `yiisoft/config`（标准 Yii3 应用模板默认包含）。
-
-插件通过 `extra.plugin-optional` 声明为可选，但该声明只有 Composer 2.5.3+ 支持：在 2.5.3+ 上未配置 `allow-plugins` 时会跳过插件并继续安装，Composer 2.2–2.5.2 则会安装失败；请保留上面的 `allow-plugins` 命令。Yii3 不依赖该插件的复制动作，插件被跳过不影响配置合并。
-
-在应用 `composer.json` 的 `extra` 中加入（已有这些键时合并到现有数组，不要重复定义）：
-
-```json
-{
-    "extra": {
-        "config-plugin-options": {
-            "source-directory": "config"
-        },
-        "config-plugin": {
-            "params": "params.php",
-            "di": "di.php"
-        }
-    }
-}
-```
+本包在 `composer.json` 的 `extra.config-plugin` 中声明了 `config/params.php` 与 `config/di.php`。`yiisoft/config` 会扫描所有已安装包的该字段并自动合并，不需要在应用 `composer.json` 里额外登记，也不会复制配置文件。应用需要安装 `yiisoft/config`（标准 Yii3 应用模板默认包含并允许其 Composer 插件）。
 
 ## 默认配置
 

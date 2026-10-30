@@ -1,0 +1,98 @@
+[
+  {
+    "title": "ActiveMQ Classic 驱动",
+    "text": "P1 · ActiveMQ Classic 驱动 驱动名： activemq · 命名空间： Erikwang2013\\Messaging\\Driver\\Stomp · 协议：STOMP 1.2 over TCP。 与 Artemis 共用 StompDriver ，差异只在 ActiveMqPreset 的端口、requeue 与延迟头。 配置 键 类型 默认 说明 host string 必填 broker 地址 port int 61613 STOMP 连接器端口 login string\\ null admin CO",
+    "anchor": "driver-activemq",
+    "type": "驱动文档"
+  },
+  {
+    "title": "ActiveMQ Artemis 驱动",
+    "text": "P1 · ActiveMQ Artemis 驱动 驱动名： artemis · 命名空间： Erikwang2013\\Messaging\\Driver\\Stomp · 协议：STOMP 1.2 over TCP。 与 ActiveMQ Classic 共用 StompDriver ，差异在 ArtemisPreset ：NACK 语义、延迟头与队列创建时机。 配置 键 类型 默认 说明 host string 必填 broker 地址 port int 61613 STOMP acceptor 端口；docker-compo",
+    "anchor": "driver-artemis",
+    "type": "驱动文档"
+  },
+  {
+    "title": "Beanstalkd 驱动",
+    "text": "P1 · Beanstalkd 驱动 纯 PHP 实现的 Beanstalkd 文本协议客户端。目标（destination）即 tube 名。 配置 键 类型 默认 说明 host string 必填 服务器地址 port int 11300 端口 priority int 1024 put 使用的优先级（0 最高） ttr int 60 time-to-run，秒 timeout float 5.0 TCP 连接超时与普通读写超时，秒 能力 能力 支持 说明 ack ✓ delete requeue ✓ reject(t",
+    "anchor": "driver-beanstalkd",
+    "type": "驱动文档"
+  },
+  {
+    "title": "NATS 驱动",
+    "text": "P1 · NATS 驱动 驱动名： nats · 命名空间： Erikwang2013\\Messaging\\Driver\\Nats · 实现： NatsDriver / NatsFactory 当前实现范围： NATS Core 文本协议 。JetStream（持久化、ack、重投、延迟、消费者组持久订阅）不在本阶段范围内，见文末。 配置 键 必填 默认 说明 host 是 — 服务器地址 port 否 4222 服务器端口（整数或数字字符串） user 否 null CONNECT 用户名；设置 pass 时必须同时设置 ",
+    "anchor": "driver-nats",
+    "type": "驱动文档"
+  },
+  {
+    "title": "NSQ 驱动",
+    "text": "P1 · NSQ 驱动 纯 PHP 实现的 NSQ v2 TCP 协议客户端（ Erikwang2013\\Messaging\\Driver\\Nsq ），不依赖 nsq 官方 SDK。 配置 destination 即 NSQ topic。一个驱动实例复用一个发布连接，并为每个消费 topic 各保持一个消费连接（NSQ 单连接只允许一次 SUB ）。 能力 能力 支持 说明 ack ✓ FIN <id> requeue ✓ REQ <id> <delay> ； reject(false) 等同 FIN （丢弃） delay（",
+    "anchor": "driver-nsq",
+    "type": "驱动文档"
+  },
+  {
+    "title": "Redis Streams 驱动",
+    "text": "P1 · Redis Streams 驱动 驱动名： redis 。纯 PHP 实现 RESP2 协议，不依赖 phpredis / Predis 扩展。 配置 键 必填 默认 说明 host 是 — Redis 主机名或 IP port 否 6379 端口 password 否 null 非空时连接后发送 AUTH database 否 0 非 0 时连接后发送 SELECT group 否 messaging 消费者组名 consumer 否 <hostname>-<pid> 消费者名 max_length 否 null",
+    "anchor": "driver-redis",
+    "type": "驱动文档"
+  },
+  {
+    "title": "Azure Service Bus 驱动",
+    "text": "P2 · Azure Service Bus 驱动 驱动名： azure-service-bus 。纯 PHP 实现 Azure Service Bus data-plane REST 接口， 使用 Shared Access Signature（SAS）认证，不依赖 azure-service-bus SDK 或 AMQP 扩展。 HTTP 使用 Guzzle，HMAC 使用 hash_hmac （ext-hash，PHP 默认启用）。 工厂类： Erikwang2013\\Messaging\\Driver\\Azure\\Se",
+    "anchor": "driver-azure-service-bus",
+    "type": "驱动文档"
+  },
+  {
+    "title": "Google Cloud Pub/Sub 驱动",
+    "text": "P2 · Google Cloud Pub/Sub 驱动 驱动名： gcp-pubsub 。纯 PHP 实现 Google Cloud Pub/Sub v1 REST JSON API，服务账号 JWT（RS256）认证， 不依赖 google/cloud-pubsub 。HTTP 使用 Guzzle，签名使用 ext-openssl。 工厂类： Erikwang2013\\Messaging\\Driver\\Gcp\\GcpPubSubFactory 驱动类： Erikwang2013\\Messaging\\Driver\\Gcp\\",
+    "anchor": "driver-gcp-pubsub",
+    "type": "驱动文档"
+  },
+  {
+    "title": "AWS Kinesis 驱动",
+    "text": "P2 · AWS Kinesis 驱动 驱动名： kinesis 。纯 PHP 实现 Kinesis Data Streams JSON API 与 SigV4 签名，不依赖 aws/aws-sdk-php。 Kinesis 是分片、可重放的消息流，没有队列式 ack/requeue。本驱动用 游标（checkpoint） 表达消费进度： ack() 记录该分片已消费到的序列号，下次 receive() 从该位置之后继续读取。 配置 kinesis 已内置于 Manager 的驱动表，直接取连接即可： destination",
+    "anchor": "driver-kinesis",
+    "type": "驱动文档"
+  },
+  {
+    "title": "AWS SNS 驱动",
+    "text": "P2 · AWS SNS 驱动 驱动名： sns 。纯 PHP 实现 SNS Query API 与 SigV4 签名，不依赖 aws/aws-sdk-php。 SNS 是发布/订阅服务，本驱动只负责 向 Topic 发布 ；订阅、投递与消费由 SNS 本身及其他驱动（如 SQS）完成。 因此 receive() / publishBatch() 会抛 UnsupportedFeatureException 。 配置 sns 已内置于 Manager 的驱动表，直接取连接即可： destination 是 Topic ARN",
+    "anchor": "driver-sns",
+    "type": "驱动文档"
+  },
+  {
+    "title": "AWS SQS 驱动",
+    "text": "P2 · AWS SQS 驱动 驱动名： sqs 。纯 PHP 实现 AWS SQS JSON 协议与 SigV4 签名，不依赖 aws/aws-sdk-php。 配置 sqs 已内置于 Manager 的驱动表，直接取连接即可： destination 可以是完整队列 URL（ https://sqs.us-east-1.amazonaws.com/123456789012/orders ）， 也可以是队列名（ orders ）。队列名首次使用时调用 GetQueueUrl 并缓存；完整 URL 直接使用、不会探测。 FI",
+    "anchor": "driver-sqs",
+    "type": "驱动文档"
+  },
+  {
+    "title": "RabbitMQ 驱动",
+    "text": "P3 · RabbitMQ 驱动 纯 PHP 实现的 AMQP 0-9-1 客户端，直接基于 TCP/TLS 收发协议帧，不依赖 ext-amqp 或 php-amqplib 。目标（destination）即队列名，消息通过默认交换机发布。 配置 键 类型 默认 说明 host string 必填 服务器地址 port int 5672 （ tls=true 时 5671 ） AMQP 端口 username string guest SASL PLAIN 用户名 password string guest SASL PL",
+    "anchor": "driver-rabbitmq",
+    "type": "驱动文档"
+  },
+  {
+    "title": "ZeroMQ 驱动",
+    "text": "P3 · ZeroMQ 驱动 驱动名： zeromq · 命名空间： Erikwang2013\\Messaging\\Driver\\ZeroMq · 实现： ZeroMqDriver / ZeroMqFactory 当前实现范围： ZMTP 3.1 + NULL 机制 ，支持 PUB/SUB 与 PUSH/PULL 两种模式。纯 PHP 实现，不依赖 ext-zmq。ZeroMQ 是 brokerless、至多一次的：没有持久化、ack、重投、延迟和消费者组。 配置 键 必填 默认 说明 host 是 — 对端地址 port ",
+    "anchor": "driver-zeromq",
+    "type": "驱动文档"
+  },
+  {
+    "title": "Kafka 驱动",
+    "text": "P4 · Kafka 驱动 纯 PHP 实现的 Kafka wire protocol 客户端（ Erikwang2013\\Messaging\\Driver\\Kafka ），不依赖 rdkafka 或官方 SDK。同一套实现通过别名覆盖 Kafka、Redpanda、AutoMQ、Confluent Platform 与 Azure Event Hubs（Kafka 端点）。 配置 brokers 中的条目可以省略端口，此时使用驱动别名的默认端口： eventhubs 为 9093，其余（ kafka 、 redpanda ",
+    "anchor": "driver-kafka",
+    "type": "驱动文档"
+  },
+  {
+    "title": "Pulsar 驱动",
+    "text": "P5 · Pulsar 驱动（实验） 纯 PHP 实现的 Apache Pulsar 二进制协议客户端（ Erikwang2013\\Messaging\\Driver\\Pulsar ），不依赖 Pulsar 官方 SDK 或扩展。 实验性支持 ：仅覆盖最小的生产/消费子集，接口和协议细节可能变化。 配置 service_url 只接受单个 broker： pulsar://host:6650 或 pulsar+ssl://host:6651 （默认端口分别为 6650/6651）。不支持逗号分隔的多 broker、URL 路径",
+    "anchor": "driver-pulsar",
+    "type": "驱动文档"
+  },
+  {
+    "title": "RocketMQ 驱动",
+    "text": "P5 · RocketMQ 驱动（实验性） 纯 PHP 实现的 Apache RocketMQ 4.x remoting 协议客户端（ Erikwang2013\\Messaging\\Driver\\RocketMq ），不依赖官方 SDK 或扩展。支持 4.x broker，以及开启 remoting 兼容端口的 5.x broker；不使用 gRPC。 实验性 ：协议覆盖发布、拉取消费、ack/requeue、固定延迟和路由查询，但不包含事务、ACL、消息轨迹、SQL92 过滤和阿里云 ONS 认证。生产使用前请自行压测。 ",
+    "anchor": "driver-rocketmq",
+    "type": "驱动文档"
+  }
+]

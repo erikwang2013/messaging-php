@@ -61,7 +61,6 @@ All twelve Xiaodi expressions are animated SVGs (source files in [docs/pet-expre
 Requires **PHP >= 8.0** plus the standard `openssl` (TLS) and `zlib` (gzip) extensions. CI runs the full unit/protocol suite on PHP 8.0 through PHPUnit 9.6 and on PHP 8.1–8.5 through PHPUnit 10.
 
 ```bash
-composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
 
@@ -69,20 +68,20 @@ composer require erikwang2013/messaging-php
 - The only runtime dependencies are Guzzle and the PSR-3 logging interface, both installed automatically by Composer.
 - Framework adapters ship in the same package and are used on demand; without a framework, use plain PHP directly.
 
-### Automatic framework config
+### Automatic framework registration and config
 
-This package is also a Composer plugin. Composer 2.2+ requires the `allow-plugins` command above. On install or update it detects installed frameworks and copies the default config using each framework's convention:
+No extra commands are needed after installation. Each framework discovers the package through its own Composer mechanism and registers it on install or boot:
 
-| Framework | Copied to |
+| Framework | Automatic behaviour |
 |---|---|
-| Laravel | `config/messaging.php` |
-| ThinkPHP | `config/messaging.php` |
-| webman | `config/plugin/erikwang2013/messaging-php/{app,messaging,bootstrap}.php` |
-| Hyperf | `config/autoload/messaging.php` |
-| Yii2 | `config/messaging.php` |
-| Yii3 | No copy needed: `yiisoft/config` merges the package config at runtime |
+| Laravel | `extra.laravel` discovers the provider and facade; `mergeConfigFrom` merges the default config at runtime |
+| ThinkPHP | `extra.think` discovers the service; the standard app's `post-autoload-dump` runs `service:discover` and `vendor:publish` |
+| webman | The install hook copies the plugin config to `config/plugin/erikwang2013/messaging-php/` (existing files are kept) |
+| Hyperf | `extra.hyperf.config` discovers the `ConfigProvider`; the shipped defaults are used until config is published |
+| Yii2 | The `yii2-extension` `extra.bootstrap` registers the `messaging` component when the application boots |
+| Yii3 | `extra.config-plugin` is merged by `yiisoft/config` at runtime |
 
-Existing files are never overwritten; to customise the config, edit the copied file. The plugin declares itself optional through `extra.plugin-optional`, but only Composer 2.5.3+ understands that declaration: on 2.5.3+ the plugin is skipped and installation still succeeds when `allow-plugins` is not configured, while Composer 2.2–2.5.2 does not support it and still fails without `allow-plugins`. Keep the `allow-plugins` command above. If the plugin is skipped, use the manual publish commands in each framework document instead.
+To customise, use the publish or override path documented for that framework; no action is needed to use the defaults.
 
 ## Quick start
 
@@ -155,7 +154,7 @@ NATS Core's `ack()` / `reject()` both throw `UnsupportedFeatureException`; use J
 
 ## Framework integration
 
-Framework adapters are bundled with the main package, so no extra Composer package is required — only the framework itself when you use it. The configuration (`default` + `connections`) matches `new Manager([...])`; where it lives and how it is registered differs by framework:
+Framework adapters are bundled with the main package, so no extra Composer package is required — only the framework itself when you use it. Composer registers each framework automatically; the configuration (`default` + `connections`) matches `new Manager([...])`, and where it lives differs by framework:
 
 ```php
 // location depends on the framework; see each framework's documentation
@@ -174,12 +173,12 @@ return [
 
 | Framework | Registration | Usage | Documentation |
 |---|---|---|---|
-| Laravel | `MessagingServiceProvider` + `Messaging` facade | Inject `Manager` through the container, or use the facade | [docs/frameworks/laravel.md](docs/frameworks/laravel.md) |
-| ThinkPHP | `MessagingService` service class | Container-injected `Manager` or `app('messaging')` | [docs/frameworks/thinkphp.md](docs/frameworks/thinkphp.md) |
-| webman | Plugin bootstrap (runs when each worker starts) | `Messaging::connection()` / `Messaging::instance()` | [docs/frameworks/webman.md](docs/frameworks/webman.md) |
-| Hyperf | `ConfigProvider` auto-discovery + `ManagerFactory` | Container-injected `Manager`; `vendor:publish` publishes the config | [docs/frameworks/hyperf.md](docs/frameworks/hyperf.md) |
-| Yii2 | `MessagingComponent` application component | `Yii::$app->messaging->connection()` | [docs/frameworks/yii2.md](docs/frameworks/yii2.md) |
-| Yii3 | `yiisoft/config` (`config/di.php` + `params.php`) | Container-injected `Manager` | [docs/frameworks/yii3.md](docs/frameworks/yii3.md) |
+| Laravel | `extra.laravel` discovers `MessagingServiceProvider` + `Messaging` facade | Inject `Manager` through the container, or use the facade | [docs/frameworks/laravel.md](docs/frameworks/laravel.md) |
+| ThinkPHP | `extra.think` discovers `MessagingService` | Container-injected `Manager` or `app('messaging')` | [docs/frameworks/thinkphp.md](docs/frameworks/thinkphp.md) |
+| webman | Install hook copies the plugin config; bootstrap runs when each worker starts | `Messaging::connection()` / `Messaging::instance()` | [docs/frameworks/webman.md](docs/frameworks/webman.md) |
+| Hyperf | `extra.hyperf.config` discovers `ConfigProvider` + `ManagerFactory` | Container-injected `Manager`; `vendor:publish` can publish the config | [docs/frameworks/hyperf.md](docs/frameworks/hyperf.md) |
+| Yii2 | `extra.bootstrap` registers `MessagingComponent` | `Yii::$app->messaging->connection()` | [docs/frameworks/yii2.md](docs/frameworks/yii2.md) |
+| Yii3 | `extra.config-plugin` merges `config/di.php` + `params.php` | Container-injected `Manager` | [docs/frameworks/yii3.md](docs/frameworks/yii3.md) |
 
 ## Driver support matrix
 
@@ -261,7 +260,7 @@ messaging-php/
 ├── src/
 │   ├── Manager.php                 # multi-connection management, driver registry, disconnect
 │   ├── Connection.php              # publish / receive / consume / capabilities
-│   ├── Composer/                   # Composer plugin + ConfigInstaller (automatic framework config copy)
+│   ├── Install.php                 # webman install hook (copies the plugin config)
 │   ├── Config/                     # Config · ConnectionConfig
 │   ├── Contract/                   # DriverInterface · Message · ReceivedMessage · Capabilities, etc.
 │   ├── Driver/
@@ -283,11 +282,10 @@ messaging-php/
 │   └── Support/                    # Socket and other low-level support
 ├── config/                         # Laravel / ThinkPHP default config · webman plugin · Yii3 config plugin (di/params)
 ├── tests/
-│   ├── Unit/                       # config, codec, driver and Composer unit tests
+│   ├── Unit/                       # config, codec, driver and framework adapter unit tests
 │   ├── Protocol/                   # fake-broker protocol tests per protocol
 │   ├── Contract/                   # DriverContractTestCase shared contract base class
 │   ├── Integration/                # real-broker / simulated cloud integration tests
-│   ├── Composer/                   # plugin-smoke.sh
 │   └── Support/                    # test helpers
 ├── docs/
 │   ├── drivers.md                  # 20-system support matrix and capability differences
@@ -311,10 +309,9 @@ composer install
 composer test                          # tests/Unit + tests/Protocol, no external services required
 composer phpstan                       # PHPStan level 5
 composer cs                            # PHP-CS-Fixer check
-bash tests/Composer/plugin-smoke.sh    # Composer plugin auto-copy smoke test
 ```
 
-The unit/protocol suite currently has 742 tests and 2663 assertions; framework unit tests are skipped automatically when the corresponding framework is not installed. On PHP 8.0, use `vendor/bin/phpunit -c phpunit-9.xml` to run the same unit/protocol suite (PHPUnit 9.6); PHP 8.1–8.5 use PHPUnit 10. CI also runs full PHP 8.0 linting plus a runtime smoke test, and a Composer plugin smoke job.
+The unit/protocol suite currently has 739 tests and 2661 assertions; framework unit tests are skipped automatically when the corresponding framework is not installed. On PHP 8.0, use `vendor/bin/phpunit -c phpunit-9.xml` to run the same unit/protocol suite (PHPUnit 9.6); PHP 8.1–8.5 use PHPUnit 10. CI also runs full PHP 8.0 linting plus a runtime smoke test.
 
 Integration tests connect to real brokers or local simulators. Start the containers by profile, then run:
 

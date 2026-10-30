@@ -1583,7 +1583,8 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
       <a href="#about" data-section="about">Project</a>
       <a href="#features" data-section="features">Capabilities</a>
       <a href="#versions" data-section="versions">Changelog</a>
-      <a href="#docs" data-section="docs">Docs</a>
+      <a href="docs-en.html">Docs</a>
+      <a href="drivers-en.html">Drivers</a>
       <a class="nav-lang" href="index.html" hreflang="zh-CN" lang="zh-CN">中文</a>
     </nav>
     <div class="header-actions">
@@ -1692,7 +1693,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
       <article class="feature-card reveal feature-card--ink" style="--delay:165ms">
         <svg class="icon" aria-hidden="true"><use href="#i-layers"></use></svg>
         <h3>Framework adapters</h3>
-        <p>Laravel, ThinkPHP, webman, Hyperf, Yii2 and Yii3; Composer copies each framework config on install.</p>
+        <p>Laravel, ThinkPHP, webman, Hyperf, Yii2 and Yii3; Composer registers each framework through its native mechanism on install.</p>
       </article>
       <article class="feature-card reveal feature-card--pet" style="--delay:220ms">
         <svg class="icon" aria-hidden="true"><use href="#i-layout"></use></svg>
@@ -1703,7 +1704,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
       <article class="feature-card reveal" style="--delay:275ms">
         <svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>
         <h3>Four test layers</h3>
-        <p>742 unit/protocol tests plus fake-broker, contract and heavy Docker integration matrices.</p>
+        <p>739 unit/protocol tests plus fake-broker, contract and heavy Docker integration matrices.</p>
       </article>
       </div>
     </div>
@@ -1725,7 +1726,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
       </div>
       <div class="milestone reveal" style="--delay:60ms">
         <div class="milestone-ver">v1.7.0<time datetime="2026-10-30">2026-10-30</time></div>
-        <div><h3>Automatic framework config</h3><p>Composer plugin copies config per framework; Yii3 merges automatically.</p></div>
+        <div><h3>Automatic framework registration</h3><p>Each framework registers the package through its native Composer rules.</p></div>
         <img class="milestone-pet" src="assets/img/pet/expressions/pleasing.svg" width="360" height="360" alt="" aria-hidden="true" loading="lazy" decoding="async">
       </div>
       <div class="milestone reveal" style="--delay:120ms">
@@ -1846,17 +1847,16 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
     <div class="wrap">
       <div class="section-head reveal">
         <h2 id="docs-title">Install and usage</h2>
-        <p>Install, then publish, receive and ack with Redis Streams.</p>
+        <p>Install, then publish, receive and ack with Redis Streams; the full installation guide, framework integration and driver matrix live on the docs page.</p>
       </div>
       <div class="docs-panel reveal">
         <div class="docs-tabs" role="tablist" aria-label="Language">
         <button class="docs-tab is-active" type="button" role="tab" id="docs-tab-php" aria-selected="true" aria-controls="docs-panel-php" data-tab="php" tabindex="0">PHP</button>
         </div>
         <div class="docs-pane is-active" id="docs-panel-php" role="tabpanel" aria-labelledby="docs-tab-php">
-          <div class="docs-meta"><span>PHP &gt;= 8.0 / Composer</span><a href="https://github.com/erikwang2013/messaging-php#readme" target="_blank" rel="noopener">Full README <svg class="icon icon-xs" aria-hidden="true"><use href="#i-external"></use></svg></a></div>
+          <div class="docs-meta"><span>PHP &gt;= 8.0 / Composer</span><span class="docs-meta-links"><a href="docs-en.html">Full docs <svg class="icon icon-xs" aria-hidden="true"><use href="#i-arrow"></use></svg></a><a href="https://github.com/erikwang2013/messaging-php#readme" target="_blank" rel="noopener">Full README <svg class="icon icon-xs" aria-hidden="true"><use href="#i-external"></use></svg></a></span></div>
           <div class="docs-code-grid">
-            <div class="code-block code-block--install"><span class="code-label">Install</span><pre><code>composer config allow-plugins.erikwang2013/messaging-php true
-composer require erikwang2013/messaging-php</code></pre></div>
+            <div class="code-block code-block--install"><span class="code-label">Install</span><pre><code>composer require erikwang2013/messaging-php</code></pre></div>
             <div class="code-block"><span class="code-label">Minimal example</span><pre><code>use Erikwang2013\Messaging\Contract\Message;
 use Erikwang2013\Messaging\Contract\ReceiveOptions;
 use Erikwang2013\Messaging\Manager;

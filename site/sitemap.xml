@@ -18,4 +18,40 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://package.erik.xyz/messaging/en.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://package.erik.xyz/messaging/"/>
   </url>
+  <url>
+    <loc>https://package.erik.xyz/messaging/docs.html</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://package.erik.xyz/messaging/docs.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://package.erik.xyz/messaging/docs-en.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://package.erik.xyz/messaging/docs.html"/>
+  </url>
+  <url>
+    <loc>https://package.erik.xyz/messaging/docs-en.html</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://package.erik.xyz/messaging/docs.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://package.erik.xyz/messaging/docs-en.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://package.erik.xyz/messaging/docs.html"/>
+  </url>
+  <url>
+    <loc>https://package.erik.xyz/messaging/drivers.html</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://package.erik.xyz/messaging/drivers.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://package.erik.xyz/messaging/drivers-en.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://package.erik.xyz/messaging/drivers.html"/>
+  </url>
+  <url>
+    <loc>https://package.erik.xyz/messaging/drivers-en.html</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://package.erik.xyz/messaging/drivers.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://package.erik.xyz/messaging/drivers-en.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://package.erik.xyz/messaging/drivers.html"/>
+  </url>
 </urlset>

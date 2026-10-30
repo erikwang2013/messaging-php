@@ -1,0 +1,9 @@
+[
+  {"title":"Installation","text":"Requires PHP >= 8.0 with openssl and zlib. composer require erikwang2013/messaging-php; no broker SDK or extension needed.","anchor":"docs-install","type":"Docs"},
+  {"title":"Framework auto-registration","text":"Laravel ThinkPHP webman Hyperf Yii2 and Yii3 discover and register the package through their own Composer mechanisms; no manual config copy or component registration.","anchor":"docs-frameworks","type":"Docs"},
+  {"title":"Redis Streams quick start","text":"publish receive ack consume consumer group PEL XAUTOCLAIM example and notes.","anchor":"docs-quickstart","type":"Docs"},
+  {"title":"NATS Core subscribe first","text":"Core NATS delivers only to existing subscriptions; call receive first, ack and reject are unsupported, use JetStream for persistence.","anchor":"docs-quickstart","type":"Docs"},
+  {"title":"Framework integration","text":"Registration and usage for Laravel ThinkPHP webman Hyperf Yii2 and Yii3, with links to each framework guide.","anchor":"docs-framework-usage","type":"Docs"},
+  {"title":"Driver support matrix","text":"20 driver names across 13 protocol stacks, P1-P5 phase status and ack requeue delay consumer group capabilities.","anchor":"docs-drivers","type":"Docs"},
+  {"title":"Development and testing","text":"composer test phpstan cs, 739 tests and 2661 assertions, PHPUnit 9.6 on PHP 8.0 and PHPUnit 10 on PHP 8.1-8.5.","anchor":"docs-development","type":"Docs"}
+]

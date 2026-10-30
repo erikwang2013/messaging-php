@@ -5,19 +5,14 @@ ThinkPHP 适配层是一个 `think\Service`：从 `config('messaging')` 读取�
 ## 安装
 
 ```bash
-composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
 
-本包是 Composer Plugin。安装/更新时若检测到 `topthink/framework`，会自动把默认配置复制到 `config/messaging.php`（已存在则不覆盖）；ThinkPHP 的 `extra.think` 自动发现仍会注册服务。
+包在 `composer.json` 的 `extra.think` 中声明服务与配置。标准 ThinkPHP 应用的 `post-autoload-dump` 会自动执行 `php think service:discover` 和 `php think vendor:publish`，安装后服务即注册、配置即复制到 `config/messaging.php`，无需手动操作。
 
-插件通过 `extra.plugin-optional` 声明为可选，但该声明只有 Composer 2.5.3+ 支持：在 2.5.3+ 上未配置 `allow-plugins` 时会跳过插件并继续安装，Composer 2.2–2.5.2 则会安装失败；请保留上面的 `allow-plugins` 命令。插件被跳过时，用 `php think vendor:publish` 手动发布配置即可。
+## 注册与配置
 
-## 注册服务
-
-### 自动发现（推荐）
-
-包在 `composer.json` 的 `extra.think` 中声明服务与配置，标准 ThinkPHP 应用的 `post-autoload-dump` 会执行 `php think service:discover` 和 `php think vendor:publish`：
+自动发现声明如下：
 
 ```json
 {
@@ -44,7 +39,7 @@ php think service:discover
 php think vendor:publish
 ```
 
-### 手动注册
+### 手动注册（自动发现被禁用时）
 
 不使用自动发现时，先复制配置：
 

@@ -7,15 +7,14 @@
 ## 安装
 
 ```bash
-composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
 
-本包是 Composer Plugin。安装/更新时若检测到 `yiisoft/yii2`，会自动把默认配置复制到 `config/messaging.php`（已存在则不覆盖）。Yii2 没有 Composer 自动发现，仍需要手动注册组件。
+本包类型为 `yii2-extension`，并在 `composer.json` 的 `extra.bootstrap` 中声明了 `Bootstrap`。标准 Yii2 应用允许 `yiisoft/yii2-composer`（随 `yiisoft/yii2` 安装），安装时会把 bootstrap 写入 `vendor/yiisoft/extensions.php`；应用启动时自动注册 `messaging` 组件并使用包内默认配置（读取下方环境变量）。不需要复制配置文件，也不需要手动注册。
 
-插件通过 `extra.plugin-optional` 声明为可选，但该声明只有 Composer 2.5.3+ 支持：在 2.5.3+ 上未配置 `allow-plugins` 时会跳过插件并继续安装，Composer 2.2–2.5.2 则会安装失败；请保留上面的 `allow-plugins` 命令。插件被跳过时，按本文的手动方式注册组件并合并包内配置即可。
+## 自定义配置（可选）
 
-## 注册组件
+应用已在 `components` 中定义 `messaging` 时，自动注册会跳过，直接使用应用配置：
 
 ```php
 // config/web.php、config/console.php

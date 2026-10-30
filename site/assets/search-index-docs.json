@@ -1,0 +1,9 @@
+[
+  {"title":"安装","text":"要求 PHP >= 8.0，标准扩展 openssl 与 zlib。composer require erikwang2013/messaging-php，不需要 broker SDK 或扩展。","anchor":"docs-install","type":"文档"},
+  {"title":"框架自动注册","text":"Laravel ThinkPHP webman Hyperf Yii2 Yii3 通过各自 Composer 机制自动发现并注册，无需手动复制配置或注册组件。","anchor":"docs-frameworks","type":"文档"},
+  {"title":"Redis Streams 快速开始","text":"publish receive ack consume 消费者组 PEL XAUTOCLAIM 示例与说明。","anchor":"docs-quickstart","type":"文档"},
+  {"title":"NATS Core 先订阅再发布","text":"Core NATS 只投递给已存在的订阅，消费端先 receive 建立订阅，ack 与 reject 不支持，使用 JetStream 获得持久化。","anchor":"docs-quickstart","type":"文档"},
+  {"title":"框架集成","text":"Laravel ThinkPHP webman Hyperf Yii2 Yii3 的注册方式、使用方式与框架文档链接。","anchor":"docs-framework-usage","type":"文档"},
+  {"title":"驱动支持矩阵","text":"20 个驱动名、13 套协议栈，P1-P5 阶段状态与 ack requeue delay consumer group 能力速查。","anchor":"docs-drivers","type":"文档"},
+  {"title":"开发测试","text":"composer test phpstan cs，739 个测试 2661 个断言，PHP 8.0 使用 PHPUnit 9.6，PHP 8.1-8.5 使用 PHPUnit 10。","anchor":"docs-development","type":"文档"}
+]

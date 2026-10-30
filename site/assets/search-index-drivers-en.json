@@ -1,0 +1,98 @@
+[
+  {
+    "title": "ActiveMQ Classic driver",
+    "text": "STOMP 1.2 over TCP; requeue is re-send plus ACK and may duplicate; no consumer groups; buffer_limit defaults to 10000.",
+    "anchor": "driver-activemq",
+    "type": "Driver guide"
+  },
+  {
+    "title": "ActiveMQ Artemis driver",
+    "text": "STOMP 1.2 over TCP; NACK is a discard; consumers must subscribe first; buffer_limit defaults to 10000.",
+    "anchor": "driver-artemis",
+    "type": "Driver guide"
+  },
+  {
+    "title": "Beanstalkd driver",
+    "text": "Beanstalkd text protocol; ack, requeue and delay; no headers, key or batch publishing; unacked messages return after TTR.",
+    "anchor": "driver-beanstalkd",
+    "type": "Driver guide"
+  },
+  {
+    "title": "NATS Core driver",
+    "text": "At-most-once core NATS; subscribe before publishing; ack and reject unsupported; queue_group for groups; JetStream not implemented.",
+    "anchor": "driver-nats",
+    "type": "Driver guide"
+  },
+  {
+    "title": "NSQ driver",
+    "text": "NSQ v2 TCP; the channel must exist first; no delay, TLS or AUTH; published messages carry no id.",
+    "anchor": "driver-nsq",
+    "type": "Driver guide"
+  },
+  {
+    "title": "Redis Streams driver",
+    "text": "RESP2; consumer groups and XACK; reject(true) unsupported, recover from the PEL with XAUTOCLAIM; no delay or TLS.",
+    "anchor": "driver-redis",
+    "type": "Driver guide"
+  },
+  {
+    "title": "Azure Service Bus driver",
+    "text": "REST data-plane with SAS; peek-lock; no AMQP, OAuth or transactions; entities must exist; delay resolution is one second.",
+    "anchor": "driver-azure-service-bus",
+    "type": "Driver guide"
+  },
+  {
+    "title": "GCP Pub/Sub driver",
+    "text": "REST JSON with service-account JWT; one-message pull; ack deadline default 60 seconds; at-least-once; topics must exist.",
+    "anchor": "driver-gcp-pubsub",
+    "type": "Driver guide"
+  },
+  {
+    "title": "AWS Kinesis driver",
+    "text": "JSON API plus SigV4; shard checkpoint in memory; no requeue or dead-letter queue; no headers or delay.",
+    "anchor": "driver-kinesis",
+    "type": "Driver guide"
+  },
+  {
+    "title": "AWS SNS driver",
+    "text": "Query API plus SigV4; publish only; receive and publishBatch unsupported; no FIFO topics or MessageStructure json.",
+    "anchor": "driver-sns",
+    "type": "Driver guide"
+  },
+  {
+    "title": "AWS SQS driver",
+    "text": "JSON plus SigV4; ack, requeue, delay and long polling; FIFO per-message delay unsupported; bodies must be UTF-8.",
+    "anchor": "driver-sqs",
+    "type": "Driver guide"
+  },
+  {
+    "title": "RabbitMQ driver",
+    "text": "AMQP 0-9-1; default exchange only; no publisher confirms; one connection and channel; no delay or auto-delete.",
+    "anchor": "driver-rabbitmq",
+    "type": "Driver guide"
+  },
+  {
+    "title": "ZeroMQ driver",
+    "text": "ZMTP 3.1 with PUB/SUB and PUSH/PULL; at-most-once; slow joiner; no persistence, ack, TLS or reconnect.",
+    "anchor": "driver-zeromq",
+    "type": "Driver guide"
+  },
+  {
+    "title": "Kafka family driver",
+    "text": "Kafka wire protocol with Redpanda, AutoMQ, Confluent and Event Hubs aliases; offset commit and seek; no SASL or transactions.",
+    "anchor": "driver-kafka",
+    "type": "Driver guide"
+  },
+  {
+    "title": "Pulsar driver",
+    "text": "Binary protocol v11; Shared subscriptions; ack, requeue and delay around one second; experimental; no auth, batching or schema.",
+    "anchor": "driver-pulsar",
+    "type": "Driver guide"
+  },
+  {
+    "title": "RocketMQ driver",
+    "text": "4.x remoting; publish, pull, ack, requeue and delay levels; experimental; no transactions, ACL, TAG filtering or compression.",
+    "anchor": "driver-rocketmq",
+    "type": "Driver guide"
+  }
+]

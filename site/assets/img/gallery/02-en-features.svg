@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="feat-title feat-desc">
   <title id="feat-title">messaging-php Feature Design</title>
-  <desc id="feat-desc">Six capability areas: unified API, capability model, driver registry covering 20 driver names and 13 protocol stacks, pure PHP transport, framework integration with Composer auto-config, and 742 tests with a CI matrix.</desc>
+  <desc id="feat-desc">Six capability areas: unified API, capability model, driver registry covering 20 driver names and 13 protocol stacks, pure PHP transport, framework integration with native Composer auto-registration, and 739 tests with a CI matrix.</desc>
   <style>
     text{font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#14213D}
     .title{font-size:22px;font-weight:700}
@@ -81,13 +81,13 @@
   <circle cx="370" cy="325" r="12" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
   <text class="num ctr" x="370" y="329" style="fill:#B45309">5</text>
   <text class="ct" x="392" y="321">Framework integration</text>
-  <text class="ce" x="392" y="336">6 frameworks + Composer auto-config</text>
+  <text class="ce" x="392" y="336">6 frameworks + Composer auto-registration</text>
   <line x1="368" y1="350" x2="592" y2="350" stroke="#E2E8F0" stroke-width="1"/>
   <text class="b" x="368" y="370">· Laravel · ThinkPHP · webman · Hyperf</text>
   <text class="b" x="368" y="390">· Yii2 · Yii3: six optional adapters</text>
-  <text class="b" x="368" y="410">· Composer Plugin detects frameworks</text>
-  <text class="b" x="368" y="430">· copies config; Yii3 merges automatically</text>
-  <text class="b" x="368" y="450">· allow-plugins required; container singleton</text>
+  <text class="b" x="368" y="410">· Native framework auto-registration</text>
+  <text class="b" x="368" y="430">· Runtime config; webman copies on install</text>
+  <text class="b" x="368" y="450">· No allow-plugins; container singleton</text>
 
   <!-- Card 6 testing -->
   <rect x="644" y="292" width="272" height="188" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.4"/>
@@ -95,9 +95,9 @@
   <circle cx="670" cy="325" r="12" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
   <text class="num ctr" x="670" y="329" style="fill:#B45309">6</text>
   <text class="ct" x="692" y="321">Testing</text>
-  <text class="ce" x="692" y="336">742 tests · 2663 assertions</text>
+  <text class="ce" x="692" y="336">739 tests · 2661 assertions</text>
   <line x1="668" y1="350" x2="892" y2="350" stroke="#E2E8F0" stroke-width="1"/>
-  <text class="b" x="668" y="370">· 742 tests · 2663 assertions</text>
+  <text class="b" x="668" y="370">· 739 tests · 2661 assertions</text>
   <text class="b" x="668" y="390">· unit · fake-broker protocol · contract</text>
   <text class="b" x="668" y="410">· Docker Compose integration tests</text>
   <text class="b" x="668" y="430">· CI matrix PHP 8.0–8.5 (PHPUnit 9.6/10)</text>
@@ -105,5 +105,5 @@
 
   <!-- Bottom capability bar -->
   <rect x="44" y="500" width="872" height="28" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.2"/>
-  <text class="foot ctr" x="480" y="518">PSR-3 logging · unified exceptions · array config · PHP 8.0–8.5 · Composer plugin auto-config · no broker SDK or extension</text>
+  <text class="foot ctr" x="480" y="518">PSR-3 logging · unified exceptions · array config · PHP 8.0–8.5 · Composer auto-registration · no broker SDK or extension</text>
 </svg>

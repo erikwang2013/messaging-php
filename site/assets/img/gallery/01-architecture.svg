@@ -34,8 +34,8 @@
   <!-- 框架适配层 + Composer 安装期 -->
   <rect x="40" y="78" width="880" height="76" rx="12" fill="#F8FAFC" stroke="#E2E8F0"/>
   <rect x="56" y="90" width="4" height="14" rx="2" fill="#2563EB"/>
-  <text class="lane" x="68" y="102">框架适配层 + Composer Plugin</text>
-  <text class="lane-en" x="290" y="102">可选集成 · 安装或更新时自动复制配置</text>
+  <text class="lane" x="68" y="102">框架适配层 + Composer 自动注册</text>
+  <text class="lane-en" x="290" y="102">可选集成 · 按各框架原生规则自动注册</text>
   <g>
     <rect x="52" y="108" width="420" height="40" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
     <rect x="62" y="117" width="60" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
@@ -51,8 +51,8 @@
     <rect x="402" y="117" width="60" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
     <text class="ns ctr" x="432" y="132">Yii3</text>
     <rect x="484" y="108" width="424" height="40" rx="8" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.2"/>
-    <text class="pd" x="496" y="123" style="font-size:9.2px;font-weight:700;fill:#92400E">Composer Plugin · 安装 / 更新自动配置</text>
-    <text class="pd" x="496" y="139">allow-plugins → 检测框架 → 复制默认配置；Yii3 由 yiisoft/config 自动合并</text>
+    <text class="pd" x="496" y="123" style="font-size:9.2px;font-weight:700;fill:#92400E">Composer 原生自动注册</text>
+    <text class="pd" x="496" y="139">extra.* 自动发现 → 注册服务/组件 → 配置运行时加载</text>
   </g>
   <line x1="480" y1="154" x2="480" y2="162" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
 

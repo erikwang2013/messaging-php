@@ -61,7 +61,6 @@ TCP 协议由 PHP 标准库实现，HTTP 云服务通过 Guzzle 直连；不依�
 要求 **PHP >= 8.0**，标准扩展 `openssl`（TLS）与 `zlib`（gzip）即可。CI 在 PHP 8.0 上通过 PHPUnit 9.6 运行完整单元/协议测试，PHP 8.1–8.5 使用 PHPUnit 10。
 
 ```bash
-composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
 
@@ -69,20 +68,20 @@ composer require erikwang2013/messaging-php
 - 运行时依赖只有 Guzzle 与 PSR-3 日志接口，均由 Composer 自动安装。
 - 框架适配器内置于同一包，按需使用；不使用任何框架时可直接裸用 PHP。
 
-### 框架配置自动复制
+### 框架自动注册与配置
 
-本包同时是 Composer Plugin。Composer 2.2+ 需要先允许插件执行（上面的 `allow-plugins` 命令）；安装或更新时会检测项目里已安装的框架，并按各框架惯例复制默认配置：
+安装后无需再执行任何命令。各框架通过自己的 Composer 机制自动发现本包，并在安装或启动时完成注册与配置加载：
 
-| 框架 | 自动复制到 |
+| 框架 | 自动完成 |
 |---|---|
-| Laravel | `config/messaging.php` |
-| ThinkPHP | `config/messaging.php` |
-| webman | `config/plugin/erikwang2013/messaging-php/{app,messaging,bootstrap}.php` |
-| Hyperf | `config/autoload/messaging.php` |
-| Yii2 | `config/messaging.php` |
-| Yii3 | 无需复制：`yiisoft/config` 在运行时自动合并包内配置 |
+| Laravel | `extra.laravel` 自动发现服务提供者与门面；配置由 `mergeConfigFrom` 在运行时合并 |
+| ThinkPHP | `extra.think` 自动发现服务；标准应用的 `post-autoload-dump` 自动执行 `service:discover` 与 `vendor:publish` |
+| webman | 安装钩子自动把插件配置复制到 `config/plugin/erikwang2013/messaging-php/`（已存在不覆盖） |
+| Hyperf | `extra.hyperf.config` 自动发现 `ConfigProvider`；未发布配置时使用包内默认值 |
+| Yii2 | `yii2-extension` 的 `extra.bootstrap` 在应用启动时自动注册 `messaging` 组件 |
+| Yii3 | `extra.config-plugin` 由 `yiisoft/config` 在运行时自动合并 |
 
-已存在的目标文件不会被覆盖；如需自定义，直接修改复制后的文件。插件通过 `extra.plugin-optional` 声明为可选，但该声明只有 Composer 2.5.3+ 支持：在 2.5.3+ 上未配置 `allow-plugins` 时会跳过插件且安装继续成功；Composer 2.2–2.5.2 不支持该声明，未配置 `allow-plugins` 时安装仍会失败。因此请保留上面的 `allow-plugins` 命令。若插件被跳过，可用各框架文档里的手动发布命令替代。
+需要自定义时，按各框架文档里的发布或覆盖方式修改即可；使用默认配置不需要任何操作。
 
 ## 快速开始
 
@@ -155,7 +154,7 @@ NATS Core 的 `ack()` / `reject()` 均抛 `UnsupportedFeatureException`；需要
 
 ## 框架集成
 
-框架适配器随主包提供，不额外安装 Composer 包；只有使用对应框架时才需要该框架本身。配置内容（`default` + `connections`）与 `new Manager([...])` 一致，放置位置与注册方式随框架不同：
+框架适配器随主包提供，不额外安装 Composer 包；只有使用对应框架时才需要该框架本身。各框架由 Composer 自动注册；配置内容（`default` + `connections`）与 `new Manager([...])` 一致，放置位置随框架不同：
 
 ```php
 // 放置路径随框架而定，见各框架文档
@@ -174,12 +173,12 @@ return [
 
 | 框架 | 注册方式 | 使用方式 | 详细文档 |
 |---|---|---|---|
-| Laravel | `MessagingServiceProvider` + `Messaging` 门面 | 容器注入 `Manager`，或使用门面 | [docs/frameworks/laravel.md](docs/frameworks/laravel.md) |
-| ThinkPHP | `MessagingService` 服务类 | 容器注入 `Manager` 或 `app('messaging')` | [docs/frameworks/thinkphp.md](docs/frameworks/thinkphp.md) |
-| webman | 插件 bootstrap（每个 worker 启动时执行） | `Messaging::connection()` / `Messaging::instance()` | [docs/frameworks/webman.md](docs/frameworks/webman.md) |
-| Hyperf | `ConfigProvider` 自动发现 + `ManagerFactory` | 容器注入 `Manager`；`vendor:publish` 发布配置 | [docs/frameworks/hyperf.md](docs/frameworks/hyperf.md) |
-| Yii2 | `MessagingComponent` 应用组件 | `Yii::$app->messaging->connection()` | [docs/frameworks/yii2.md](docs/frameworks/yii2.md) |
-| Yii3 | `yiisoft/config`（`config/di.php` + `params.php`） | 容器注入 `Manager` | [docs/frameworks/yii3.md](docs/frameworks/yii3.md) |
+| Laravel | `extra.laravel` 自动发现 `MessagingServiceProvider` + `Messaging` 门面 | 容器注入 `Manager`，或使用门面 | [docs/frameworks/laravel.md](docs/frameworks/laravel.md) |
+| ThinkPHP | `extra.think` 自动发现 `MessagingService` | 容器注入 `Manager` 或 `app('messaging')` | [docs/frameworks/thinkphp.md](docs/frameworks/thinkphp.md) |
+| webman | 安装钩子复制插件配置，bootstrap 在每个 worker 启动时执行 | `Messaging::connection()` / `Messaging::instance()` | [docs/frameworks/webman.md](docs/frameworks/webman.md) |
+| Hyperf | `extra.hyperf.config` 自动发现 `ConfigProvider` + `ManagerFactory` | 容器注入 `Manager`；`vendor:publish` 可发布配置 | [docs/frameworks/hyperf.md](docs/frameworks/hyperf.md) |
+| Yii2 | `extra.bootstrap` 自动注册 `MessagingComponent` | `Yii::$app->messaging->connection()` | [docs/frameworks/yii2.md](docs/frameworks/yii2.md) |
+| Yii3 | `extra.config-plugin` 自动合并 `config/di.php` + `params.php` | 容器注入 `Manager` | [docs/frameworks/yii3.md](docs/frameworks/yii3.md) |
 
 ## 驱动支持矩阵
 
@@ -261,7 +260,7 @@ messaging-php/
 ├── src/
 │   ├── Manager.php                 # 多连接管理、驱动注册表、disconnect
 │   ├── Connection.php              # publish / receive / consume / capabilities
-│   ├── Composer/                   # Composer Plugin + ConfigInstaller（框架配置自动复制）
+│   ├── Install.php                 # webman 安装钩子（复制插件配置）
 │   ├── Config/                     # Config · ConnectionConfig
 │   ├── Contract/                   # DriverInterface · Message · ReceivedMessage · Capabilities 等
 │   ├── Driver/
@@ -283,11 +282,10 @@ messaging-php/
 │   └── Support/                    # Socket 等底层支撑
 ├── config/                         # Laravel / ThinkPHP 默认配置 · webman 插件 · Yii3 config plugin（di/params）
 ├── tests/
-│   ├── Unit/                       # 配置、编解码、驱动与 Composer 单元测试
+│   ├── Unit/                       # 配置、编解码、驱动与框架适配单元测试
 │   ├── Protocol/                   # 各协议假 broker 协议测试
 │   ├── Contract/                   # DriverContractTestCase 共享契约基类
 │   ├── Integration/                # 真实 broker / 模拟云服务集成测试
-│   ├── Composer/                   # plugin-smoke.sh
 │   └── Support/                    # 测试辅助
 ├── docs/
 │   ├── drivers.md                  # 20 系统支持矩阵与能力差异
@@ -311,10 +309,9 @@ composer install
 composer test                          # tests/Unit + tests/Protocol，无需外部服务
 composer phpstan                       # PHPStan level 5
 composer cs                            # PHP-CS-Fixer 检查
-bash tests/Composer/plugin-smoke.sh    # Composer Plugin 自动复制配置冒烟测试
 ```
 
-当前单元/协议测试：742 个测试、2663 个断言；未安装对应框架时，相关框架单测自动跳过。PHP 8.0 请改用 `vendor/bin/phpunit -c phpunit-9.xml` 运行同一套单元/协议测试（PHPUnit 9.6），PHP 8.1–8.5 使用 PHPUnit 10。CI 还包含 PHP 8.0 全量 lint 与运行时冒烟，以及 Composer Plugin 冒烟任务。
+当前单元/协议测试：739 个测试、2661 个断言；未安装对应框架时，相关框架单测自动跳过。PHP 8.0 请改用 `vendor/bin/phpunit -c phpunit-9.xml` 运行同一套单元/协议测试（PHPUnit 9.6），PHP 8.1–8.5 使用 PHPUnit 10。CI 还包含 PHP 8.0 全量 lint 与运行时冒烟。
 
 集成测试连接真实 broker 或本地模拟服务，按 profile 启动容器后运行：
 

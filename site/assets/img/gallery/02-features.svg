@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="feat-title feat-desc">
   <title id="feat-title">messaging-php 功能设计</title>
-  <desc id="feat-desc">六个能力面：统一 API、能力模型、驱动注册表（20 个驱动名 / 13 套协议栈）、纯 PHP 传输、框架集成与 Composer 自动配置、742 个测试与 CI 矩阵。</desc>
+  <desc id="feat-desc">六个能力面：统一 API、能力模型、驱动注册表（20 个驱动名 / 13 套协议栈）、纯 PHP 传输、框架集成与 Composer 自动注册、739 个测试与 CI 矩阵。</desc>
   <style>
     text{font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#14213D}
     .title{font-size:22px;font-weight:700}
@@ -81,13 +81,13 @@
   <circle cx="370" cy="325" r="12" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
   <text class="num ctr" x="370" y="329" style="fill:#B45309">5</text>
   <text class="ct" x="392" y="321">框架集成</text>
-  <text class="ce" x="392" y="336">6 Frameworks + Composer Plugin</text>
+  <text class="ce" x="392" y="336">6 Frameworks + Composer 自动注册</text>
   <line x1="368" y1="350" x2="592" y2="350" stroke="#E2E8F0" stroke-width="1"/>
   <text class="b" x="368" y="370">· Laravel · ThinkPHP · webman · Hyperf</text>
   <text class="b" x="368" y="390">· Yii2 · Yii3：6 个可选适配器</text>
-  <text class="b" x="368" y="410">· Composer Plugin 安装期检测框架</text>
-  <text class="b" x="368" y="430">· 自动复制配置；Yii3 自动合并</text>
-  <text class="b" x="368" y="450">· allow-plugins 必需 · 容器单例</text>
+  <text class="b" x="368" y="410">· 按各框架原生规则自动注册</text>
+  <text class="b" x="368" y="430">· 配置运行时加载；webman 安装时复制</text>
+  <text class="b" x="368" y="450">· 无需 allow-plugins · 容器单例</text>
 
   <!-- 卡片 6 测试体系 -->
   <rect x="644" y="292" width="272" height="188" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.4"/>
@@ -95,9 +95,9 @@
   <circle cx="670" cy="325" r="12" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
   <text class="num ctr" x="670" y="329" style="fill:#B45309">6</text>
   <text class="ct" x="692" y="321">测试体系</text>
-  <text class="ce" x="692" y="336">742 tests · 2663 assertions</text>
+  <text class="ce" x="692" y="336">739 tests · 2661 assertions</text>
   <line x1="668" y1="350" x2="892" y2="350" stroke="#E2E8F0" stroke-width="1"/>
-  <text class="b" x="668" y="370">· 742 tests · 2663 assertions</text>
+  <text class="b" x="668" y="370">· 739 tests · 2661 assertions</text>
   <text class="b" x="668" y="390">· 单元 · 假 broker 协议 · 契约测试</text>
   <text class="b" x="668" y="410">· Docker Compose 集成测试</text>
   <text class="b" x="668" y="430">· CI 矩阵 PHP 8.0–8.5（PHPUnit 9.6/10）</text>
@@ -105,5 +105,5 @@
 
   <!-- 底部能力条 -->
   <rect x="44" y="500" width="872" height="28" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.2"/>
-  <text class="foot ctr" x="480" y="518">PSR-3 日志注入 · 统一异常体系 · 数组配置 · PHP 8.0–8.5 · Composer Plugin 自动配置 · 无 broker SDK / 扩展依赖</text>
+  <text class="foot ctr" x="480" y="518">PSR-3 日志注入 · 统一异常体系 · 数组配置 · PHP 8.0–8.5 · Composer 自动注册 · 无 broker SDK / 扩展依赖</text>
 </svg>

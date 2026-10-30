@@ -6,27 +6,14 @@
 ## 安装
 
 ```bash
-composer config allow-plugins.erikwang2013/messaging-php true
 composer require erikwang2013/messaging-php
 ```
 
-本包是 Composer Plugin。安装/更新时若检测到 `hyperf/framework`，会自动把默认配置复制到 `config/autoload/messaging.php`（已存在则不覆盖）；`vendor:publish` 仍可用于重新发布。
+包在 `composer.json` 的 `extra.hyperf.config` 中声明了 `ConfigProvider`。Hyperf 会从所有已安装包的 `composer.lock` extra 中自动发现并注册它，不需要在应用 `composer.json` 里手动登记。
 
-插件通过 `extra.plugin-optional` 声明为可选，但该声明只有 Composer 2.5.3+ 支持：在 2.5.3+ 上未配置 `allow-plugins` 时会跳过插件并继续安装，Composer 2.2–2.5.2 则会安装失败；请保留上面的 `allow-plugins` 命令。插件被跳过时，用 `vendor:publish` 手动发布配置即可。
+`ManagerFactory` 在应用未提供 `messaging` 配置时使用包内默认值（读取下方环境变量），因此不发布配置也可以直接注入 `Manager`。
 
-在应用 `composer.json` 里登记 ConfigProvider（已有 `extra.hyperf.config` 时把类名追加进数组）：
-
-```json
-{
-    "extra": {
-        "hyperf": {
-            "config": "Erikwang2013\\Messaging\\Integration\\Hyperf\\ConfigProvider"
-        }
-    }
-}
-```
-
-## 发布配置
+## 发布配置（可选）
 
 ```bash
 php bin/hyperf.php vendor:publish erikwang2013/messaging-php

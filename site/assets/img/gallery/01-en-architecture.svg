@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="arch-title arch-desc">
   <title id="arch-title">messaging-php Architecture</title>
-  <desc id="arch-desc">Four layers from top to bottom: framework adapters with Composer install-time auto-config, core, drivers grouped by 13 protocol stacks covering 20 driver names, and brokers or cloud services. PHP 8.0–8.5 is supported across the CI matrix and all 20 drivers are shipped.</desc>
+  <desc id="arch-desc">Four layers from top to bottom: framework adapters with native Composer auto-registration, core, drivers grouped by 13 protocol stacks covering 20 driver names, and brokers or cloud services. PHP 8.0–8.5 is supported across the CI matrix and all 20 drivers are shipped.</desc>
   <style>
     text{font-family:system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;fill:#14213D}
     .title{font-size:22px;font-weight:700}
@@ -29,12 +29,12 @@
   <rect x="0" y="0" width="960" height="540" fill="#FFFFFF"/>
   <text class="title" x="48" y="42">messaging-php Architecture</text>
   <text class="sub" x="912" y="42" text-anchor="end">PHP 8.0–8.5 · Composer 2.2+</text>
-  <text class="sub" x="48" y="64">6 framework adapters → Composer auto-config → core layer → 13 protocol stacks / 20 drivers → brokers and cloud</text>
+  <text class="sub" x="48" y="64">6 framework adapters → native Composer discovery → core layer → 13 protocol stacks / 20 drivers → brokers and cloud</text>
 
   <!-- Framework adapters + Composer install -->
   <rect x="40" y="78" width="880" height="76" rx="12" fill="#F8FAFC" stroke="#E2E8F0"/>
   <rect x="56" y="90" width="4" height="14" rx="2" fill="#2563EB"/>
-  <text class="lane" x="68" y="102">Framework adapters + Composer plugin</text>
+  <text class="lane" x="68" y="102">Framework adapters + Composer auto-registration</text>
   <text class="lane-en" x="342" y="102">Optional integrations · config copied at install time</text>
   <g>
     <rect x="52" y="108" width="420" height="40" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
@@ -51,8 +51,8 @@
     <rect x="402" y="117" width="60" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.1"/>
     <text class="ns ctr" x="432" y="132">Yii3</text>
     <rect x="484" y="108" width="424" height="40" rx="8" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.2"/>
-    <text class="pd" x="496" y="123" style="font-size:9.2px;font-weight:700;fill:#92400E">Composer Plugin · install / update auto-config</text>
-    <text class="pd" x="496" y="139">allow-plugins → detect frameworks → copy config; Yii3 merges via yiisoft/config</text>
+    <text class="pd" x="496" y="123" style="font-size:9.2px;font-weight:700;fill:#92400E">Native Composer auto-registration</text>
+    <text class="pd" x="496" y="139">extra.* discovery → register provider/component → runtime config</text>
   </g>
   <line x1="480" y1="154" x2="480" y2="162" stroke="#2563EB" stroke-width="1.8" marker-end="url(#arw-blue)"/>
 
@@ -154,5 +154,5 @@
     <text class="ns ctr" x="695" y="489">AWS SQS / SNS / Kinesis · GCP Pub/Sub</text>
     <text class="ns ctr" x="695" y="502">Azure Service Bus · Azure Event Hubs (Kafka endpoint)</text>
   </g>
-  <text class="note" x="48" y="530">All 20 driver names shipped · Pulsar / RocketMQ experimental (no real broker) · PHP 8.0–8.5 CI · Composer 2.2+ auto-config</text>
+  <text class="note" x="48" y="530">All 20 driver names shipped · Pulsar / RocketMQ experimental (no real broker) · PHP 8.0–8.5 CI · native Composer auto-registration</text>
 </svg>

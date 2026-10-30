@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Erikwang2013\Messaging\Tests\Unit\Integration\Hyperf;
 
 use Erikwang2013\Messaging\Integration\Hyperf\ManagerFactory;
+use Erikwang2013\Messaging\Manager;
 use Erikwang2013\Messaging\Tests\Support\FakeDriverFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -32,19 +33,21 @@ final class ManagerFactoryTest extends TestCase
         self::assertSame('hello', $connection->receive('orders')?->body());
     }
 
-    public function test_missing_messaging_config_is_rejected(): void
+    public function test_missing_messaging_config_falls_back_to_shipped_defaults(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $manager = (new ManagerFactory())($this->container(null));
 
-        (new ManagerFactory())($this->container([]));
+        self::assertInstanceOf(Manager::class, $manager);
+        self::assertSame('default', $manager->connection()->name());
     }
 
     /**
-     * @param array<string, mixed> $messaging
+     * @param array<string, mixed>|null $messaging
      */
-    private function container(array $messaging): ContainerInterface
+    private function container(?array $messaging): ContainerInterface
     {
-        $configService = new class (['messaging' => $messaging]) {
+        $values = $messaging === null ? [] : ['messaging' => $messaging];
+        $configService = new class ($values) {
             /** @param array<string, mixed> $values */
             public function __construct(private array $values)
             {

@@ -47,7 +47,7 @@
   <circle cx="68" cy="127" r="11" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
   <text class="num ctr" x="68" y="131">1</text>
   <text class="st" x="88" y="123">Composer 安装</text>
-  <text class="ss" x="88" y="138">allow-plugins → 检测框架 → 复制配置；Yii3 自动合并</text>
+  <text class="ss" x="88" y="138">安装 → 框架按原生 Composer 规则自动注册</text>
 
   <!-- 步骤 2 -->
   <rect x="48" y="160" width="400" height="42" rx="9" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.3"/>
